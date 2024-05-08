@@ -36,7 +36,7 @@ def get_env_variable_values_string(prefix=['WS_', 'GH_']):
 
     return '\n'.join(rc)
 
-###########
+
 def test_bin():
     assert (get_bin_folder()==os.getcwd())
 def test_get_data_folder():
@@ -51,10 +51,10 @@ def test_get_env_var():
     assert (get_env_var('TEST_VAR', default_value=None)==None)
     assert (get_env_var('TEST_VAR', default_value='main') == 'main')
 def isStringNone(str_object):
-    ##
-    ##__isStringNone__
-    ##
-    ## Determine if str_object is None
+    #
+    #__isStringNone__
+    #
+    # Determine if str_object is None
 
     rc = str_object
 
@@ -64,7 +64,7 @@ def isStringNone(str_object):
         rc = None
 
     return rc
-###########
+
 def main():
     print('bin:       ', get_bin_folder())
     print('data:      ', get_data_folder())
