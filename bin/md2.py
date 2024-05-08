@@ -1,28 +1,24 @@
 import os
-import re
-from pprint import pprint
-
-from able import Inputable, \
-                 StringReader, \
+import sys
+#SCRIPT_DIR = os.path.dirname(str(os.path.abspath(__file__)).replace('/bin','/source/component'))
+#sys.path.append(os.path.dirname(SCRIPT_DIR))
+#print('SCRIPT_DIR',SCRIPT_DIR)
+from able import StringReader, \
                  StringWriter, \
                  UpserterString, \
                  EnvVarString,\
                  Recorder,\
                  NameValuePairs,\
                  TemplateString, \
-                 CloneRepo, \
-                 TemplateList_Latest
+                 CloneRepo,\
+                 DiagramString
 
 from functions import get_bin_folder, \
     get_template_folder, \
-    get_data_folder, \
-    get_default_input_folder,\
-    get_default_output_folder,\
-    get_env_var,\
-    get_root_folder,\
     get_env_variable_values_string
-#from source.recursive_list import RecursionList
-
+    #get_env_var,\
+#from source.component import ProcessGithub
+from source.component import ProcessProject
 
 def get_environment_filename():
     # env is stored in the bin folder bin/md2
@@ -38,8 +34,10 @@ def isStringNone(str_object):
         rc = None
 
     return rc
+
 def get_environment_template_filename():
     return '{}/md2.env.tmpl'.format(get_template_folder())
+
 def get_environment_varable_names(prefix):
 
     rc = [item for item in os.environ
@@ -63,7 +61,8 @@ def output_name(folder_file):
     everyother = str(folder_file).split('/')[::2]
     print('everyother',everyother)
     return folder_file
-
+##
+### MD2 Script
 ##
 ##__Terms__
 ##* __NF__ means Not Found
@@ -74,25 +73,45 @@ def output_name(folder_file):
 ##* __initialize__ refers to the creation of something when nothing was there previously
 ##* __template__ refers to a file of content, complete with template-keys and/or default values
 
-class DiagramString(str):
+class Auto():
+    def __init__(self, process):
+        process.run()
 
-    def __new__(cls, recorder=None):
-        contents = recorder
-        if not recorder:
-            contents=''
 
-        contents = ''
-        if 'step_list' not in recorder:
-            recorder['step_list'] = []
+def main():
+    recorder = Recorder()
+    ##
+    #### MD2 Process
+    ##
+    ## Make what is not there
 
-        for s in recorder['step_list']:
-            if s['count'] == 1:
-                contents += ' {}'.format(s['msg'])
-            else:
-                contents += ' {} ({})'.format(s['msg'], s['count'])
+    ##1. [__Initialize__ md2](#initialize~md2)
 
-        instance = super().__new__(cls, contents)
-        return instance
+    initialize_md2(recorder)
+
+    ##1. [__Configure__ Environment Values](#configure~environment~values)
+
+    # load env from file
+    env_file_content_string=StringReader(get_environment_filename())
+    #configure_environment(env_file_content_string, recorder)
+
+    Auto(ProcessConfigure(env_file_content_string,recorder))
+    ##1. [__Clone__ GitHub Repository](#clone~process)
+    exit(0)
+    # clone_github_repository(recorder)
+    Auto(ProcessGithub(recorder))
+    # #1. [__Initialize__ GitHub Repository](#initialize~clone)
+
+    #initialize_github(recorder)
+
+    # #1. __Commit__ Environment Values __To__ '\<root>/bin/md2.env'
+
+    ##1. __Commit__ Environment Values
+
+    commit_environment(recorder)
+
+    #print('recorder: {}'.format(recorder))
+    print(DiagramString(recorder))
 
 def initialize_md2(recorder):
     print('1. initialize_md2')
@@ -115,249 +134,149 @@ def initialize_md2(recorder):
 
     recorder.add('initialize ({})'.format(env_name))
 
-def configure_environment(env_file_content_string, recorder):
-    print('2. Configure Environment:')
-    ##### Configure Environment Values
-    ##
-    ## Interactively configure values
+class ProcessConfigure(ProcessProject):
+    def __init__(self, env_file_content_string, recorder=None):
+        super().__init__(template_subfolder_name='github', recorder=recorder)
+        # package is {nv_list, repo_folder, template_folder}
+        #
+        self.recorder = recorder
+        self.env_file_content_string=env_file_content_string
 
-    ##1. Project Values
-    ##
+    def configure_environment(self):
+        ##
+        ##### Configure Environment Values
+        ##1. Project Values
+        ##    * __Configure__ WS_ORGANIZATION
+        self.set_env_var('WS_ORGANIZATION', 'test-org')
+        ##    * __Configure__ WS_WORKSPACE
+        self.set_env_var('WS_WORKSPACE', 'test-ws')
+        ##    * __Configure__ WS_PROJECT
+        self.set_env_var('WS_PROJECT', 'test-prj')
+        ##    * __Configure__ WS_REPO
+        self.set_env_var('WS_REPO', 'py_test')
 
-    recorder.add('configure')
-    ##    * __Configure__ WS_ORGANIZATION
-    os.environ['WS_ORGANIZATION'] = Inputable().get_input('WS_ORGANIZATION',
-                                                          get_env_var('WS_ORGANIZATION', 'test-org'),
-                                                          hardstop=True)
-    recorder.add('configure')
-    ##    * __Configure__ WS_WORKSPACE
+        ##
+        ##2. GitHub Values
+        ##    * __Configure__ GH_TRUNK
+        self.set_env_var('GH_TRUNK','main')
+        ##    * __Configure__ GH_PROJECT
+        self.set_env_var('GH_PROJECT','test-prj')
+        ##    * __Configure__ GH_BRANCH
+        self.set_env_var('GH_BRANCH','first')
+        ##    * __Configure__ GH_REPO
+        self.set_env_var('GH_REPO','py_test')
+        ##    * __Configure__ GH_USER
+        self.set_env_var('GH_USER','x')
+        ##    * __Configure__ GH_MESSAGE
+        self.set_env_var('GH_MESSAGE','init')
+        ##    * __Configure__ GH_TOKEN
+        self.set_env_var('GH_TOKEN','x')
 
-    os.environ['WS_WORKSPACE'] = Inputable().get_input('WS_WORKSPACE',
-                                                       get_env_var('WS_WORKSPACE', 'test-ws'),
-                                                       hardstop=True)
-    recorder.add('configure')
-    ##    * __Configure__ WS_PROJECT
+        super().configure_environment()
+        # env_file_content_string = ''
+        print('2. Configure Environment:')
 
-    os.environ['WS_PROJECT'] = Inputable().get_input('WS_PROJECT',
-                                                     get_env_var('WS_PROJECT', 'test-prj'),
-                                                     hardstop=True)
-    print('    configured: {}'.format(get_environment_varable_names('WS_')))
+        self.recorder.add('configure')
 
-    ##
-    ##2. GitHub Values
 
-    recorder.add('configure')
-    ##    * __Configure__ GH_TRUNK
+        self.env_file_content_string = UpserterString(self.env_file_content_string,
+                                                 settings={'dup': True, 'hard_fail': True}) \
+            .upsert(EnvVarString())
+        #return env_file_content_string
+        return self
 
-    os.environ['GH_TRUNK'] = Inputable().get_input('GH_TRUNK',
-                                                   get_env_var('GH_TRUNK', 'main'),
-                                                   hardstop=True)
-    recorder.add('configure')
+    def process(self):
+        self.configure_environment()
 
-    ##    * __Configure__ GH_PROJECT
+class ProcessGithub(ProcessProject):
+    def __init__(self, recorder=None ):
+        super().__init__(template_subfolder_name='github', recorder=recorder)
+        # package is {nv_list, repo_folder, template_folder}
+        #
+        self.recorder=recorder
 
-    os.environ['GH_PROJECT'] = Inputable().get_input('GH_PROJECT',
-                                                     get_env_var('GH_PROJECT', 'test-prj'),
-                                                     hardstop=True)
-    #print('    configured: {}'.format(get_environment_varable_names('GH_')))
+    def clone(self):
+        #if self.recorder: self.recorder.add('clone')
+        repo_name = os.environ['GH_REPO']
+        if self.recorder: self.recorder.add('clone ({})'.format(repo_name))
 
-    ##    * __Configure__ GH_BRANCH
+        ##
+        ##### Clone GitHub Repository
+        ## Create and Configure a Project Repository
 
-    os.environ['GH_BRANCH'] = Inputable().get_input('GH_BRANCH',
-                                                    get_env_var('GH_BRANCH', 'first'),
-                                                    hardstop=True)
-    recorder.add('configure')
-    ##    * __Configure__ GH_REPO
+        ##* __Create__ Branch Folder __When__ folder is NF
+        branch_folder = self.get_branch_folder()
+        os.makedirs(branch_folder, exist_ok=True)
 
-    os.environ['GH_REPO'] = Inputable().get_input('GH_REPO',
-                                                  get_env_var('GH_REPO', 'py_test'),
-                                                  hardstop=True)
-    recorder.add('configure')
-    ##    * __Configure__ GH_USER
+        ##* __Clone__ '\<repo>' __When__ repo is NF
+        repo_folder = '{}/{}'.format(branch_folder, repo_name)
 
-    os.environ['GH_USER'] = Inputable().get_input('GH_USER',
-                                                  get_env_var('GH_USER', 'x'),
-                                                  hardstop=True)
-    recorder.add('configure')
-    ##    * __Configure__ GH_MESSAGE
+        if not os.path.isdir(repo_folder):
+            repo_name = repo_folder.split('/')[-1]
+            # if self.recorder: self.recorder.add('clone ({})'.format(repo_name))
+            if 'GH_TEST' not in os.environ:
+                CloneRepo(repo_folder=repo_folder, username_gh=os.environ['GH_USER'])
+            else:
+                self.makedirs(repo_folder)
+        #else:
+        #    repo_name = repo_folder.split('/')[-1]
+            # if self.recorder: self.recorder.add('cloned ({})'.format(repo_name))
 
-    os.environ['GH_MESSAGE'] = Inputable().get_input('GH_MESSAGE',
-                                                     get_env_var('GH_MESSAGE', 'init'),
-                                                     hardstop=True)
-    recorder.add('configure')
-    ##    * __Configure__ GH_TOKEN
+        return self
 
-    os.environ['GH_TOKEN'] = Inputable().get_input('GH_TOKEN',
-                                                   get_env_var('GH_TOKEN', 'x'),
-                                                   hardstop=True)
-    recorder.add('configure')
-    print('    configured: {}'.format(get_environment_varable_names('GH_')))
+    def patch(self):
+        if self.recorder: self.recorder.add('patch(.gitignore)')
 
-    env_file_content_string = UpserterString(env_file_content_string,
-                                             settings={'dup': True, 'hard_fail': True}) \
-                                .upsert(EnvVarString())
-    return env_file_content_string
-
-def clone_github_repository(recorder):
-    print('clone_repository')
-    repo_name =  os.environ['GH_REPO']
-    recorder.add('clone repository ({})'.format(repo_name))
-
-    ##
-    ##### Clone GitHub Repository
-    ## Create and Configure a Project Repository
-
-    ##* __Create__ Branch Folder __When__ folder is NF
-    branch_folder = get_branch_folder()
-    os.makedirs(branch_folder, exist_ok=True)
-
-    ##* __Clone__ '\<repo>' __When__ repo is NF
-    repo_folder = '{}/{}'.format(branch_folder, os.environ['GH_REPO'])
-
-    if not os.path.isdir(repo_folder):
+        repo_folder = self.get_repo_folder()
         repo_name = repo_folder.split('/')[-1]
-        recorder.add('clone ({})'.format(repo_name))
-        CloneRepo(repo_folder=repo_folder,  username_gh=os.environ['GH_USER'])
-    else:
-        repo_name = repo_folder.split('/')[-1]
-        recorder.add('cloned ({})'.format(repo_name))
+        ##
+        ##* Fix the .gitignore file
+        temp_file = '{}/.gitignore'.format(repo_folder)
 
-def initialize_github(recorder):
-    print('initialize_github')
-    # repo_folder = '{}/{}'.format(branch_folder, os.environ['GH_REPO'])
-    repo_folder = get_repo_folder()
-    repo_name = repo_folder.split('/')[-1]
-    recorder.add('initialize clone ({})'.format(repo_name))
+        if not os.path.isfile(temp_file):
+            if 'GH_TEST' not in os.environ:
+                raise Exception('Uninitialized file ({})'.format(temp_file.split('/')[-1]))
+        temp_contents = ''
+        if os.path.isfile(temp_file):
+            temp_contents = StringReader(temp_file)
+        temp_contents = UpserterString(temp_contents, settings={'dup': True, 'hard_fail': True}, recorder=self.recorder) \
+            .upsert('*.env') \
+            .upsert('.idea/')
+        self.makedirs(temp_file)
+        StringWriter(temp_file, temp_contents)
+        return self
 
-    ##
-    ##### Initialize GitHub Repository
-    ##
-    print('repo_folder',repo_folder)
+    def process(self):
+        self.clone()
+        self.patch()
+        self.templatize()
+        return self
 
-    ##* Fix the .gitignore file
+class ProcessCommit(ProcessProject):
+    def __init__(self, env_file_content_string, recorder=None):
+        super().__init__(template_subfolder_name='github', recorder=recorder)
+        # package is {nv_list, repo_folder, template_folder}
+        #
+        self.recorder = recorder
+        self.env_file_content_string=env_file_content_string
 
-    ##  * __Create__ '\<repo>/.gitignore' file __When__ file is NF
+    def commit_environment(self):
+        env_name = 'TBD'
+        self.recorder.add('commit environment ({})'.format(env_name))
+        ##
+        ##### Commit Environment Values
+        ##
 
-    temp_file = '{}/.gitignore'.format(repo_folder)
+        env_file_content_string = StringReader(get_environment_filename())
+        env_file_content_string = UpserterString(env_file_content_string, settings={'dup': True, 'hard_fail': True},
+                                                 recorder=recorder).upsert(get_env_variable_values_string())
+        ##1. __Commit__ Environment Values __To__ '\<root>/bin/md2.env'
 
-    if not os.path.isfile(temp_file):
-        raise Exception('Uninitialized file ({})'.format(temp_file.split('/')[-1]))
+        StringWriter(get_environment_filename(),
+                     env_file_content_string,
+                     self.recorder)
+        return self
 
-    ##  * __Upsert__ '\<repo>/.gitignore' __Set__ line = '\*.env'
-    ##  * __Upsert__ '\<repo>/.gitignore' __Set__ line = '.idea/'
-
-    temp_contents = StringReader(temp_file)
-    temp_contents = UpserterString(temp_contents, settings={'dup':True, 'hard_fail': True},recorder=recorder)\
-                        .upsert('*.env')\
-                        .upsert('.idea/')
-
-    StringWriter(temp_file, temp_contents)
-    ##
-    ##* Update .env with github variables
-    ##
-    ## TBD...
-    ##  * __Create__ '\<repo>/.env' file __When__ file is NF
-
-    ##* Create github code
-
-    ##  * __Create__ '\<repo>/scripts/' folder __When__ folder is NF
-    ##  * __Create__ '\<repo>/scripts/git.rebase.sh.c-u-.tmpl' file __When__ file is NF
-
-    ##  * Create source folder
-
-    ##* __Create__ '\<repo>/source/' folder __When__ folder is NF
-
-    ##* __Create__ '\<repo>/bin/' folder __When__ folder is NF
-    ##* __Create__ '\<repo>/bin/md2.env' __When__ file NF
-    ##* __Upsert__ '\<repo>/bin/md2.env' __Set__ line = GH_*
-    ##* __Upsert__ '\<repo>/bin/md2.env' __Set__ line = WS_*
-
-    # make list from template folder
-    print('cwd   ', os.getcwd().replace('/bin','/source/template/github'))
-    folder = os.getcwd().replace('/bin','/source/template/github')
-
-    print('folder', folder)
-    # template_list = RecursionList(folder=folder, ext=['.tmpl']).traverse_folder()
-
-    ##* Convert Templates to Code
-    template_list = TemplateList_Latest(folder_path=folder)
-
-    #output_list = [output_name(n) for n in template_list]
-    print('template_list',template_list)
-    print('repo_folder', repo_folder)
-    print('repo_name  ', repo_name)
-    #print('output_list  ', output_list)
-
-    # make list of template-keys and values
-    nv_list = get_template_name_value_pairs()
-    pprint(nv_list)
-    print('nv_list', nv_list)
-    # make list of specific templates
-    for tmplt in template_list:
-        #print('template', template_list[tmplt])
-        print('')
-        for template_folderfile in template_list[tmplt]['template']:
-            # make input and output file names
-            repo_folderfile='{}/{}'.format(get_repo_folder(),template_list[tmplt]['output_subfolder'])
-            repo_folderfile = repo_folderfile.replace('root/','')
-            print('template_folderfile ',template_folderfile)
-            print('repo_folderfile     ',repo_folderfile)
-            new_content = TemplateString(StringReader(template_folderfile), nv_list)
-            print('new_content', new_content)
-            # make templatized-content from template
-            # make list of output folders and output files
-            # make target-file from templatized-content
-
-def commit_environment(recorder):
-    print('commit_environment')
-    env_name = 'TBD'
-    recorder.add('commit environment ({})'.format(env_name))
-    ##
-    ##### Commit Environment
-    ##
-
-    env_file_content_string=StringReader(get_environment_filename())
-    # print('env_file_content_string',env_file_content_string)
-    #print('get_env_variable_values_string()',get_env_variable_values_string())
-    env_file_content_string=UpserterString(env_file_content_string,settings={'dup': True, 'hard_fail': True}, recorder=recorder).upsert(get_env_variable_values_string())
-    #print('env_file_content_string',env_file_content_string)
-    StringWriter(get_environment_filename(),
-                 env_file_content_string,
-                 recorder)
-
-    #env_file_content_string = configure_environment(env_file_content_string, recorder)
-
-def main():
-    recorder = Recorder()
-    ##
-    #### MD2 Process
-    ##
-    ## Make what is not there
-
-    ##1. [__Initialize__ md2](#initialize~md2)
-
-    initialize_md2(recorder)
-
-    ##1. [__Configure__ Environment Values](#configure~environment~values)
-
-    # load env from file
-    env_file_content_string=StringReader(get_environment_filename())
-    configure_environment(env_file_content_string, recorder)
-
-    ##1. [__Clone__ GitHub Repository](#clone~process)
-
-    clone_github_repository(recorder)
-
-    ##1. [__Initialize__ GitHub Repository](#initialize~clone)
-
-    initialize_github(recorder)
-
-    ##1. __Commit__ Environment Values __To__ '\<root>/bin/md2.env'
-
-    commit_environment(recorder)
-
-    #print('recorder: {}'.format(recorder))
-    print(DiagramString(recorder=recorder))
 
 if __name__ == "__main__":
     # execute as docker
