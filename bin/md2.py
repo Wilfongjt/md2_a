@@ -20,47 +20,65 @@ from functions import get_bin_folder, \
 #from source.component import ProcessGithub
 from source.component import ProcessProject
 
-def get_environment_filename():
-    # env is stored in the bin folder bin/md2
-    return '{}/md2.env'.format(get_bin_folder())
+class Application(Recorder):
+    def __init__(self, name='md2'):
+        Recorder.__init__(self)
+        #self.name = name
+        self['name']=name
 
-def isStringNone(str_object):
+    def get_name(self):
+        return self['name']
 
-    rc = str_object
+    def set_name(self, name):
+        self['name']=name
+        return self
 
-    if str_object == None:
-        rc = None
-    elif str_object == 'None':
-        rc = None
+    def get_bin_folder(self):
+        return os.getcwd()
 
-    return rc
+    def get_template_folder(self):
+        return os.getcwd().replace('/bin', '/source/template')
 
-def get_environment_template_filename():
-    return '{}/md2.env.tmpl'.format(get_template_folder())
+    def get_environment_filename(self):
+        # env is stored in the bin folder bin/md2
+        return '{}/{}.env'.format(self.get_bin_folder(), self.get_name())
 
-def get_environment_varable_names(prefix):
+    def get_environment_template_filename(self):
+        return '{}/{}.env.tmpl'.format(self.get_template_folder(), self.get_name())
 
-    rc = [item for item in os.environ
-            if item.startswith(prefix)]
-    return ', '.join(rc)
+    def get_environment_varable_names(self, prefix):
 
-def get_template_name_value_pairs():
-    nv_list = NameValuePairs(multi_line_string=EnvVarString())
-    nv_list = [{'name': '<<{}>>'.format(itm['name']), 'value': itm['value']} for itm in nv_list]
-    return nv_list
+        rc = [item for item in os.environ
+                if item.startswith(prefix)]
+        return ', '.join(rc)
 
-def get_branch_folder():
-    nv_list = get_template_name_value_pairs()
-    return TemplateString('{}/Development/<<WS_ORGANIZATION>>/<<WS_WORKSPACE>>/<<WS_PROJECT>>/<<GH_BRANCH>>'.format(os.environ['HOME']), nv_list=nv_list)
+#def isStringNone(str_object):
+#    rc = str_object
+#    if str_object == None:
+#        rc = None
+#    elif str_object == 'None':
+#        rc = None
+#    return rc
 
-def get_repo_folder():
-    nv_list = get_template_name_value_pairs()
-    return TemplateString('{}/Development/<<WS_ORGANIZATION>>/<<WS_WORKSPACE>>/<<WS_PROJECT>>/<<GH_BRANCH>>/<<GH_REPO>>'.format(os.environ['HOME']), nv_list=nv_list)
 
-def output_name(folder_file):
-    everyother = str(folder_file).split('/')[::2]
-    print('everyother',everyother)
-    return folder_file
+
+#def get_template_name_value_pairs():
+#    nv_list = NameValuePairs(multi_line_string=EnvVarString())
+#    nv_list = [{'name': '<<{}>>'.format(itm['name']), 'value': itm['value']} for itm in nv_list]
+#    return nv_list
+
+#def get_branch_folder():
+#    nv_list = get_template_name_value_pairs()
+#    return TemplateString('{}/Development/<<WS_ORGANIZATION>>/<<WS_WORKSPACE>>/<<WS_PROJECT>>/<<GH_BRANCH>>'.format(os.environ['HOME']), nv_list=nv_list)
+
+#def get_repo_folder():
+#    nv_list = get_template_name_value_pairs()
+#    return TemplateString('{}/Development/<<WS_ORGANIZATION>>/<<WS_WORKSPACE>>/<<WS_PROJECT>>/<<GH_BRANCH>>/<<GH_REPO>>'.format(os.environ['HOME']), nv_list=nv_list)
+
+#def output_name(folder_file):
+#    everyother = str(folder_file).split('/')[::2]
+#    print('everyother',everyother)
+#    return folder_file
 ##
 ### MD2 Script
 ##
@@ -79,7 +97,8 @@ class Auto():
 
 
 def main():
-    recorder = Recorder()
+    #recorder = Recorder()
+    app = Application('md2')
     ##
     #### MD2 Process
     ##
@@ -87,19 +106,20 @@ def main():
 
     ##1. [__Initialize__ md2](#initialize~md2)
 
-    initialize_md2(recorder)
+    # initialize_md2(recorder)
+    Auto(ProcessMd2().set_application(app))
 
     ##1. [__Configure__ Environment Values](#configure~environment~values)
 
     # load env from file
-    env_file_content_string=StringReader(get_environment_filename())
-    #configure_environment(env_file_content_string, recorder)
 
-    Auto(ProcessConfigure(env_file_content_string,recorder))
-    ##1. [__Clone__ GitHub Repository](#clone~process)
-    exit(0)
+    Auto(ProcessConfigure().set_application(app)) #(env_file_content_string, app)
+
+    ##1. [__Initialize__ Repository](#clone~process)
+
     # clone_github_repository(recorder)
-    Auto(ProcessGithub(recorder))
+    Auto(ProcessGithub().set_application(app))
+
     # #1. [__Initialize__ GitHub Repository](#initialize~clone)
 
     #initialize_github(recorder)
@@ -107,42 +127,66 @@ def main():
     # #1. __Commit__ Environment Values __To__ '\<root>/bin/md2.env'
 
     ##1. __Commit__ Environment Values
-
-    commit_environment(recorder)
+    Auto(ProcessCommit().set_application(app))
+    exit(0)
+    #commit_environment(recorder)
 
     #print('recorder: {}'.format(recorder))
-    print(DiagramString(recorder))
+    print(DiagramString().set_application(app))
 
-def initialize_md2(recorder):
-    print('1. initialize_md2')
-    ##
-    ##### Initialize md2
-    ##
-    ## Make the md2.env file
+class ProcessMd2(ProcessProject):
 
-    #recorder.add('initialize')
+    def __init__(self): # , recorder):
+        ProcessProject.__init__(self)
+        # self.set_application(recorder)
 
-    ##* __Create__ '\<root>/bin/md2.env' __From__ template __When__ file NF
+    def initialize_md2(self):
 
-    env_name = get_environment_filename().split('/')[-1]
+        ##
+        ##### Initialize md2
+        ##
+        ## Make the md2.env file
+        #print('A application', not self.get_application())
+        if not self.get_application():
+            raise Exception('Application Not Found!')
+        #recorder.add('initialize')
+        #print('B')
+        ##* __Create__ '\<root>/bin/md2.env' __From__ template __When__ file NF
 
-    if not os.path.isfile(get_environment_filename()):
-        # init from template
-        env_file_content_string = isStringNone(StringReader(get_environment_template_filename()))
-        assert(env_file_content_string)
-        StringWriter(get_environment_filename(),env_file_content_string)
+        env_name = self.get_application().get_environment_filename().split('/')[-1]
+        #print('C')
 
-    recorder.add('initialize ({})'.format(env_name))
+        if not os.path.isfile(self.get_application().get_environment_filename()):
+            #    print('D')
+
+            # init from template
+            env_file_content_string = self.get_application().isStringNone(StringReader(self.get_application().get_environment_template_filename()))
+            assert(env_file_content_string)
+            StringWriter(self.get_application().get_environment_filename(),env_file_content_string)
+        #print('E')
+
+        self.get_application().add('initialize ({})'.format(env_name))
+        return self
+
+    def process(self):
+        print('1. Initialize md2')
+        self.initialize_md2()
+        print('    step {} {}'.format(self.get_application().get_name(),DiagramString(self.get_application())))
+        return self
 
 class ProcessConfigure(ProcessProject):
-    def __init__(self, env_file_content_string, recorder=None):
-        super().__init__(template_subfolder_name='github', recorder=recorder)
+    def __init__(self): #, env_file_content_string): # , recorder):
+        ProcessProject.__init__(self)
+        #def __init__(self, env_file_content_string, recorder=None):
+        #super().__init__(template_folder_key='github', recorder=recorder)
         # package is {nv_list, repo_folder, template_folder}
         #
-        self.recorder = recorder
-        self.env_file_content_string=env_file_content_string
+        #self.recorder = recorder
+        self.env_file_content_string=None #env_file_content_string
 
     def configure_environment(self):
+        if not self.get_application():
+            raise Exception('Application Not Found!')
         ##
         ##### Configure Environment Values
         ##1. Project Values
@@ -175,11 +219,9 @@ class ProcessConfigure(ProcessProject):
         super().configure_environment()
         # env_file_content_string = ''
         print('2. Configure Environment:')
+        env_file_content_string = StringReader(self.get_application().get_environment_filename())
 
-        self.recorder.add('configure')
-
-
-        self.env_file_content_string = UpserterString(self.env_file_content_string,
+        self.env_file_content_string = UpserterString(env_file_content_string,
                                                  settings={'dup': True, 'hard_fail': True}) \
             .upsert(EnvVarString())
         #return env_file_content_string
@@ -187,22 +229,29 @@ class ProcessConfigure(ProcessProject):
 
     def process(self):
         self.configure_environment()
+        print('    step {} {}'.format(self.get_application().get_name(),DiagramString(self.get_application())))
+        return self
 
 class ProcessGithub(ProcessProject):
-    def __init__(self, recorder=None ):
-        super().__init__(template_subfolder_name='github', recorder=recorder)
+    def __init__(self): # , recorder=None ):
+        ProcessProject.__init__(self)
+        #super().__init__(template_folder_key='github', recorder=recorder)
+
         # package is {nv_list, repo_folder, template_folder}
         #
-        self.recorder=recorder
+        #self.recorder=recorder
+        self.set_template_folder_key('github')
 
     def clone(self):
+        if not self.get_application():
+            raise Exception('Application Not Found!')
         #if self.recorder: self.recorder.add('clone')
         repo_name = os.environ['GH_REPO']
-        if self.recorder: self.recorder.add('clone ({})'.format(repo_name))
+        self.get_application().add('clone ({})'.format(repo_name))
 
         ##
-        ##### Clone GitHub Repository
-        ## Create and Configure a Project Repository
+        ##### Initialize Repository
+        ## Create and Configure a Project Repository.
 
         ##* __Create__ Branch Folder __When__ folder is NF
         branch_folder = self.get_branch_folder()
@@ -225,7 +274,11 @@ class ProcessGithub(ProcessProject):
         return self
 
     def patch(self):
-        if self.recorder: self.recorder.add('patch(.gitignore)')
+        if not self.get_application():
+            raise Exception('Application Not Found!')
+        ##* __Patch__ .gitignore
+
+        self.get_application().add('patch(.gitignore)')
 
         repo_folder = self.get_repo_folder()
         repo_name = repo_folder.split('/')[-1]
@@ -239,7 +292,7 @@ class ProcessGithub(ProcessProject):
         temp_contents = ''
         if os.path.isfile(temp_file):
             temp_contents = StringReader(temp_file)
-        temp_contents = UpserterString(temp_contents, settings={'dup': True, 'hard_fail': True}, recorder=self.recorder) \
+        temp_contents = UpserterString(temp_contents, settings={'dup': True, 'hard_fail': True}, recorder=self.get_application()) \
             .upsert('*.env') \
             .upsert('.idea/')
         self.makedirs(temp_file)
@@ -247,37 +300,55 @@ class ProcessGithub(ProcessProject):
         return self
 
     def process(self):
+        print('3. GitHub:')
+
         self.clone()
         self.patch()
         self.templatize()
+        print('    step {} {}'.format(self.get_application().get_name(),DiagramString(self.get_application())))
+
         return self
 
 class ProcessCommit(ProcessProject):
-    def __init__(self, env_file_content_string, recorder=None):
-        super().__init__(template_subfolder_name='github', recorder=recorder)
+    def __init__(self): #, env_file_content_string, recorder=None):
+        ProcessProject.__init__(self) #(template_folder_key='github', recorder=recorder)
         # package is {nv_list, repo_folder, template_folder}
         #
-        self.recorder = recorder
-        self.env_file_content_string=env_file_content_string
+        #self.recorder = recorder
+        #self.env_file_content_string=env_file_content_string
 
     def commit_environment(self):
-        env_name = 'TBD'
-        self.recorder.add('commit environment ({})'.format(env_name))
+
+        if not self.get_application():
+            raise Exception('Application Not Found!')
+
+        env_name = str(self.get_application().get_environment_filename()).split('/')[-1]
+        self.get_application().add('commit ({})'.format(env_name))
         ##
         ##### Commit Environment Values
         ##
-
-        env_file_content_string = StringReader(get_environment_filename())
+        ## Save user's environment changes.
+        env_file_content_string = StringReader(self.get_application().get_environment_filename())
         env_file_content_string = UpserterString(env_file_content_string, settings={'dup': True, 'hard_fail': True},
-                                                 recorder=recorder).upsert(get_env_variable_values_string())
+                                                 recorder=self.get_application()).upsert(get_env_variable_values_string())
         ##1. __Commit__ Environment Values __To__ '\<root>/bin/md2.env'
 
-        StringWriter(get_environment_filename(),
+        StringWriter(self.get_application().get_environment_filename(),
                      env_file_content_string,
-                     self.recorder)
+                     self.get_application())
+
+        print('    step {} {}'.format(self.get_application().get_name(),DiagramString(self.get_application())))
+
+        assert (self.get_application().get_environment_filename())
         return self
 
+    def process(self):
+        print('4. Commit:')
 
+        self.commit_environment()
+        return self
+
+#### Classes
 if __name__ == "__main__":
     # execute as docker
     main()
