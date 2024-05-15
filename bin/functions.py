@@ -19,7 +19,7 @@ def get_default_output_folder():
     return os.getcwd()
 
 
-def get_env_var(env_name, default_value=None):
+def dep_get_env_var(env_name, default_value=None):
     rc = None
     if env_name in os.environ:
         rc = os.environ[env_name]
@@ -47,9 +47,9 @@ def test_get_default_input_folder():
     assert ('/bin' not in get_default_input_folder())
 def test_get_default_output_folder():
     assert ('source/template' in get_template_folder())
-def test_get_env_var():
-    assert (get_env_var('TEST_VAR', default_value=None)==None)
-    assert (get_env_var('TEST_VAR', default_value='main') == 'main')
+#def test_get_env_var():
+#    assert (get_env_var('TEST_VAR', default_value=None)==None)
+#    assert (get_env_var('TEST_VAR', default_value='main') == 'main')
 def isStringNone(str_object):
     #
     #__isStringNone__
@@ -77,7 +77,7 @@ def main():
     test_template_folder()
     test_get_default_input_folder()
     test_get_default_output_folder()
-    test_get_env_var()
+    #test_get_env_var()
 
 if __name__ == "__main__":
     # execute as docker
