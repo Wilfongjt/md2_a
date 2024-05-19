@@ -1,6 +1,10 @@
 
 # MD2 Script
 
+ __Goal__: Make what is not there
+
+ __Strategy__: break down process into tasks and code those tasks in classes. Run the classes in order.
+
 __Terms__
 * __NF__ means Not Found
 * __\<root>__ refers to the current repo's root folder
@@ -12,11 +16,11 @@ __Terms__
 
 ## MD2 Process
 
- Make what is not there
+### Tasks
 1. [__Initialize__ md2](#initialize~md2)
 1. [__Configure__ Environment Values](#configure~environment~values)
 1. [__Initialize__ Repository](#clone~process)
-1. __Commit__ Environment Values
+1. __Update__ Environment Values
 
 ### Initialize md2
 
@@ -44,14 +48,24 @@ __Terms__
 * __Create__ Branch Folder __When__ folder is NF
 * __Clone__ '\<repo>' __When__ repo is NF
 * __Patch__ .gitignore
+  * add "*.env" when NF
+  * add "*.idea" when NF
 
-* Fix the .gitignore file
 
 ### Commit Environment Values
 
  Save user's environment changes.
 1. __Commit__ Environment Values __To__ '\<root>/bin/md2.env'
-## Classes
+## Helper Classes
+
+### Auto
+
+ Launch/run task
+
+### MultiLogger
+
+ Application logging system
+## Base Classes
 
 ### Process Package
 
@@ -59,6 +73,16 @@ __Terms__
 * __get__
 * __assign__
 * __show__
+
+### __Application__
+
+* __get_name__, get repository name (aka repo-name)
+* __get_bin_folder__, eg "\<repo>/bin" (aka bin-folder)
+* __get_template_folder__, eg "\<repo>/source/template" (aka template-folder)
+* __get_environment_filename___, eg "\<repo>/bin/\<repo-name>_.env" (aka runtime-env)
+* __get_environment_template_filename__, eg "\<repo>/bin/\<name>.env" (aka app-env)
+* __get_environment_varable_names__, get env var names from memory
+* __load_environment__, put env vars into memory from file
 
 ### Process Project
 
