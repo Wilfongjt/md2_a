@@ -103,7 +103,7 @@ class ProcessProject(ProcessPackage):
         # set environment variables before configuring
         #if self.e_var == []:
         #    raise Exception('Environment keys are undefined!')
-        print('e_var', self.e_var)
+        # print('e_var', self.e_var)
         for v in self.e_var:
             if self.get_application(): self.get_application().add('configure')
             os.environ[v['name']] = Inputable().get_input(v['name'],

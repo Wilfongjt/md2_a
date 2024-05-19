@@ -1,5 +1,13 @@
+##
+### MD2 Script
+##
+## __Goal__: Make what is not there
+##
+## __Strategy__: break down process into tasks and code those tasks in classes. Run the classes in order.
+
 import os
 import sys
+import datetime
 #SCRIPT_DIR = os.path.dirname(str(os.path.abspath(__file__)).replace('/bin','/source/component'))
 #sys.path.append(os.path.dirname(SCRIPT_DIR))
 #print('SCRIPT_DIR',SCRIPT_DIR)
@@ -11,76 +19,18 @@ from able import StringReader, \
                  NameValuePairs,\
                  TemplateString, \
                  CloneRepo,\
-                 DiagramString
+                 DiagramString, \
+                 RuntimeLogger
 
 from functions import get_bin_folder, \
     get_template_folder, \
     get_env_variable_values_string
     #get_env_var,\
-#from source.component import ProcessGithub
-from source.component import ProcessProject
 
-class Application(Recorder):
-    def __init__(self, name='md2'):
-        Recorder.__init__(self)
-        #self.name = name
-        self['name']=name
+from source.component import ProcessProject, Application
 
-    def get_name(self):
-        return self['name']
+# Terms
 
-    def set_name(self, name):
-        self['name']=name
-        return self
-
-    def get_bin_folder(self):
-        return os.getcwd()
-
-    def get_template_folder(self):
-        return os.getcwd().replace('/bin', '/source/template')
-
-    def get_environment_filename(self):
-        # env is stored in the bin folder bin/md2
-        return '{}/{}.env'.format(self.get_bin_folder(), self.get_name())
-
-    def get_environment_template_filename(self):
-        return '{}/{}.env.tmpl'.format(self.get_template_folder(), self.get_name())
-
-    def get_environment_varable_names(self, prefix):
-
-        rc = [item for item in os.environ
-                if item.startswith(prefix)]
-        return ', '.join(rc)
-
-#def isStringNone(str_object):
-#    rc = str_object
-#    if str_object == None:
-#        rc = None
-#    elif str_object == 'None':
-#        rc = None
-#    return rc
-
-
-
-#def get_template_name_value_pairs():
-#    nv_list = NameValuePairs(multi_line_string=EnvVarString())
-#    nv_list = [{'name': '<<{}>>'.format(itm['name']), 'value': itm['value']} for itm in nv_list]
-#    return nv_list
-
-#def get_branch_folder():
-#    nv_list = get_template_name_value_pairs()
-#    return TemplateString('{}/Development/<<WS_ORGANIZATION>>/<<WS_WORKSPACE>>/<<WS_PROJECT>>/<<GH_BRANCH>>'.format(os.environ['HOME']), nv_list=nv_list)
-
-#def get_repo_folder():
-#    nv_list = get_template_name_value_pairs()
-#    return TemplateString('{}/Development/<<WS_ORGANIZATION>>/<<WS_WORKSPACE>>/<<WS_PROJECT>>/<<GH_BRANCH>>/<<GH_REPO>>'.format(os.environ['HOME']), nv_list=nv_list)
-
-#def output_name(folder_file):
-#    everyother = str(folder_file).split('/')[::2]
-#    print('everyother',everyother)
-#    return folder_file
-##
-### MD2 Script
 ##
 ##__Terms__
 ##* __NF__ means Not Found
@@ -91,22 +41,18 @@ class Application(Recorder):
 ##* __initialize__ refers to the creation of something when nothing was there previously
 ##* __template__ refers to a file of content, complete with template-keys and/or default values
 
-class Auto():
-    def __init__(self, process):
-        process.run()
-
 
 def main():
-    #recorder = Recorder()
-    app = Application('md2')
+
+    MultiLogger('df').set_msg('start').runtime().terminal()
+    app = Application('md2').load_environment()
+
     ##
     #### MD2 Process
     ##
-    ## Make what is not there
-
+    ##### Tasks
     ##1. [__Initialize__ md2](#initialize~md2)
 
-    # initialize_md2(recorder)
     Auto(ProcessMd2().set_application(app))
 
     ##1. [__Configure__ Environment Values](#configure~environment~values)
@@ -117,78 +63,72 @@ def main():
 
     ##1. [__Initialize__ Repository](#clone~process)
 
-    # clone_github_repository(recorder)
     Auto(ProcessGithub().set_application(app))
 
     # #1. [__Initialize__ GitHub Repository](#initialize~clone)
 
-    #initialize_github(recorder)
+    Auto(ProcessGithubPatch().set_application(app))
 
-    # #1. __Commit__ Environment Values __To__ '\<root>/bin/md2.env'
+    ##1. __Update__ Environment Values
 
-    ##1. __Commit__ Environment Values
-    Auto(ProcessCommit().set_application(app))
-    exit(0)
-    #commit_environment(recorder)
+    Auto(ProcessUpdateEnvironment().set_application(app))
 
-    #print('recorder: {}'.format(recorder))
-    print(DiagramString().set_application(app))
+    xx = 'Summary {} {}'.format(app.get_name(), DiagramString(app))
+    MultiLogger().set_msg(xx).runtime().terminal()
+    MultiLogger().set_msg('end').runtime().terminal()
+
+# Steps
 
 class ProcessMd2(ProcessProject):
-
-    def __init__(self): # , recorder):
+    ##
+    ##### Initialize md2
+    ##
+    ## Make the md2.env file
+    def __init__(self):
         ProcessProject.__init__(self)
-        # self.set_application(recorder)
 
     def initialize_md2(self):
 
-        ##
-        ##### Initialize md2
-        ##
-        ## Make the md2.env file
-        #print('A application', not self.get_application())
         if not self.get_application():
+            MultiLogger().set_msg('Application Not Found!').runtime().terminal()
             raise Exception('Application Not Found!')
-        #recorder.add('initialize')
-        #print('B')
+
         ##* __Create__ '\<root>/bin/md2.env' __From__ template __When__ file NF
 
         env_name = self.get_application().get_environment_filename().split('/')[-1]
-        #print('C')
-
         if not os.path.isfile(self.get_application().get_environment_filename()):
-            #    print('D')
+
+            MultiLogger().set_msg('    Create ({})'.format(env_name)).runtime().terminal()
 
             # init from template
             env_file_content_string = self.get_application().isStringNone(StringReader(self.get_application().get_environment_template_filename()))
             assert(env_file_content_string)
             StringWriter(self.get_application().get_environment_filename(),env_file_content_string)
-        #print('E')
 
         self.get_application().add('initialize ({})'.format(env_name))
         return self
 
     def process(self):
-        print('1. Initialize md2')
+        # print('1. Initialize md2')
+        MultiLogger().set_msg('1. Initialize Environment {}'.format(self.get_application().get_name())).runtime().terminal()
+
         self.initialize_md2()
-        print('    step {} {}'.format(self.get_application().get_name(),DiagramString(self.get_application())))
+
         return self
 
 class ProcessConfigure(ProcessProject):
+    ##
+    ##### Configure Environment Values
     def __init__(self): #, env_file_content_string): # , recorder):
         ProcessProject.__init__(self)
-        #def __init__(self, env_file_content_string, recorder=None):
-        #super().__init__(template_folder_key='github', recorder=recorder)
         # package is {nv_list, repo_folder, template_folder}
         #
-        #self.recorder = recorder
         self.env_file_content_string=None #env_file_content_string
 
     def configure_environment(self):
         if not self.get_application():
             raise Exception('Application Not Found!')
-        ##
-        ##### Configure Environment Values
+
         ##1. Project Values
         ##    * __Configure__ WS_ORGANIZATION
         self.set_env_var('WS_ORGANIZATION', 'test-org')
@@ -217,22 +157,24 @@ class ProcessConfigure(ProcessProject):
         self.set_env_var('GH_TOKEN','x')
 
         super().configure_environment()
-        # env_file_content_string = ''
-        print('2. Configure Environment:')
         env_file_content_string = StringReader(self.get_application().get_environment_filename())
 
         self.env_file_content_string = UpserterString(env_file_content_string,
                                                  settings={'dup': True, 'hard_fail': True}) \
             .upsert(EnvVarString())
-        #return env_file_content_string
         return self
 
     def process(self):
+        MultiLogger().set_msg('2. Configure {}'.format(self.get_application().get_name())).runtime().terminal()
+
         self.configure_environment()
-        print('    step {} {}'.format(self.get_application().get_name(),DiagramString(self.get_application())))
+
         return self
 
 class ProcessGithub(ProcessProject):
+    ##
+    ##### Initialize Repository
+    ## Create and Configure a Project Repository.
     def __init__(self): # , recorder=None ):
         ProcessProject.__init__(self)
         #super().__init__(template_folder_key='github', recorder=recorder)
@@ -243,15 +185,12 @@ class ProcessGithub(ProcessProject):
         self.set_template_folder_key('github')
 
     def clone(self):
+
         if not self.get_application():
             raise Exception('Application Not Found!')
-        #if self.recorder: self.recorder.add('clone')
+
         repo_name = os.environ['GH_REPO']
         self.get_application().add('clone ({})'.format(repo_name))
-
-        ##
-        ##### Initialize Repository
-        ## Create and Configure a Project Repository.
 
         ##* __Create__ Branch Folder __When__ folder is NF
         branch_folder = self.get_branch_folder()
@@ -262,16 +201,27 @@ class ProcessGithub(ProcessProject):
 
         if not os.path.isdir(repo_folder):
             repo_name = repo_folder.split('/')[-1]
-            # if self.recorder: self.recorder.add('clone ({})'.format(repo_name))
             if 'GH_TEST' not in os.environ:
                 CloneRepo(repo_folder=repo_folder, username_gh=os.environ['GH_USER'])
             else:
                 self.makedirs(repo_folder)
-        #else:
-        #    repo_name = repo_folder.split('/')[-1]
-            # if self.recorder: self.recorder.add('cloned ({})'.format(repo_name))
 
         return self
+
+    def process(self):
+        #print('3. GitHub:')
+        repo_name = os.environ['GH_REPO']
+        MultiLogger().set_msg('3. GitHub: {}'.format(repo_name)).runtime().terminal()
+
+        self.clone()
+        self.templatize()
+
+        return self
+
+class ProcessGithubPatch(ProcessProject):
+    def __init__(self): # , recorder=None ):
+        ProcessProject.__init__(self)
+        # package is {nv_list, repo_folder, template_folder}
 
     def patch(self):
         if not self.get_application():
@@ -281,35 +231,38 @@ class ProcessGithub(ProcessProject):
         self.get_application().add('patch(.gitignore)')
 
         repo_folder = self.get_repo_folder()
-        repo_name = repo_folder.split('/')[-1]
-        ##
-        ##* Fix the .gitignore file
+        #repo_name = repo_folder.split('/')[-1]
+
         temp_file = '{}/.gitignore'.format(repo_folder)
 
         if not os.path.isfile(temp_file):
             if 'GH_TEST' not in os.environ:
+
                 raise Exception('Uninitialized file ({})'.format(temp_file.split('/')[-1]))
+
         temp_contents = ''
         if os.path.isfile(temp_file):
             temp_contents = StringReader(temp_file)
         temp_contents = UpserterString(temp_contents, settings={'dup': True, 'hard_fail': True}, recorder=self.get_application()) \
             .upsert('*.env') \
             .upsert('.idea/')
-        self.makedirs(temp_file)
+        ##  * add "*.env" when NF
+        ##  * add "*.idea" when NF
+        ##
+        #self.makedirs(temp_file)
         StringWriter(temp_file, temp_contents)
         return self
 
     def process(self):
-        print('3. GitHub:')
 
-        self.clone()
+        repo_name = os.environ['GH_REPO']
+        MultiLogger().set_msg('4. GitHub Patch: {}'.format(repo_name)).runtime().terminal()
+
         self.patch()
-        self.templatize()
-        print('    step {} {}'.format(self.get_application().get_name(),DiagramString(self.get_application())))
 
         return self
 
-class ProcessCommit(ProcessProject):
+class ProcessUpdateEnvironment(ProcessProject):
     def __init__(self): #, env_file_content_string, recorder=None):
         ProcessProject.__init__(self) #(template_folder_key='github', recorder=recorder)
         # package is {nv_list, repo_folder, template_folder}
@@ -323,7 +276,7 @@ class ProcessCommit(ProcessProject):
             raise Exception('Application Not Found!')
 
         env_name = str(self.get_application().get_environment_filename()).split('/')[-1]
-        self.get_application().add('commit ({})'.format(env_name))
+        self.get_application().add('update ({})'.format(env_name))
         ##
         ##### Commit Environment Values
         ##
@@ -337,18 +290,80 @@ class ProcessCommit(ProcessProject):
                      env_file_content_string,
                      self.get_application())
 
-        print('    step {} {}'.format(self.get_application().get_name(),DiagramString(self.get_application())))
+        #print('   * step {} {}'.format(self.get_application().get_name(),DiagramString(self.get_application())))
 
         assert (self.get_application().get_environment_filename())
         return self
 
     def process(self):
-        print('4. Commit:')
+        # print('5. Update Environment:')
+
+        MultiLogger().set_msg('5. Update Environment: {}'.format(self.get_application().get_name())).runtime().terminal()
 
         self.commit_environment()
+
+        #xx = '   * step {} {}'.format(self.get_application().get_name(), DiagramString(self.get_application()))
+        #MultiLogger().set_msg(xx).runtime().terminal()
         return self
 
-#### Classes
+#### Helper Classes
+
+class Auto():
+    ##
+    ##### Auto
+    ##
+    ## Launch/run task
+    def __init__(self, process):
+        process.run()
+
+class MultiLogger():
+    ##
+    ##### MultiLogger
+    ##
+    ## Application logging system
+
+    def __init__(self,setting_string='df', log_folder=None):
+        self.msg = '{}'.format(datetime.datetime.now())
+        self.log_folder=log_folder
+        if not self.log_folder:
+            # default log folder is the current working dir
+            self.log_folder = os.getcwd()
+        self.setting_string=setting_string
+
+    def set_msg(self, msg):
+        self.msg = msg
+        return self
+
+    #def datetime(self):
+    #    if not self.msg:
+    #        self.msg = '{}'.format(datetime.datetime.now())
+    #    else:
+    #        self.msg = '{}: {}'.format(datetime.datetime.now(), self.msg)
+
+    def format(self):
+        rc = ''
+        if 'd' in self.setting_string:
+            rc += '{}'.format(datetime.datetime.now())
+        if 'f' in self.setting_string :
+            rc += ' {}'.format(str(__file__).split('/')[-1])
+
+        rc += ' ' + self.msg
+
+        return rc
+
+    def runtime(self):
+        log_foldefile = '{}/runtime.log'.format(self.log_folder)
+        with open(log_foldefile, 'a') as f:
+            f.write('{}\n'.format(self.format()))
+        return self
+
+    def terminal(self):
+        print(self.format())
+        return self
+
+#### Base Classes
+
+
 if __name__ == "__main__":
     # execute as docker
     main()
