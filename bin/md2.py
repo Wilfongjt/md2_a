@@ -51,25 +51,26 @@ def main():
     #### MD2 Process
     ##
     ##### Tasks
-    ##1. [__Initialize__ md2](#initialize~md2)
+    ##1. [Initialize MD2](#initialize-md2)
 
     Auto(TaskMd2().set_application(app))
 
-    ##1. [__Configure__ Environment Values](#configure~environment~values)
+    ##1. [Configure MD2 Environment Values](#configure-md2-environment-values)
 
     # load env from file
 
     Auto(TaskConfigure().set_application(app)) #(env_file_content_string, app)
 
-    ##1. [__Initialize__ Repository](#clone~process)
+    ##1. [Clone GitHub Repository](#clone-github-repository)
 
     Auto(TaskGithub().set_application(app))
 
-    # #1. [__Initialize__ GitHub Repository](#initialize~clone)
+    # #1. [Initialize GitHub Repository](#initialize-github-repository)
+    ##1. [Patch Clone](#patch-github-repository)
 
     Auto(TaskGithubPatch().set_application(app))
 
-    ##1. __Update__ Environment Values
+    ##1. [Update Environment Values](#update-md2-environment-variables)
 
     Auto(TaskUpdateEnvironment().set_application(app))
 
@@ -81,7 +82,7 @@ def main():
 
 class TaskMd2(ProcessProject):
     ##
-    ##### Initialize md2
+    ##### Initialize MD2
     ##
     ## Make the md2.env file
     def __init__(self):
@@ -109,7 +110,7 @@ class TaskMd2(ProcessProject):
         return self
 
     def process(self):
-        # print('1. Initialize md2')
+        # print('1. Initialize MD2')
         MultiLogger().set_msg('1. Initialize Environment {}'.format(self.get_application().get_name())).runtime().terminal()
 
         self.initialize_md2()
@@ -118,7 +119,7 @@ class TaskMd2(ProcessProject):
 
 class TaskConfigure(ProcessProject):
     ##
-    ##### Configure Environment Values
+    ##### Configure MD2 Environment Values
     def __init__(self): #, env_file_content_string): # , recorder):
         ProcessProject.__init__(self)
         # package is {nv_list, repo_folder, template_folder}
@@ -173,7 +174,7 @@ class TaskConfigure(ProcessProject):
 
 class TaskGithub(ProcessProject):
     ##
-    ##### Initialize Repository
+    ##### Clone GitHub Repository
     ## Create and Configure a Project Repository.
     def __init__(self): # , recorder=None ):
         ProcessProject.__init__(self)
@@ -219,6 +220,9 @@ class TaskGithub(ProcessProject):
         return self
 
 class TaskGithubPatch(ProcessProject):
+    ##
+    ##### Patch Clone
+    ##
     def __init__(self): # , recorder=None ):
         ProcessProject.__init__(self)
         # package is {nv_list, repo_folder, template_folder}
@@ -263,12 +267,13 @@ class TaskGithubPatch(ProcessProject):
         return self
 
 class TaskUpdateEnvironment(ProcessProject):
+    ##
+    ##### Update MD2 Environment Variables
+    ##
     def __init__(self): #, env_file_content_string, recorder=None):
         ProcessProject.__init__(self) #(template_folder_key='github', recorder=recorder)
         # package is {nv_list, repo_folder, template_folder}
         #
-        #self.recorder = recorder
-        #self.env_file_content_string=env_file_content_string
 
     def commit_environment(self):
 
@@ -277,14 +282,12 @@ class TaskUpdateEnvironment(ProcessProject):
 
         env_name = str(self.get_application().get_environment_filename()).split('/')[-1]
         self.get_application().add('update ({})'.format(env_name))
-        ##
-        ##### Commit Environment Values
-        ##
-        ## Save user's environment changes.
+
+        ## Save MD2 user's environment changes.
         env_file_content_string = StringReader(self.get_application().get_environment_filename())
         env_file_content_string = UpserterString(env_file_content_string, settings={'dup': True, 'hard_fail': True},
                                                  recorder=self.get_application()).upsert(get_env_variable_values_string())
-        ##1. __Commit__ Environment Values __To__ '\<root>/bin/md2.env'
+        ##* __Commit__ Environment Values __To__ '\<root>/bin/md2.env'
 
         StringWriter(self.get_application().get_environment_filename(),
                      env_file_content_string,
@@ -296,14 +299,11 @@ class TaskUpdateEnvironment(ProcessProject):
         return self
 
     def process(self):
-        # print('5. Update Environment:')
 
         MultiLogger().set_msg('5. Update Environment: {}'.format(self.get_application().get_name())).runtime().terminal()
 
         self.commit_environment()
 
-        #xx = '   * step {} {}'.format(self.get_application().get_name(), DiagramString(self.get_application()))
-        #MultiLogger().set_msg(xx).runtime().terminal()
         return self
 
 #### Helper Classes
@@ -333,12 +333,6 @@ class MultiLogger():
     def set_msg(self, msg):
         self.msg = msg
         return self
-
-    #def datetime(self):
-    #    if not self.msg:
-    #        self.msg = '{}'.format(datetime.datetime.now())
-    #    else:
-    #        self.msg = '{}: {}'.format(datetime.datetime.now(), self.msg)
 
     def format(self):
         rc = ''
