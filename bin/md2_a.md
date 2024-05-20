@@ -17,17 +17,18 @@ __Terms__
 ## MD2 Process
 
 ### Tasks
-1. [__Initialize__ md2](#initialize-md2)
-1. [__Configure__ Environment Values](#configure-environment-values)
-1. [__Initialize__ Repository](#clone-process)
-1. __Update__ Environment Values
+1. [Initialize MD2](#initialize-md2)
+1. [Configure MD2 Environment Values](#configure-md2-environment-values)
+1. [Clone GitHub Repository](#clone-github-repository)
+1. [Patch Clone](#patch-github-repository)
+1. [Update Environment Values](#update-md2-environment-variables)
 
-### Initialize md2
+### Initialize MD2
 
  Make the md2.env file
 * __Create__ '\<root>/bin/md2.env' __From__ template __When__ file NF
 
-### Configure Environment Values
+### Configure MD2 Environment Values
 1. Project Values
     * __Configure__ WS_ORGANIZATION
     * __Configure__ WS_WORKSPACE
@@ -43,19 +44,22 @@ __Terms__
     * __Configure__ GH_MESSAGE
     * __Configure__ GH_TOKEN
 
-### Initialize Repository
+### Clone GitHub Repository
  Create and Configure a Project Repository.
 * __Create__ Branch Folder __When__ folder is NF
 * __Clone__ '\<repo>' __When__ repo is NF
+
+### Patch Clone
+
 * __Patch__ .gitignore
   * add "*.env" when NF
   * add "*.idea" when NF
 
 
-### Commit Environment Values
+### Update MD2 Environment Variables
 
- Save user's environment changes.
-1. __Commit__ Environment Values __To__ '\<root>/bin/md2.env'
+ Save MD2 user's environment changes.
+* __Commit__ Environment Values __To__ '\<root>/bin/md2.env'
 ## Helper Classes
 
 ### Auto
