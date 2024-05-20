@@ -17,9 +17,9 @@ __Terms__
 ## MD2 Process
 
 ### Tasks
-1. [__Initialize__ md2](#initialize~md2)
-1. [__Configure__ Environment Values](#configure~environment~values)
-1. [__Initialize__ Repository](#clone~process)
+1. [__Initialize__ md2](#initialize-md2)
+1. [__Configure__ Environment Values](#configure-environment-values)
+1. [__Initialize__ Repository](#clone-process)
 1. __Update__ Environment Values
 
 ### Initialize md2

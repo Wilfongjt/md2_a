@@ -53,25 +53,25 @@ def main():
     ##### Tasks
     ##1. [__Initialize__ md2](#initialize~md2)
 
-    Auto(ProcessMd2().set_application(app))
+    Auto(TaskMd2().set_application(app))
 
     ##1. [__Configure__ Environment Values](#configure~environment~values)
 
     # load env from file
 
-    Auto(ProcessConfigure().set_application(app)) #(env_file_content_string, app)
+    Auto(TaskConfigure().set_application(app)) #(env_file_content_string, app)
 
     ##1. [__Initialize__ Repository](#clone~process)
 
-    Auto(ProcessGithub().set_application(app))
+    Auto(TaskGithub().set_application(app))
 
     # #1. [__Initialize__ GitHub Repository](#initialize~clone)
 
-    Auto(ProcessGithubPatch().set_application(app))
+    Auto(TaskGithubPatch().set_application(app))
 
     ##1. __Update__ Environment Values
 
-    Auto(ProcessUpdateEnvironment().set_application(app))
+    Auto(TaskUpdateEnvironment().set_application(app))
 
     xx = 'Summary {} {}'.format(app.get_name(), DiagramString(app))
     MultiLogger().set_msg(xx).runtime().terminal()
@@ -79,7 +79,7 @@ def main():
 
 # Steps
 
-class ProcessMd2(ProcessProject):
+class TaskMd2(ProcessProject):
     ##
     ##### Initialize md2
     ##
@@ -116,7 +116,7 @@ class ProcessMd2(ProcessProject):
 
         return self
 
-class ProcessConfigure(ProcessProject):
+class TaskConfigure(ProcessProject):
     ##
     ##### Configure Environment Values
     def __init__(self): #, env_file_content_string): # , recorder):
@@ -171,7 +171,7 @@ class ProcessConfigure(ProcessProject):
 
         return self
 
-class ProcessGithub(ProcessProject):
+class TaskGithub(ProcessProject):
     ##
     ##### Initialize Repository
     ## Create and Configure a Project Repository.
@@ -218,7 +218,7 @@ class ProcessGithub(ProcessProject):
 
         return self
 
-class ProcessGithubPatch(ProcessProject):
+class TaskGithubPatch(ProcessProject):
     def __init__(self): # , recorder=None ):
         ProcessProject.__init__(self)
         # package is {nv_list, repo_folder, template_folder}
@@ -262,7 +262,7 @@ class ProcessGithubPatch(ProcessProject):
 
         return self
 
-class ProcessUpdateEnvironment(ProcessProject):
+class TaskUpdateEnvironment(ProcessProject):
     def __init__(self): #, env_file_content_string, recorder=None):
         ProcessProject.__init__(self) #(template_folder_key='github', recorder=recorder)
         # package is {nv_list, repo_folder, template_folder}
