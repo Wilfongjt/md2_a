@@ -20,7 +20,7 @@ __Terms__
 1. [Initialize MD2](#initialize-md2)
 1. [Configure MD2 Environment Values](#configure-md2-environment-values)
 1. [Clone GitHub Repository](#clone-github-repository)
-1. [Patch Clone](#patch-github-repository)
+1. [Patch Clone](#patch-clone)
 1. [Update Environment Values](#update-md2-environment-variables)
 
 ### Initialize MD2

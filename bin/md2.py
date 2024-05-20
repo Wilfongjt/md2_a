@@ -66,7 +66,7 @@ def main():
     Auto(TaskGithub().set_application(app))
 
     # #1. [Initialize GitHub Repository](#initialize-github-repository)
-    ##1. [Patch Clone](#patch-github-repository)
+    ##1. [Patch Clone](#patch-clone)
 
     Auto(TaskGithubPatch().set_application(app))
 
