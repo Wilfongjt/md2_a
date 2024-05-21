@@ -16,11 +16,12 @@ __Terms__
 
 ## MD2 Process
 
-### Tasks
+### Process Tasks
 1. [Initialize MD2](#initialize-md2)
 1. [Configure MD2 Environment Values](#configure-md2-environment-values)
 1. [Clone GitHub Repository](#clone-github-repository)
 1. [Patch Clone](#patch-clone)
+1. [Initialize Docker](#initialize-docker)
 1. [Update Environment Values](#update-md2-environment-variables)
 
 ### Initialize MD2
@@ -51,25 +52,35 @@ __Terms__
 
 ### Patch Clone
 
+ Make sure that runtime files don't get included in the repo
 * __Patch__ .gitignore
-  * add "*.env" when NF
-  * add "*.idea" when NF
+  * add "*.env" line when NF
+  * add "*.idea" line when NF
 
+
+### Initialize Docker
+
+ Create docker and docker-compose configuration files
 
 ### Update MD2 Environment Variables
 
  Save MD2 user's environment changes.
 * __Commit__ Environment Values __To__ '\<root>/bin/md2.env'
+<hr/>
+
 ## Helper Classes
+
+### ApplicationMD2
+
+ Custom application data and methods
+* Extends Application
 
 ### Auto
 
  Launch/run task
+<hr/>
 
-### MultiLogger
-
- Application logging system
-## Base Classes
+## Parent Classes
 
 ### Process Package
 
@@ -80,6 +91,7 @@ __Terms__
 
 ### __Application__
 
+Application data and methods
 * __get_name__, get repository name (aka repo-name)
 * __get_bin_folder__, eg "\<repo>/bin" (aka bin-folder)
 * __get_template_folder__, eg "\<repo>/source/template" (aka template-folder)
@@ -104,3 +116,8 @@ __Terms__
 * __configure_environment__, manually set or confirm env vars
 * __makedirs__, make folders from a folder file name
 * __templatize__ convert templates to code
+
+### MultiLogger
+
+ Application logging system
+* Create runtime.log at \<root>/log/runtime.log

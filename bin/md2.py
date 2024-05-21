@@ -7,7 +7,6 @@
 
 import os
 import sys
-import datetime
 #SCRIPT_DIR = os.path.dirname(str(os.path.abspath(__file__)).replace('/bin','/source/component'))
 #sys.path.append(os.path.dirname(SCRIPT_DIR))
 #print('SCRIPT_DIR',SCRIPT_DIR)
@@ -15,11 +14,8 @@ from able import StringReader, \
                  StringWriter, \
                  UpserterString, \
                  EnvVarString,\
-                 Recorder,\
-                 NameValuePairs,\
-                 TemplateString, \
                  CloneRepo,\
-                 DiagramString, \
+                 DiagramString,\
                  RuntimeLogger
 
 from functions import get_bin_folder, \
@@ -27,7 +23,7 @@ from functions import get_bin_folder, \
     get_env_variable_values_string
     #get_env_var,\
 
-from source.component import ProcessProject, Application
+from source.component import ProcessProject, Application, MultiLogger
 
 # Terms
 
@@ -43,21 +39,20 @@ from source.component import ProcessProject, Application
 
 
 def main():
-
-    MultiLogger('df').set_msg('start').runtime().terminal()
-    app = Application('md2').load_environment()
-
+    print('runtime',RuntimeLogger())
     ##
     #### MD2 Process
     ##
-    ##### Tasks
+    MultiLogger('df').set_msg('start').runtime().terminal()
+    app = ApplicationMD2().load_environment()
+
+
+    ##### Process Tasks
     ##1. [Initialize MD2](#initialize-md2)
 
     Auto(TaskMd2().set_application(app))
 
     ##1. [Configure MD2 Environment Values](#configure-md2-environment-values)
-
-    # load env from file
 
     Auto(TaskConfigure().set_application(app)) #(env_file_content_string, app)
 
@@ -65,10 +60,13 @@ def main():
 
     Auto(TaskGithub().set_application(app))
 
-    # #1. [Initialize GitHub Repository](#initialize-github-repository)
     ##1. [Patch Clone](#patch-clone)
 
     Auto(TaskGithubPatch().set_application(app))
+
+    ##1. [Initialize Docker](#initialize-docker)
+
+    Auto(TaskInitializeDocker().set_application(app))
 
     ##1. [Update Environment Values](#update-md2-environment-variables)
 
@@ -78,7 +76,7 @@ def main():
     MultiLogger().set_msg(xx).runtime().terminal()
     MultiLogger().set_msg('end').runtime().terminal()
 
-# Steps
+# Tasks
 
 class TaskMd2(ProcessProject):
     ##
@@ -223,6 +221,7 @@ class TaskGithubPatch(ProcessProject):
     ##
     ##### Patch Clone
     ##
+    ## Make sure that runtime files don't get included in the repo
     def __init__(self): # , recorder=None ):
         ProcessProject.__init__(self)
         # package is {nv_list, repo_folder, template_folder}
@@ -250,8 +249,8 @@ class TaskGithubPatch(ProcessProject):
         temp_contents = UpserterString(temp_contents, settings={'dup': True, 'hard_fail': True}, recorder=self.get_application()) \
             .upsert('*.env') \
             .upsert('.idea/')
-        ##  * add "*.env" when NF
-        ##  * add "*.idea" when NF
+        ##  * add "*.env" line when NF
+        ##  * add "*.idea" line when NF
         ##
         #self.makedirs(temp_file)
         StringWriter(temp_file, temp_contents)
@@ -263,6 +262,29 @@ class TaskGithubPatch(ProcessProject):
         MultiLogger().set_msg('4. GitHub Patch: {}'.format(repo_name)).runtime().terminal()
 
         self.patch()
+
+        return self
+
+class TaskInitializeDocker(ProcessProject):
+    ##
+    ##### Initialize Docker
+    ##
+    ## Create docker and docker-compose configuration files
+
+    def __init__(self): # , recorder=None ):
+        ProcessProject.__init__(self)
+        self.set_template_folder_key('docker')
+
+    def docker_templates(self):
+        self.templatize()
+        return self
+
+    def process(self):
+
+        repo_name = os.environ['GH_REPO']
+        MultiLogger().set_msg('5. Docker: {}'.format(repo_name)).runtime().terminal()
+
+        self.docker_templates()
 
         return self
 
@@ -305,8 +327,18 @@ class TaskUpdateEnvironment(ProcessProject):
         self.commit_environment()
 
         return self
-
+##<hr/>
+##
 #### Helper Classes
+
+class ApplicationMD2(Application):
+    ##
+    ##### ApplicationMD2
+    ##
+    ## Custom application data and methods
+    ##* Extends Application
+    def __init__(self):
+        Application.__init__(self, 'md2')
 
 class Auto():
     ##
@@ -316,46 +348,10 @@ class Auto():
     def __init__(self, process):
         process.run()
 
-class MultiLogger():
-    ##
-    ##### MultiLogger
-    ##
-    ## Application logging system
 
-    def __init__(self,setting_string='df', log_folder=None):
-        self.msg = '{}'.format(datetime.datetime.now())
-        self.log_folder=log_folder
-        if not self.log_folder:
-            # default log folder is the current working dir
-            self.log_folder = os.getcwd()
-        self.setting_string=setting_string
-
-    def set_msg(self, msg):
-        self.msg = msg
-        return self
-
-    def format(self):
-        rc = ''
-        if 'd' in self.setting_string:
-            rc += '{}'.format(datetime.datetime.now())
-        if 'f' in self.setting_string :
-            rc += ' {}'.format(str(__file__).split('/')[-1])
-
-        rc += ' ' + self.msg
-
-        return rc
-
-    def runtime(self):
-        log_foldefile = '{}/runtime.log'.format(self.log_folder)
-        with open(log_foldefile, 'a') as f:
-            f.write('{}\n'.format(self.format()))
-        return self
-
-    def terminal(self):
-        print(self.format())
-        return self
-
-#### Base Classes
+##<hr/>
+##
+#### Parent Classes
 
 
 if __name__ == "__main__":
