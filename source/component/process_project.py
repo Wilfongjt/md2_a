@@ -1,6 +1,6 @@
 import os
 from pprint import pprint
-from source.component import ProcessPackage
+from source.component import ProcessPackage, MultiLogger
 
 from able import TemplateString, \
                  EnvVarString, \
@@ -10,7 +10,9 @@ from able import TemplateString, \
                  TemplateList_Latest,\
                  StringReader, \
                  UpserterString,\
-                 Recorder, DiagramString,Inputable
+                 Recorder, \
+                 DiagramString,\
+                 Inputable
 
 class ProcessProject(ProcessPackage):
     ##
@@ -152,6 +154,9 @@ class ProcessProject(ProcessPackage):
 
                 # make target-file from templatized-content
                 self.makedirs(repo_folderfile)
+                print('branck', self.get_branch_folder())
+                xxx = '/'.join(self.get_template_folder().split('/')[0:-1])
+                MultiLogger().set_msg('   template({}) -> actual({})'.format(str(template_folderfile).replace(xxx,''), repo_folderfile.replace(self.get_branch_folder(),''))).runtime()
                 StringWriter(repo_folderfile, new_content)
 
         return self

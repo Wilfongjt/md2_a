@@ -6,7 +6,10 @@ class Application(Recorder):
     ##
     ##### __Application__
     ##
-    def __init__(self, name='md2'):
+    ##Application data and methods
+    # def __init__(self, name='md2'):
+
+    def __init__(self, name=None):
         Recorder.__init__(self)
         #self.name = name
         self['name']=name
