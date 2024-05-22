@@ -68,6 +68,18 @@ def main():
 
     Auto(TaskInitializeDocker().set_application(app))
 
+    ##1. [Initialize Heroku](#initialize-heroku)
+
+    Auto(TaskInitializeHeroku().set_application(app))
+
+    ##1. [Initialize Node](#initialize-node)
+
+    Auto(TaskInitializeNode().set_application(app))
+
+    ##1. [Initialize Nodemon](#initialize-nodemon)
+
+    Auto(TaskInitializeNodemon().set_application(app))
+
     ##1. [Update Environment Values](#update-md2-environment-variables)
 
     Auto(TaskUpdateEnvironment().set_application(app))
@@ -269,13 +281,16 @@ class TaskInitializeDocker(ProcessProject):
     ##
     ##### Initialize Docker
     ##
-    ## Create docker and docker-compose configuration files
 
     def __init__(self): # , recorder=None ):
         ProcessProject.__init__(self)
         self.set_template_folder_key('docker')
 
     def docker_templates(self):
+        if not self.get_application():
+            raise Exception('Application Not Found!')
+        self.get_application().add('docker')
+        ##* Templatize Docker templates
         self.templatize()
         return self
 
@@ -287,6 +302,85 @@ class TaskInitializeDocker(ProcessProject):
         self.docker_templates()
 
         return self
+
+class TaskInitializeHeroku(ProcessProject):
+    ##
+    ##### Initialize Heroku
+    ##
+
+    def __init__(self):  # , recorder=None ):
+        ProcessProject.__init__(self)
+        self.set_template_folder_key('heroku')
+
+    def heroku_templates(self):
+        if not self.get_application():
+            raise Exception('Application Not Found!')
+        self.get_application().add('heroku')
+        ##* Templatize Heroku templates
+        self.templatize()
+        return self
+
+    def process(self):
+
+        repo_name = os.environ['GH_REPO']
+        MultiLogger().set_msg('6. Heroku: {}'.format(repo_name)).runtime().terminal()
+
+        self.heroku_templates()
+
+        return self
+
+class TaskInitializeNode(ProcessProject):
+    ##
+    ##### Initialize Node
+    ##
+
+    def __init__(self):
+        ProcessProject.__init__(self)
+        self.set_template_folder_key('node')
+
+    def node_templates(self):
+        if not self.get_application():
+            raise Exception('Application Not Found!')
+        self.get_application().add('node')
+        ##* Templatize Node templates
+        self.templatize()
+        return self
+
+    def process(self):
+
+        repo_name = os.environ['GH_REPO']
+        MultiLogger().set_msg('7. Node: {}'.format(repo_name)).runtime().terminal()
+
+        self.node_templates()
+
+        return self
+
+class TaskInitializeNodemon(ProcessProject):
+    ##
+    ##### Initialize Nodemon
+    ##
+
+    def __init__(self):
+        ProcessProject.__init__(self)
+        self.set_template_folder_key('nodemon')
+
+    def nodemon_templates(self):
+        if not self.get_application():
+            raise Exception('Application Not Found!')
+        self.get_application().add('nodemon')
+        ##* Templatize Nodemon templates
+        self.templatize()
+        return self
+
+    def process(self):
+
+        repo_name = os.environ['GH_REPO']
+        MultiLogger().set_msg('8. Nodemon: {}'.format(repo_name)).runtime().terminal()
+
+        self.nodemon_templates()
+
+        return self
+
 
 class TaskUpdateEnvironment(ProcessProject):
     ##
