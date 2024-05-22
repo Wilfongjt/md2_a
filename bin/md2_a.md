@@ -22,6 +22,7 @@ __Terms__
 1. [Clone GitHub Repository](#clone-github-repository)
 1. [Patch Clone](#patch-clone)
 1. [Initialize Docker](#initialize-docker)
+1. [Initialize Heroku](#initialize-heroku)
 1. [Update Environment Values](#update-md2-environment-variables)
 
 ### Initialize MD2
@@ -60,7 +61,11 @@ __Terms__
 
 ### Initialize Docker
 
- Create docker and docker-compose configuration files
+* Templatize Docker templates
+
+### Initialize Heroku
+
+* Templatize Heroku templates
 
 ### Update MD2 Environment Variables
 
