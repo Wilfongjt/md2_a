@@ -12,7 +12,8 @@ from able import TemplateString, \
                  UpserterString,\
                  Recorder, \
                  DiagramString,\
-                 Inputable
+                 Inputable, \
+                 UpdaterString
 
 class ProcessProject(ProcessPackage):
     ##
@@ -143,21 +144,36 @@ class ProcessProject(ProcessPackage):
             if self.get_application(): self.get_application().add('templatize')
             # handle multiple templates of the same name
             for template_folderfile in template_list[tmplt]['template']:
-                # make output folder
 
                 # make input and output file names
                 repo_folderfile = '{}/{}'.format(self.get_repo_folder(), template_list[tmplt]['output_subfolder'])
                 repo_folderfile = repo_folderfile.replace('root/', '')
-
+                cmd = str(template_folderfile).split('/')[-1].split('.')[-2]
                 # make templatized-content from template
-                new_content = TemplateString(StringReader(template_folderfile), nv_list)
-
+                #new_content = TemplateString(StringReader(template_folderfile), nv_list)
+                target_content = ''
+                template_content = ''
                 # make target-file from templatized-content
-                self.makedirs(repo_folderfile)
-                print('branck', self.get_branch_folder())
-                xxx = '/'.join(self.get_template_folder().split('/')[0:-1])
-                MultiLogger().set_msg('   template({}) -> actual({})'.format(str(template_folderfile).replace(xxx,''), repo_folderfile.replace(self.get_branch_folder(),''))).runtime()
-                StringWriter(repo_folderfile, new_content)
+                self.makedirs(repo_folderfile) # make output folder
+                template_name = '/'.join(self.get_template_folder().split('/')[0:-1])
+                MultiLogger().set_msg('   template({}) -> actual({})'.format(str(template_folderfile).replace(template_name,''), repo_folderfile.replace(self.get_branch_folder(),''))).runtime()
+                if 'd' in cmd or 'D' in cmd:  # delete target
+                    if not os.path.exists(repo_folderfile): os.remove(repo_folderfile)
+
+                if 'c' in cmd or 'C' in cmd:  # create from template
+                    if not os.path.exists(repo_folderfile): StringWriter(repo_folderfile, template_content)
+
+                if 'r' in cmd or 'R' in cmd:  # read from target
+                    target_content = TemplateString(StringReader(repo_folderfile), nv_list)
+                    template_content = TemplateString(StringReader(template_folderfile), nv_list)
+
+                if 'u' in cmd or 'U' in cmd:  # update
+                    # read template
+                    # read target
+                    tmp = UpdaterString(target_content).updates(template_content)
+                    StringWriter(repo_folderfile, tmp)
+                    print('tmp', tmp)
+
 
         return self
 

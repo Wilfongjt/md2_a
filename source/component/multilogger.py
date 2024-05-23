@@ -1,6 +1,8 @@
 import os
 import datetime
+import __main__
 
+#filename = __main__.__file__
 class MultiLogger():
     ##
     ##### MultiLogger
@@ -9,6 +11,8 @@ class MultiLogger():
     ##* Create runtime.log at \<root>/log/runtime.log
 
     def __init__(self,setting_string='df', log_folder=None):
+        # d is datetime
+        # f is
         self.msg = '{}'.format(datetime.datetime.now())
         self.log_folder=log_folder
         if not self.log_folder:
@@ -26,7 +30,8 @@ class MultiLogger():
         if 'd' in self.setting_string:
             rc += '{}'.format(datetime.datetime.now())
         if 'f' in self.setting_string :
-            rc += ' {}'.format(str(__file__).split('/')[-1])
+            # print('file', __main__.__file__)
+            rc += ' {}'.format(str(__main__.__file__).split('/')[-1])
 
         rc += ' ' + self.msg
 
