@@ -16,14 +16,20 @@ __Terms__
 
 ## MD2 Process
 
-### Process Tasks
+### Process
 1. [Initialize MD2](#initialize-md2)
 1. [Configure MD2 Environment Values](#configure-md2-environment-values)
 1. [Clone GitHub Repository](#clone-github-repository)
 1. [Patch Clone](#patch-clone)
+1. [Initialize ProjectSpace](#initialize-projectspace)
 1. [Initialize Docker](#initialize-docker)
 1. [Initialize Heroku](#initialize-heroku)
+1. [Initialize Node](#initialize-node)
+1. [Initialize Nodemon](#initialize-nodemon)
+1. [Initialize Hapi](#initialize-hapi)
+1. [Initialize Postgres](#initialize-postgres)
 1. [Update Environment Values](#update-md2-environment-variables)
+### Tasks
 
 ### Initialize MD2
 
@@ -59,6 +65,10 @@ __Terms__
   * add "*.idea" line when NF
 
 
+### Initialize ProjectSpace
+
+* Templatize Projectspace templates
+
 ### Initialize Docker
 
 * Templatize Docker templates
@@ -66,6 +76,22 @@ __Terms__
 ### Initialize Heroku
 
 * Templatize Heroku templates
+
+### Initialize Node
+
+* Templatize Node templates
+
+### Initialize Nodemon
+
+* Templatize Nodemon templates
+
+### Initialize Hapi
+
+* Templatize Hapi templates
+
+### Initialize Postgres
+
+* Templatize Postgres templates
 
 ### Update MD2 Environment Variables
 

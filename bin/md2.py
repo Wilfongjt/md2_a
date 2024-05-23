@@ -47,48 +47,49 @@ def main():
     app = ApplicationMD2().load_environment()
 
 
-    ##### Process Tasks
-    ##1. [Initialize MD2](#initialize-md2)
+    ##### Process
 
+    ##1. [Initialize MD2](#initialize-md2)
     Auto(TaskMd2().set_application(app))
 
     ##1. [Configure MD2 Environment Values](#configure-md2-environment-values)
-
     Auto(TaskConfigure().set_application(app)) #(env_file_content_string, app)
 
     ##1. [Clone GitHub Repository](#clone-github-repository)
-
     Auto(TaskGithub().set_application(app))
 
     ##1. [Patch Clone](#patch-clone)
-
     Auto(TaskGithubPatch().set_application(app))
 
-    ##1. [Initialize Docker](#initialize-docker)
+    ##1. [Initialize ProjectSpace](#initialize-projectspace)
+    Auto(TaskInitializeProjectSpace().set_application(app))
 
+    ##1. [Initialize Docker](#initialize-docker)
     Auto(TaskInitializeDocker().set_application(app))
 
     ##1. [Initialize Heroku](#initialize-heroku)
-
     Auto(TaskInitializeHeroku().set_application(app))
 
     ##1. [Initialize Node](#initialize-node)
-
     Auto(TaskInitializeNode().set_application(app))
 
     ##1. [Initialize Nodemon](#initialize-nodemon)
-
     Auto(TaskInitializeNodemon().set_application(app))
 
-    ##1. [Update Environment Values](#update-md2-environment-variables)
+    ##1. [Initialize Hapi](#initialize-hapi)
+    Auto(TaskInitializeHapi().set_application(app))
 
+    ##1. [Initialize Postgres](#initialize-postgres)
+    Auto(TaskInitializePostgres().set_application(app))
+
+    ##1. [Update Environment Values](#update-md2-environment-variables)
     Auto(TaskUpdateEnvironment().set_application(app))
 
     xx = 'Summary {} {}'.format(app.get_name(), DiagramString(app))
     MultiLogger().set_msg(xx).runtime().terminal()
     MultiLogger().set_msg('end').runtime().terminal()
 
-# Tasks
+##### Tasks
 
 class TaskMd2(ProcessProject):
     ##
@@ -182,6 +183,8 @@ class TaskConfigure(ProcessProject):
 
         return self
 
+
+
 class TaskGithub(ProcessProject):
     ##
     ##### Clone GitHub Repository
@@ -274,6 +277,31 @@ class TaskGithubPatch(ProcessProject):
         MultiLogger().set_msg('4. GitHub Patch: {}'.format(repo_name)).runtime().terminal()
 
         self.patch()
+
+        return self
+
+class TaskInitializeProjectSpace(ProcessProject):
+    ##
+    ##### Initialize ProjectSpace
+    ##
+    def __init__(self):
+        ProcessProject.__init__(self)
+
+        self.set_template_folder_key('projectspace')
+
+    def projectspace_templates(self):
+        if not self.get_application():
+            raise Exception('Application Not Found!')
+        self.get_application().add(self.get_template_folder_key())
+        ##* Templatize Projectspace templates
+        self.templatize()
+        return self
+
+    def process(self):
+        repo_name = os.environ['GH_REPO']
+        MultiLogger().set_msg('3. ProjectSpace: {}'.format(repo_name)).runtime().terminal()
+
+        self.projectspace_templates()
 
         return self
 
@@ -381,6 +409,57 @@ class TaskInitializeNodemon(ProcessProject):
 
         return self
 
+class TaskInitializeHapi(ProcessProject):
+    ##
+    ##### Initialize Hapi
+    ##
+
+    def __init__(self):
+        ProcessProject.__init__(self)
+        self.set_template_folder_key('hapi')
+
+    def hapi_templates(self):
+        if not self.get_application():
+            raise Exception('Application Not Found!')
+        self.get_application().add('hapi')
+        ##* Templatize Hapi templates
+        self.templatize()
+        return self
+
+    def process(self):
+
+        repo_name = os.environ['GH_REPO']
+        MultiLogger().set_msg('9. Hapi: {}'.format(repo_name)).runtime().terminal()
+
+        self.hapi_templates()
+
+        return self
+
+class TaskInitializePostgres(ProcessProject):
+    ##
+    ##### Initialize Postgres
+    ##
+
+    def __init__(self):
+        ProcessProject.__init__(self)
+        self.set_template_folder_key('postgres')
+
+    def postgres_templates(self):
+        if not self.get_application():
+            raise Exception('Application Not Found!')
+        self.get_application().add('postgres')
+        ##* Templatize Postgres templates
+        self.templatize()
+        return self
+
+    def process(self):
+
+        repo_name = os.environ['GH_REPO']
+        MultiLogger().set_msg('10. Postgres: {}'.format(repo_name)).runtime().terminal()
+
+        self.postgres_templates()
+
+        return self
 
 class TaskUpdateEnvironment(ProcessProject):
     ##
@@ -416,7 +495,7 @@ class TaskUpdateEnvironment(ProcessProject):
 
     def process(self):
 
-        MultiLogger().set_msg('5. Update Environment: {}'.format(self.get_application().get_name())).runtime().terminal()
+        MultiLogger().set_msg('99. Update Environment: {}'.format(self.get_application().get_name())).runtime().terminal()
 
         self.commit_environment()
 
