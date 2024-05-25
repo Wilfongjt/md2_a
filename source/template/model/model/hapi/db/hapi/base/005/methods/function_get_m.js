@@ -1,0 +1,93 @@
+'use strict';
+// const pg = require('pg');
+// Single Get
+// Group Get
+
+const Step = require('../../../../lib/runner/step');
+module.exports = class CreateFunctionGetMBR extends Step {
+  constructor(baseName, baseVersion) {
+    super(baseName, baseVersion);
+    // this.kind = kind;
+    this.name = 'get';
+    this.name = `${this.kind}_${this.version}.${this.name}`;
+    this.params = 'm_b_r MBR';
+    this.types = 'MBR';
+
+    this.return = 'JSONB';
+    this.sql = `
+    DROP FUNCTION if exists ${this.name}(${this.types});    
+
+    CREATE OR REPLACE FUNCTION ${this.name}(${this.params}) RETURNS JSONB
+      AS $$
+      declare _result JSONB;
+    BEGIN
+        
+        -- [Function: Get ]
+        -- [Description: MBR get]
+                
+        -- [Validate MBR]
+        
+        if m_b_r is NULL then
+            -- [Fail 400 when a mbr parameter is NULL]
+            return '{"status":"400","msg":"Bad Request", "extra":"mbr is NULL"}'::JSONB;
+        end if;
+            
+        if m_b_r.east is NULL then
+          -- [Fail 400 when mbr.east a parameter is NULL]
+          return '{"status":"400","msg":"Bad Request", "extra":"mbr.east is NULL"}'::JSONB;
+        end if;      
+        
+        if m_b_r.west is NULL then
+          -- [Fail 400 when m_b_r.west parameter is NULL]
+          return '{"status":"400","msg":"Bad Request", "extra":"m_b_r.west is NULL"}'::JSONB;
+        end if;
+        
+        if m_b_r.north is NULL then
+          -- [Fail 400 when m_b_r.north parameter is NULL]
+          return '{"status":"400","msg":"Bad Request", "extra":"m_b_r.north is NULL"}'::JSONB;
+        end if;
+        
+        if m_b_r.south is NULL then
+          -- [Fail 400 when m_b_r.south parameter is NULL]
+          return '{"status":"400","msg":"Bad Request", "extra":"m_b_r.south is NULL"}'::JSONB;
+        end if;
+        
+        
+        -- [Get Many]
+        SELECT array_to_json(array_agg(to_jsonb(u) #- '{form}' #- '{active}' #- '{owner}' #- '{created}' #- '{updated}')) into _result
+          from base_0_0_1.one u
+           where u.pk in (select pk from base_0_0_1.one w
+                            where w.sk ='coordinate' and (w.tk::COORDINATE).lat >= m_b_r.south 
+                                  and (w.tk::COORDINATE).lat <= m_b_r.north
+                                  and (w.tk::COORDINATE).lon >= m_b_r.west
+                                  and (w.tk::COORDINATE).lon <= m_b_r.east
+                     ) 
+                     and u.sk<>'password'
+                     ; 
+
+        if not(FOUND) or _result is NULL then
+             -- [Fail 404 when given primary_key is not found]
+             return format('{"status":"404", "msg":"Not Found", "extra":"D", "mbr":"%s"}', m_b_r::TEXT)::JSONB;
+        end if;
+  
+        -- [Return {status,msg,updation}]
+        -- return format('{"status":"200","msg":"OK","selection":%s}',(to_jsonb(_result) #- '{form,password}')::TEXT)::JSONB;
+        
+        return format(
+            '{"status":"200","msg":"OK","selection":%s}',to_jsonb(_result)::TEXT
+            )::JSONB;
+
+    END;
+
+  $$ LANGUAGE plpgsql;     
+  
+  /* Doesnt work in Hobby
+  grant EXECUTE on FUNCTION ${this.name}(JSONB,OWNERID,PRIMARYKEY) to api_user;
+  */
+    `;
+    // console.log('-- Create GET Function\n', this.sql);
+  }    
+  getName() {
+    return `${this.name}(${this.params}) ${this.return}`;
+  }
+};

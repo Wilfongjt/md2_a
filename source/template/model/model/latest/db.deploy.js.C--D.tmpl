@@ -33,55 +33,55 @@ const TypeTriple = require('./db/type_triple_001.js');
 const TypeCoordinate = require('./db/type_coordinate_001.js');
 const TypeKind = require('./db/type_kind_001.js');
 
-let base_version = '005';
+// let base_version = 'latest';
 // let version = '000';
 // version = '005';
-const FunctionAlgorithmSign = require(`./db/base/${base_version}/function_algorithm_sign.js`);
-const FunctionChangedKey = require(`./db/base/${base_version}/function_changed_key.js`);
-const FunctionChelate = require(`./db/base/${base_version}/function_chelate.js`);
-// const FunctionDelete = require(`./db/base/${base_version}/function_delete_op.js`);
-const FunctionGetJwtClaims = require(`./db/base/${base_version}/function_get_jwt_claims.js`);
-const FunctionGetJwtSecret = require(`./db/base/${base_version}/function_get_jwt_secret.js`);
-const FunctionInsert = require(`./db/base/${base_version}/function_insert.js`);
-const FunctionQuery = require(`./db/base/${base_version}/function_query.js`);
-const FunctionQueryMbr = require(`./db/base/${base_version}/function_query_mbr.js`);
+const FunctionAlgorithmSign = require(`./db/base/function_algorithm_sign.js`);
+const FunctionChangedKey = require(`./db/base/function_changed_key.js`);
+const FunctionChelate = require(`./db/base/function_chelate.js`);
+// const FunctionDelete = require(`./db/base/function_delete_op.js`);
+const FunctionGetJwtClaims = require(`./db/base/function_get_jwt_claims.js`);
+const FunctionGetJwtSecret = require(`./db/base/function_get_jwt_secret.js`);
+const FunctionInsert = require(`./db/base/function_insert.js`);
+const FunctionQuery = require(`./db/base/function_query.js`);
+const FunctionQueryMbr = require(`./db/base/function_query_mbr.js`);
 
-const FunctionSign = require(`./db/base/${base_version}/function_sign.js`);
+const FunctionSign = require(`./db/base/function_sign.js`);
 
-const FunctionTally = require(`./db/base/${base_version}/function_tally.js`);
+const FunctionTally = require(`./db/base/function_tally.js`);
 
-const FunctionUpdate = require(`./db/base/${base_version}/function_update.js`);
-const FunctionUpdateJOP = require(`./db/base/${base_version}/function_update_jop.js`);
+const FunctionUpdate = require(`./db/base/function_update.js`);
+const FunctionUpdateJOP = require(`./db/base/function_update_jop.js`);
 
-const FunctionUrlDecode = require(`./db/base/${base_version}/function_url_decode.js`);
-const FunctionUrlEncode = require(`./db/base/${base_version}/function_url_encode.js`);
-const FunctionValidateChelate = require(`./db/base/${base_version}/function_validate_chelate.js`);
-const FunctionValidateCredentials = require(`./db/base/${base_version}/function_validate_credentials.js`);
-const FunctionValidateCriteria = require(`./db/base/${base_version}/function_validate_criteria.js`);
-const FunctionValidateForm = require(`./db/base/${base_version}/function_validate_form.js`);
-const FunctionValidateToken = require(`./db/base/${base_version}/function_validate_token.js`);
-const FunctionVerify = require(`./db/base/${base_version}/function_verify.js`);
-const FunctionTime = require(`./db/base/${base_version}/function_time.js`);
+const FunctionUrlDecode = require(`./db/base/function_url_decode.js`);
+const FunctionUrlEncode = require(`./db/base/function_url_encode.js`);
+const FunctionValidateChelate = require(`./db/base/function_validate_chelate.js`);
+const FunctionValidateCredentials = require(`./db/base/function_validate_credentials.js`);
+const FunctionValidateCriteria = require(`./db/base/function_validate_criteria.js`);
+const FunctionValidateForm = require(`./db/base/function_validate_form.js`);
+const FunctionValidateToken = require(`./db/base/function_validate_token.js`);
+const FunctionVerify = require(`./db/base/function_verify.js`);
+const FunctionTime = require(`./db/base/function_time.js`);
 
-const FunctionGetMBR = require(`./db/base/${base_version}/methods/function_get_m.js`);
-const FunctionGetMBRK = require(`./db/base/${base_version}/methods/function_get_mk.js`);
+const FunctionGetMBR = require(`./db/base/methods/function_get_m.js`);
+const FunctionGetMBRK = require(`./db/base/methods/function_get_mk.js`);
 
-const FunctionGetOP = require(`./db/base/${base_version}/methods/function_get_op.js`);
-const FunctionGetOPK = require(`./db/base/${base_version}/methods/function_get_opk.js`);
+const FunctionGetOP = require(`./db/base/methods/function_get_op.js`);
+const FunctionGetOPK = require(`./db/base/methods/function_get_opk.js`);
 
-const FunctionDeleteOP = require(`./db/base/${base_version}/methods/function_delete_op.js`);
-const FunctionPostOT = require(`./db/base/${base_version}/methods/function_post_ot.js`);
-const FunctionPutOPT = require(`./db/base/${base_version}/methods/function_put_opt.js`);
+const FunctionDeleteOP = require(`./db/base/methods/function_delete_op.js`);
+const FunctionPostOT = require(`./db/base/methods/function_post_ot.js`);
+const FunctionPutOPT = require(`./db/base/methods/function_put_opt.js`);
 
 // signin
-let signin_version = '003';
+// let signin_version = '003';
 // version = '003';
-const FunctionSignin = require(`./db/signin/${signin_version}/function_signin_post.js`);
+const FunctionSignin = require(`./db/signin/function_signin_post.js`);
 
 // signup
-let signup_version = '003';
+// let signup_version = '003';
 // version = '003';
-const FunctionSignup = require(`./db/signup/${signup_version}/function_signup_post.js`);
+const FunctionSignup = require(`./db/signup/function_signup_post.js`);
 
 // Adoptees
 // let adoptees_version = '003';

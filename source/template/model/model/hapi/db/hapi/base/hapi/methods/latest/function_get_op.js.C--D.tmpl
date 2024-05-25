@@ -1,0 +1,114 @@
+'use strict';
+// const pg = require('pg');
+// Single Get
+// Group Get
+
+const Step = require('../../../../lib/runner/step');
+module.exports = class CreateFunctionGetOP extends Step {
+  constructor(baseName, baseVersion) {
+    super(baseName, baseVersion);
+    // this.kind = kind;
+    this.name = 'get';
+    this.name = `${this.kind}_${this.version}.${this.name}`;
+    this.params = 'owner_id OWNERID, primary_key PRIMARYKEY';
+    this.types = 'OWNERID, PRIMARYKEY';
+    this.return = 'JSONB';
+    this.sql = `
+        
+    DROP FUNCTION if exists ${this.name}(${this.types});    
+
+    CREATE OR REPLACE FUNCTION ${this.name}(${this.params}) RETURNS JSONB
+      AS $$
+      declare _result JSONB;
+    BEGIN
+  
+        -- [Function: Get ]
+        -- [Description: General get]
+                
+        -- [Validate OwnerId]
+        
+        if owner_id is NULL then
+            -- [Fail 400 when a owner_id parameter is NULL]
+            return '{"status":"400","msg":"Bad Request", "extra":"owner_id is NULL"}'::JSONB;
+        end if;
+            
+        if owner_id.id is NULL then
+          -- [Fail 400 when owner_id.id a parameter is NULL]
+          return '{"status":"400","msg":"Bad Request", "extra":"owner_id.id is NULL"}'::JSONB;
+        end if;  
+        
+        -- [Validate PrimaryKey]
+        
+        if primary_key is NULL then
+            -- [Fail 400 when a primary_key parameter is NULL]
+            return '{"status":"400","msg":"Bad Request", "extra":"primary_key is NULL"}'::JSONB;
+        end if;
+            
+        if primary_key.pk is NULL then
+          -- [Fail 400 when primary_key.pk a parameter is NULL]
+          return '{"status":"400","msg":"Bad Request", "extra":"primary_key.pk is NULL"}'::JSONB;
+        end if;      
+        
+        if primary_key.sk is NULL then
+          -- [Fail 400 when primary_key.sk parameter is NULL]
+          return '{"status":"400","msg":"Bad Request", "extra":"primary_key.sk is NULL"}'::JSONB;
+        end if;
+        
+        -- [Match Owner]
+                  
+        if not exists(select t.pk 
+               from base_0_0_1.one t 
+               where t.pk=primary_key.pk 
+                     and t.sk='name#owner'
+                     and t.tk=format('value#%s', owner_id.id)) then
+            return format('{"status":"404", "msg":"Not Found", "extra":"E bad key", "key":"%s", "pk":"%s", "sk":"%s"}',owner_id.id, primary_key.pk, primary_key.sk)::JSONB;
+        end if;
+
+        -- [Get Single Triple]
+          
+        if strpos(primary_key.sk,'*') > 0 then
+             SELECT array_to_json(array_agg(to_jsonb(u) #- '{form}' #- '{active}' #- '{owner}' #- '{created}' #- '{updated}')) into _result
+              from base_0_0_1.one u
+               where
+                 u.pk = primary_key.pk
+                 and u.sk<>'password'
+                 ;
+        else    
+            -- [Get Group of Triples]
+            SELECT array_to_json(array_agg(to_jsonb(u) #- '{form}' #- '{active}' #- '{owner}' #- '{created}' #- '{updated}')) into _result
+             from base_0_0_1.one u
+              where
+                u.pk = primary_key.pk
+                and u.sk = primary_key.sk
+                and u.sk<>'password'
+                ;
+        end if;
+        
+        if not(FOUND) then
+            -- [Success 200 when given primary_key is not found]
+            return '{"status":"200", "msg":"OK", "selection": []}'::JSONB;
+        end if;
+        
+        if _result is NULL then
+             -- [Fail 404 when given primary_key is not found]
+             return format('{"status":"404", "msg":"Not Found", "extra":"D", "owner_id":"%s", "primary_key":"%s"}',owner_id.id, primary_key)::JSONB;
+        end if;
+      
+        -- [Return {status,msg,updation}]
+  
+        return format('{"status":"200", "msg":"OK", "selection": %s}', _result)::JSONB;
+
+    END;
+
+  $$ LANGUAGE plpgsql;     
+  
+  /* Doesnt work in Hobby
+  grant EXECUTE on FUNCTION ${this.name}(${this.types}) to api_user;
+  */
+    `;
+    console.log('-- Create GET Function\n', this.sql);
+  }    
+  getName() {
+    return `${this.name}(${this.params}) ${this.return}`;
+  }
+};
