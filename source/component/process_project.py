@@ -1,7 +1,6 @@
-import os
+import os, stat
 from pprint import pprint
-from source.component import ProcessPackage, MultiLogger
-
+from source.component import ProcessPackage, MultiLogger, Permissions
 from able import TemplateString, \
                  EnvVarString, \
                  NameValuePairs, \
@@ -14,6 +13,7 @@ from able import TemplateString, \
                  DiagramString,\
                  Inputable, \
                  UpdaterString
+
 
 class ProcessProject(ProcessPackage):
     ##
@@ -149,6 +149,8 @@ class ProcessProject(ProcessPackage):
                 repo_folderfile = '{}/{}'.format(self.get_repo_folder(), template_list[tmplt]['output_subfolder'])
                 repo_folderfile = repo_folderfile.replace('root/', '')
                 cmd = str(template_folderfile).split('/')[-1].split('.')[-2]
+                #print('template_folderfile',template_folderfile)
+                #print('repo_folderfile    ', repo_folderfile)
                 # make templatized-content from template
                 #new_content = TemplateString(StringReader(template_folderfile), nv_list)
                 target_content = ''
@@ -158,10 +160,13 @@ class ProcessProject(ProcessPackage):
                 template_name = '/'.join(self.get_template_folder().split('/')[0:-1])
                 MultiLogger().set_msg('   template({}) -> actual({})'.format(str(template_folderfile).replace(template_name,''), repo_folderfile.replace(self.get_branch_folder(),''))).runtime()
                 if 'd' in cmd or 'D' in cmd:  # delete target
-                    if not os.path.exists(repo_folderfile): os.remove(repo_folderfile)
+                    if os.path.exists(repo_folderfile): os.remove(repo_folderfile)
 
                 if 'c' in cmd or 'C' in cmd:  # create from template
-                    if not os.path.exists(repo_folderfile): StringWriter(repo_folderfile, template_content)
+                    if not os.path.exists(repo_folderfile):
+                        #template_content = StringReader(template_folderfile)
+                        template_content = TemplateString(StringReader(template_folderfile), nv_list)
+                        StringWriter(repo_folderfile, template_content)
 
                 if 'r' in cmd or 'R' in cmd:  # read from target
                     target_content = TemplateString(StringReader(repo_folderfile), nv_list)
@@ -171,10 +176,16 @@ class ProcessProject(ProcessPackage):
                     # read template
                     # read target
                     tmp = UpdaterString(target_content).updates(template_content)
-                    StringWriter(repo_folderfile, tmp)
-                    print('tmp', tmp)
+                    #print('file {} nv-list {}'.format(repo_folderfile,nv_list), nv_list)
+                    StringWriter(repo_folderfile, TemplateString(tmp, nv_list))
+                    #print('tmp', tmp)
+                if repo_folderfile.endswith('.sh'):
+                    # make file runable
+                    # Change the mode of path
+                    Permissions(repo_folderfile, verbose=False)
+        #import subprocess
 
-
+        #subprocess.run(["ls", "-l"])
         return self
 
     def process(self):

@@ -31,12 +31,12 @@ __Terms__
 1. [Update Environment Values](#update-md2-environment-variables)
 ### Tasks
 
-### Initialize MD2
+#### Initialize MD2
 
  Make the md2.env file
 * __Create__ '\<root>/bin/md2.env' __From__ template __When__ file NF
 
-### Configure MD2 Environment Values
+#### Configure MD2 Environment Values
 1. Project Values
     * __Configure__ WS_ORGANIZATION
     * __Configure__ WS_WORKSPACE
@@ -52,12 +52,12 @@ __Terms__
     * __Configure__ GH_MESSAGE
     * __Configure__ GH_TOKEN
 
-### Clone GitHub Repository
+#### Clone GitHub Repository
  Create and Configure a Project Repository.
 * __Create__ Branch Folder __When__ folder is NF
 * __Clone__ '\<repo>' __When__ repo is NF
 
-### Patch Clone
+#### Patch Clone
 
  Make sure that runtime files don't get included in the repo
 * __Patch__ .gitignore
@@ -65,35 +65,35 @@ __Terms__
   * add "*.idea" line when NF
 
 
-### Initialize ProjectSpace
+#### Initialize ProjectSpace
 
 * Templatize Projectspace templates
 
-### Initialize Docker
+#### Initialize Docker
 
 * Templatize Docker templates
 
-### Initialize Heroku
+#### Initialize Heroku
 
 * Templatize Heroku templates
 
-### Initialize Node
+#### Initialize Node
 
 * Templatize Node templates
 
-### Initialize Nodemon
+#### Initialize Nodemon
 
 * Templatize Nodemon templates
 
-### Initialize Hapi
+#### Initialize Hapi
 
 * Templatize Hapi templates
 
-### Initialize Postgres
+#### Initialize Postgres
 
 * Templatize Postgres templates
 
-### Update MD2 Environment Variables
+#### Update MD2 Environment Variables
 
  Save MD2 user's environment changes.
 * __Commit__ Environment Values __To__ '\<root>/bin/md2.env'
@@ -101,12 +101,12 @@ __Terms__
 
 ## Helper Classes
 
-### ApplicationMD2
+#### ApplicationMD2
 
  Custom application data and methods
 * Extends Application
 
-### Auto
+#### Auto
 
  Launch/run task
 <hr/>

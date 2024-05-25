@@ -1,0 +1,150 @@
+'use strict';
+// const pg = require('pg');
+
+const Step = require('../../../../lib/runner/step');
+module.exports = class CreateFunctionPutOPT extends Step {
+  constructor(baseName, baseVersion) {
+    super(baseName, baseVersion);
+    // this.kind = kind;
+    this.name = 'put';
+    this.name = `${this.kind}_${this.version}.${this.name}`;
+    this.params = 'owner OWNERID, id PRIMARYKEY, trip TRIPLE';
+    this.types = 'OWNERID, PRIMARYKEY, TRIPLE';
+
+    this.return = 'JSONB';
+    this.sql = `
+    
+    DROP FUNCTION if exists ${this.name}(${this.types});    
+
+    CREATE OR REPLACE FUNCTION ${this.name}(${this.params}) RETURNS JSONB
+      AS $$
+
+      declare _result record;
+  
+    BEGIN
+  
+        -- [Function: Update with single triple for a given owner]
+        -- [Description: General update]
+        
+       -- [Validate OwnerId]
+        
+        if owner is NULL then
+            -- [Fail 400 when a owner parameter is NULL]
+            return '{"status":"400","msg":"Bad Request", "extra":"owner is NULL"}'::JSONB;
+        end if;
+            
+        if owner.id is NULL then
+          -- [Fail 400 when owner.id a parameter is NULL]
+          return '{"status":"400","msg":"Bad Request", "extra":"owner.id is NULL"}'::JSONB;
+        end if;          
+                
+        -- [Validate PrimaryKey]
+        
+        if id is NULL then
+            -- [Fail 400 when a id parameter is NULL]
+            return '{"status":"400","msg":"Bad Request", "extra":"id is NULL"}'::JSONB;
+        end if;
+            
+        if id.pk is NULL then
+          -- [Fail 400 when id.pk a parameter is NULL]
+          return '{"status":"400","msg":"Bad Request", "extra":"id.pk is NULL"}'::JSONB;
+        end if;      
+        
+        if id.sk is NULL then
+          -- [Fail 400 when id.sk parameter is NULL]
+          return '{"status":"400","msg":"Bad Request", "extra":"id.sk is NULL"}'::JSONB;
+        end if;
+        
+        -- [Validate Triple]
+    
+        if trip is NULL then
+            -- [Fail 400 when a parameter is NULL]
+            return '{"status":"400","msg":"Bad Request", "extra":"triple is NULL"}'::JSONB;
+        end if;
+            
+        if trip.pk is NULL then
+          -- [Fail 400 when triple.pk a parameter is NULL]
+          return '{"status":"400","msg":"Bad Request", "extra":"triple.pk is NULL"}'::JSONB;
+        end if;      
+        
+        if trip.sk is NULL then
+          -- [Fail 400 when triple.sk parameter is NULL]
+          return '{"status":"400","msg":"Bad Request", "extra":"triple.sk is NULL"}'::JSONB;
+        end if;
+        
+        if trip.tk is NULL then
+          -- [Fail 400 when triple.tk parameter is NULL]
+          return '{"status":"400","msg":"Bad Request", "extra":"triple is NULL"}'::JSONB;
+        end if;
+        
+        if strpos(trip.pk,'#') = 0 then
+           return '{"status":"400","msg":"Bad Request", "extra":"malformed triple.pk"}'::JSONB;
+        end if;
+        
+        if strpos(trip.sk,'#') = 0 then
+           return '{"status":"400","msg":"Bad Request", "extra":"malformed triple.sk"}'::JSONB;
+        end if;
+        
+        if strpos(trip.tk,'#') = 0 then
+           return '{"status":"400","msg":"Bad Request", "extra":"malformed triple.tk"}'::JSONB;
+        end if;   
+          
+        -- [Match Owner]
+                  
+        if not exists(select t.pk 
+               from base_0_0_1.one t 
+               where t.pk=id.pk 
+                     and t.sk='name#owner'
+                     and t.tk=format('value#%s', owner.id)) then
+            return format('{"status":"404", "msg":"Not Found", "extra":"E bad key", "key":"%s", "pk":"%s", "sk":"%s"}',owner.id, id.pk, id.sk)::JSONB;
+        end if;     
+        
+        update base_0_0_1.one 
+            set
+                pk=trip.pk,
+                sk=trip.sk,
+                tk=trip.tk,
+                form = '{"id":"DEPRECATED"}'::JSONB,
+                updated = NOW()
+         where
+           pk = id.pk
+           and sk = id.sk
+           returning * into _result; 
+        
+        /*  
+        update base_0_0_1.one t
+            set
+                t.pk=trip.pk,
+                t.sk=trip.sk,
+                t.tk=trip.tk,
+                t.form = '{"id":"DEPRECATED"}'::JSONB,
+                t.updated = NOW()
+         where
+           t.pk = id.pk
+           and t.sk = id.sk
+           and t.owner = owner.id
+           returning * into _result;
+        */
+        if not(FOUND) then
+             -- [Fail 404 when given chelate is not found]
+             return format('{"status":"404", "msg":"Not Found", "extra":"D", "key":"%s", "pk":"%s", "sk":"%s"}',owner.id, id.pk, id.sk)::JSONB;
+        end if;
+  
+        -- [Return {status,msg,updation}]
+  
+        return format('{"status":"200","msg":"OK","updation":%s}',(to_jsonb(_result) #- '{form,password}')::TEXT)::JSONB;
+
+    END;
+
+  $$ LANGUAGE plpgsql;     
+  
+  /* Doesnt work in Hobby
+  grant EXECUTE on FUNCTION ${this.name}(JSONB,OWNERID,PRIMARYKEY) to api_user;
+  */
+    `;
+    console.log('-- Create PUT Function', this.sql);
+  }    
+  getName() {
+    return `${this.name}(${this.params}) ${this.return}`;
+  }
+};

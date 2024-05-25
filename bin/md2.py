@@ -46,7 +46,6 @@ def main():
     MultiLogger('df').set_msg('start').runtime().terminal()
     app = ApplicationMD2().load_environment()
 
-
     ##### Process
 
     ##1. [Initialize MD2](#initialize-md2)
@@ -73,6 +72,9 @@ def main():
     ##1. [Initialize Node](#initialize-node)
     Auto(TaskInitializeNode().set_application(app))
 
+    ##1. [Initialize JWT](#initialize-jwt)
+    Auto(TaskInitializeJWT().set_application(app))
+
     ##1. [Initialize Nodemon](#initialize-nodemon)
     Auto(TaskInitializeNodemon().set_application(app))
 
@@ -81,6 +83,9 @@ def main():
 
     ##1. [Initialize Postgres](#initialize-postgres)
     Auto(TaskInitializePostgres().set_application(app))
+
+    ##1. [Initialize Model](#initialize-model)
+    Auto(TaskInitializeModel().set_application(app))
 
     ##1. [Update Environment Values](#update-md2-environment-variables)
     Auto(TaskUpdateEnvironment().set_application(app))
@@ -93,7 +98,7 @@ def main():
 
 class TaskMd2(ProcessProject):
     ##
-    ##### Initialize MD2
+    ###### Initialize MD2
     ##
     ## Make the md2.env file
     def __init__(self):
@@ -130,7 +135,7 @@ class TaskMd2(ProcessProject):
 
 class TaskConfigure(ProcessProject):
     ##
-    ##### Configure MD2 Environment Values
+    ###### Configure MD2 Environment Values
     def __init__(self): #, env_file_content_string): # , recorder):
         ProcessProject.__init__(self)
         # package is {nv_list, repo_folder, template_folder}
@@ -183,11 +188,9 @@ class TaskConfigure(ProcessProject):
 
         return self
 
-
-
 class TaskGithub(ProcessProject):
     ##
-    ##### Clone GitHub Repository
+    ###### Clone GitHub Repository
     ## Create and Configure a Project Repository.
     def __init__(self): # , recorder=None ):
         ProcessProject.__init__(self)
@@ -234,7 +237,7 @@ class TaskGithub(ProcessProject):
 
 class TaskGithubPatch(ProcessProject):
     ##
-    ##### Patch Clone
+    ###### Patch Clone
     ##
     ## Make sure that runtime files don't get included in the repo
     def __init__(self): # , recorder=None ):
@@ -282,7 +285,7 @@ class TaskGithubPatch(ProcessProject):
 
 class TaskInitializeProjectSpace(ProcessProject):
     ##
-    ##### Initialize ProjectSpace
+    ###### Initialize ProjectSpace
     ##
     def __init__(self):
         ProcessProject.__init__(self)
@@ -307,7 +310,7 @@ class TaskInitializeProjectSpace(ProcessProject):
 
 class TaskInitializeDocker(ProcessProject):
     ##
-    ##### Initialize Docker
+    ###### Initialize Docker
     ##
 
     def __init__(self): # , recorder=None ):
@@ -333,7 +336,7 @@ class TaskInitializeDocker(ProcessProject):
 
 class TaskInitializeHeroku(ProcessProject):
     ##
-    ##### Initialize Heroku
+    ###### Initialize Heroku
     ##
 
     def __init__(self):  # , recorder=None ):
@@ -359,7 +362,7 @@ class TaskInitializeHeroku(ProcessProject):
 
 class TaskInitializeNode(ProcessProject):
     ##
-    ##### Initialize Node
+    ###### Initialize Node
     ##
 
     def __init__(self):
@@ -383,9 +386,36 @@ class TaskInitializeNode(ProcessProject):
 
         return self
 
+class TaskInitializeJWT(ProcessProject):
+    ##
+    ###### Initialize Node
+    ##
+
+    def __init__(self):
+        ProcessProject.__init__(self)
+        self.set_template_folder_key('jwt')
+
+    def jwt_templates(self):
+        if not self.get_application():
+            raise Exception('Application Not Found!')
+        self.get_application().add('jwt')
+        ##* Templatize JWT templates
+        self.templatize()
+        return self
+
+    def process(self):
+
+        repo_name = os.environ['GH_REPO']
+        MultiLogger().set_msg('7. JWT: {}'.format(repo_name)).runtime().terminal()
+
+        self.jwt_templates()
+
+        return self
+
+
 class TaskInitializeNodemon(ProcessProject):
     ##
-    ##### Initialize Nodemon
+    ###### Initialize Nodemon
     ##
 
     def __init__(self):
@@ -411,7 +441,7 @@ class TaskInitializeNodemon(ProcessProject):
 
 class TaskInitializeHapi(ProcessProject):
     ##
-    ##### Initialize Hapi
+    ###### Initialize Hapi
     ##
 
     def __init__(self):
@@ -437,7 +467,7 @@ class TaskInitializeHapi(ProcessProject):
 
 class TaskInitializePostgres(ProcessProject):
     ##
-    ##### Initialize Postgres
+    ###### Initialize Postgres
     ##
 
     def __init__(self):
@@ -447,7 +477,7 @@ class TaskInitializePostgres(ProcessProject):
     def postgres_templates(self):
         if not self.get_application():
             raise Exception('Application Not Found!')
-        self.get_application().add('postgres')
+        self.get_application().add(self.get_template_folder_key())
         ##* Templatize Postgres templates
         self.templatize()
         return self
@@ -461,9 +491,35 @@ class TaskInitializePostgres(ProcessProject):
 
         return self
 
+class TaskInitializeModel(ProcessProject):
+    ##
+    ###### Initialize Model
+    ##
+
+    def __init__(self):
+        ProcessProject.__init__(self)
+        self.set_template_folder_key('model')
+
+    def db_deploy_templates(self):
+        if not self.get_application():
+            raise Exception('Application Not Found!')
+        self.get_application().add(self.get_template_folder_key())
+        ##* Templatize DB Deploy templates
+        self.templatize()
+        return self
+
+    def process(self):
+        repo_name = os.environ['GH_REPO']
+        MultiLogger().set_msg('10. Model: {}'.format(repo_name)).runtime().terminal()
+
+        self.db_deploy_templates()
+
+        return self
+
+
 class TaskUpdateEnvironment(ProcessProject):
     ##
-    ##### Update MD2 Environment Variables
+    ###### Update MD2 Environment Variables
     ##
     def __init__(self): #, env_file_content_string, recorder=None):
         ProcessProject.__init__(self) #(template_folder_key='github', recorder=recorder)
@@ -506,7 +562,7 @@ class TaskUpdateEnvironment(ProcessProject):
 
 class ApplicationMD2(Application):
     ##
-    ##### ApplicationMD2
+    ###### ApplicationMD2
     ##
     ## Custom application data and methods
     ##* Extends Application
@@ -515,7 +571,7 @@ class ApplicationMD2(Application):
 
 class Auto():
     ##
-    ##### Auto
+    ###### Auto
     ##
     ## Launch/run task
     def __init__(self, process):
