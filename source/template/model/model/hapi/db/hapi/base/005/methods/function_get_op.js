@@ -3,7 +3,7 @@
 // Single Get
 // Group Get
 
-const Step = require('../../../../lib/runner/step');
+const Step = require('../../../lib/runner/step');
 module.exports = class CreateFunctionGetOP extends Step {
   constructor(baseName, baseVersion) {
     super(baseName, baseVersion);
