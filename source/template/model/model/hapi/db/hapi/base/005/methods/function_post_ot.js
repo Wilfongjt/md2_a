@@ -1,7 +1,7 @@
 'use strict';
 // const pg = require('pg');
 // post a {pk:<group-type>#<group-value>, sk, tk}
-const Step = require('../../../../lib/runner/step');
+const Step = require('../../../lib/runner/step');
 module.exports = class CreateFunctionPostOT extends Step {
   constructor(baseName, baseVersion) {
     super(baseName, baseVersion);

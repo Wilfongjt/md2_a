@@ -1,0 +1,77 @@
+'use strict';
+
+const Step = require('../../../../lib/runner/step');
+module.exports = class FunctionDocumentDeleteToi extends Step {
+  constructor(baseName, baseVersion) {
+    super(baseName, baseVersion);
+    // this.kind = kind;
+    this.name = 'document_del';
+    this.desc = `Delete ${this.name} by identity`;
+    this.name = `${this.kind}_${this.version}.${this.name}`;
+    this.role = 'api_admin';
+    this.scope = 'api_admin';
+    this.pk = 'id';// 'doc_id';
+    this.sk = '*';
+
+    this.baseKind='base';
+    this.baseVersion=baseVersion;
+    this.params = 'token TOKEN, owner_id OWNERID, id PRIMARYKEY';
+    this.types = 'TOKEN, OWNERID, PRIMARYKEY';
+
+    this.method = 'DELETE';
+    this.sql = `
+    
+        DROP FUNCTION if exists ${this.name}(${this.types}); 
+
+    
+    CREATE OR REPLACE FUNCTION ${this.name}(${this.params})  RETURNS JSONB AS $$
+        Declare result JSONB;
+        -- Declare criteria JSONB ='{"pk":"${this.pk}", "sk":"*"}'::JSONB;
+        BEGIN
+          -- [Function: get api_${this.version}.document given user_token TOKEN, owner_id OWNERID, id PRIMARYKEY]
+          -- [Description: get an existing api_${this.version}.document]
+          -- [Note: Only the owner can delete]
+          -- [Validate id parameter]
+          if id is NULL then
+                -- [Fail 400 when id is NULL]
+                return '{"status":"400","msg":"Bad Request"}'::JSONB;
+          end if;
+
+          -- [Validate Token]
+
+          result := base_${this.baseVersion}.validate_token(token, 'api_admin') ;
+          if result is NULL then
+                -- [Fail 403 When token is invalid]
+                return format('{"status":"403","msg":"Forbidden","extra":"Invalid token","user":"%s"}',CURRENT_USER)::JSONB;
+          end if;
+
+          -- [Assemble Data]
+          
+          -- [Execute delete]
+
+          BEGIN
+             result := base_0_0_1.delete(owner_id, id); 
+    	      -- result := format('{"status":"200", "msg":"OK", "primarykey":"%s", "deletion":{}}',id::TEXT)::JSONB ;
+          EXCEPTION
+                  when others then
+                    RAISE NOTICE '5B Beyond here there be dragons! %', sqlstate;
+                    return format('{"status":"%s", "msg":"Internal Server Error", "primarykey":"%s"}',sqlstate,id::TEXT)::JSONB ;
+          END;
+
+          -- [Return {status,msg,selection}]
+          return result;
+
+        END;
+
+        $$ LANGUAGE plpgsql;
+    
+    /* Doesnt work in Hobby
+    grant EXECUTE on FUNCTION ${this.name}(TOKEN, OWNERID, PRIMARYKEY) to ${this.role};
+    */
+    `;
+    // console.log('Create\n', this.sql);
+  }
+  getName() {
+    return `.${this.name}(${this.params}) .${this.method} .${this.role} .${this.desc} .`;
+  }
+};

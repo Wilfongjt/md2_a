@@ -1,7 +1,7 @@
 'use strict';
 // const pg = require('pg');
 
-const Step = require('../../../../lib/runner/step');
+const Step = require('../../../lib/runner/step');
 module.exports = class CreateFunctionPutOPT extends Step {
   constructor(baseName, baseVersion) {
     super(baseName, baseVersion);

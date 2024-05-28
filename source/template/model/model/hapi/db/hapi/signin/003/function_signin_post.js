@@ -1,6 +1,6 @@
 'use strict';
 
-const Step = require('../../../../lib/runner/step');
+const Step = require('../../../lib/runner/step');
 module.exports = class CreateFunctionSignin extends Step {
   constructor(baseName, baseVersion) {
     super(baseName, baseVersion);
