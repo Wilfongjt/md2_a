@@ -1,0 +1,88 @@
+
+'use strict';
+
+const Step = require('../../runner/step');
+module.exports = class FunctionDelete extends Step {
+  constructor(baseName, baseVersion) {
+    super(baseName, baseVersion);
+    // this.kind = kind;
+
+    let groupType = 'adoptee';
+    let function_name = 'adoptee_del';
+    this.role = 'api_user';
+    // this.scope = 'api_user';
+    // this.params = 'token_id TOKEN, owner_id OWNERID, primary_key PRIMARYKEY';
+    // this.types = 'TOKEN, OWNERID, PRIMARYKEY';
+    // let base_type_param_names = 'owner_id, primary_key';
+    // this.returns = 'JSONB';
+    // this.method = 'delete';
+    let description = 'delete one by token, owner and id ';
+
+    this.name = `${this.kind}_${this.version}.${function_name}`;
+    this.desc = `${description}`;
+
+    this.pk = groupType;
+    this.sk = 'name';
+
+    this.baseKind='base';
+    this.baseVersion=baseVersion;
+
+    this.sql = `
+    DROP FUNCTION if exists ${this.name}(TOKEN, OWNERID, PRIMARYKEY);
+
+    CREATE OR REPLACE FUNCTION ${this.name}(token_id TOKEN, owner_id OWNERID, primary_key PRIMARYKEY)  RETURNS JSONB AS $$
+
+    Declare result JSONB;
+    BEGIN
+      -- [Function: delete api_${this.version}.{$groupType} given ${this.role}]
+      -- [Description: ${description}]
+      -- [Note: Only the owner can delete]
+
+
+        -- [Fail 400 when token_id is NULL]
+
+        if token_id is NULL then
+            return '{"status":"400","msg":"Bad Request"}'::JSONB;
+        end if;
+
+        -- [Fail 400 when owner_id is NULL]
+
+        if owner_id is NULL then
+            return '{"status":"400","msg":"Bad Request"}'::JSONB;
+        end if;
+
+        -- [Fail 400 when primary_key is NULL]
+
+        if primary_key is NULL then
+            return '{"status":"400","msg":"Bad Request"}'::JSONB;
+        end if;
+
+      -- [Validate Token]
+
+      result := base_${this.baseVersion}.validate_token(token_id, '${this.role}') ;
+      if result is NULL then
+            -- [Fail 403 When token_id is invalid]
+            return format('{"status":"403","msg":"Forbidden","extra":"Invalid token","user":"%s"}',CURRENT_USER)::JSONB;
+      end if;
+
+      -- [Assemble Data]
+
+      -- [Execute delete]
+      result := base_${this.baseVersion}.delete(${owner_id, primary_key});
+
+      -- [Return {status,msg,selection}]
+      return result;
+
+    END;
+
+    $$ LANGUAGE plpgsql;
+
+    `;
+    // console.log(this.sql);
+  }
+  getName() {
+    return `.${this.name}(token_id TOKEN, owner_id OWNERID, primary_key PRIMARYKEY).delete.${this.role} .${this.desc} .`;
+    // return `.${this.name}(${this.params}) .${this.method} .${this.role} .${this.desc} .`;
+
+  }
+};
