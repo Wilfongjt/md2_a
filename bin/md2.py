@@ -81,6 +81,11 @@ def main():
     ##1. [Initialize Hapi](#initialize-hapi)
     Auto(TaskInitializeHapi().set_application(app))
 
+
+    print('app_starter', ConvertMd2Json(StringReader('{}/{}'.format(get_bin_folder(), 'app_starter.md'))))
+
+    Auto(TaskInitializeHapiCRUD().set_application(app))
+
     ##1. [Initialize Postgres](#initialize-postgres)
     Auto(TaskInitializePostgres().set_application(app))
 
@@ -93,6 +98,122 @@ def main():
     xx = 'Summary {} {}'.format(app.get_name(), DiagramString(app))
     MultiLogger().set_msg(xx).runtime().terminal()
     MultiLogger().set_msg('end').runtime().terminal()
+
+
+##### Coversion
+class ConvertMd2Json(str):
+    def __new__(cls, md_text):
+        # ProcessProject.__init__(self)
+        print('ConvertMd2Json', md_text)
+        md_text = str(md_text).split('\n')
+        contents = []
+        tbl_cols = []
+        tbl_rows = []
+        tbl_spacer = False
+        tbl_type = ''
+        resource = ''
+
+        for ln in md_text:
+            # print('md2json ln', ln)
+            if len(ln.strip()):
+                contents.append('')
+            if ln.startswith('# '):
+                contents.append(ln)
+            elif ln.startswith('## '):
+                contents.append(ln)
+            elif ln.startswith('1.'):
+                contents.append(ln)
+            elif ln.startswith('| resource'):
+                tbl_cols = ln.replace(' ', '').split('|')
+                tbl_cols = [c for c in tbl_cols if c != '']
+                tbl_type = tbl_cols[0]
+                #contents.append('### {}:'.format(tbl_type))
+                #contents.append('### {}'.format())
+
+                # print('cols', tbl_cols)
+            elif ln.startswith('| data') and not tbl_spacer:
+                tbl_cols = ln.replace(' ', '').split('|')
+                tbl_cols = [c for c in tbl_cols if c != '']
+                tbl_type = tbl_cols[0]
+                # print('cols', tbl_cols)
+            elif ln.startswith('|-'):
+                tbl_spacer = True
+                # print('spacer')
+            elif ln.startswith('|') and tbl_spacer:
+                tbl_row = ln.replace(' ', '').split('|')
+                tbl_row = [r for r in tbl_row if r != '']
+                if tbl_spacer:
+                    tbl_spacer = False
+                    print('here', tbl_row[0], tbl_row)
+                    contents.append('### {}:'.format(tbl_row[0]))
+
+                # print('c', len(tbl_cols), tbl_cols)
+                print('r', len(tbl_row), tbl_row)
+                # print('range', range(len(tbl_row)))
+                tbl_row = ['1. {}: {}'.format(tbl_cols[i], tbl_row[i]) for i in range(len(tbl_row))]
+                # print('row\n', '\n'.join(tbl_row))
+                tbl_rows.append('\n'.join(tbl_row))
+
+            else:
+                tbl_spacer = False
+
+        print('tbl_type', tbl_type)
+        print('rows', '\n'.join(tbl_rows))
+        print('contents', contents)
+        # contents = '\n'.join(contents)
+        instance = super().__new__(cls, contents)
+        print('instance', instance)
+        return instance
+
+
+class ParseMd2Json_1(str):
+    def __new__(cls, md_text):
+        #ProcessProject.__init__(self)
+        print('ParseMd2Json', md_text)
+        md_text = str(md_text).split('\n')
+        contents = {}
+        tbl_cols = []
+        tbl_rows = []
+        tbl_spacer = False
+        for ln in md_text:
+            #print('md2json ln', ln)
+            if ln.startswith('| field'):
+                tbl_cols = ln.replace(' ','').split('|')
+                tbl_cols = [c for c in tbl_cols if c != '']
+                print('cols', tbl_cols)
+            elif ln.startswith('| id') and not tbl_spacer:
+                tbl_cols = ln.replace(' ','').split('|')
+                tbl_cols = [c for c in tbl_cols if c != '']
+                print('cols', tbl_cols)
+            elif ln.startswith('|-'):
+                tbl_spacer = True
+                print('spacer')
+
+            elif ln.startswith('|') and tbl_spacer:
+                tbl_row = ln.replace(' ', '').split('|')
+                tbl_row = [r for r in tbl_row if r != '']
+                #print('c', len(tbl_cols), tbl_cols)
+                #print('r', len(tbl_row), tbl_row)
+                tbl_row = {tbl_cols[i]: tbl_row[i] for i in range(len(tbl_row))}
+                tbl_rows.append(tbl_row)
+
+            else:
+                tbl_spacer = False
+                #tbl_start = True
+                #print('ParseMd2Json C {}'.format(ln))
+
+            #if ln.startswith('#'):
+            #    print('ParseMd2Json A {}'.format(ln))
+            #elif ln.startswith('1.'):
+            #    print('ParseMd2Json B {}'.format(ln))
+
+        print('rows', tbl_rows)
+        #contents = '\n'.join(contents)
+        instance = super().__new__(cls, contents)
+        return instance
+
+
+
 
 ##### Tasks
 
@@ -412,7 +533,6 @@ class TaskInitializeJWT(ProcessProject):
 
         return self
 
-
 class TaskInitializeNodemon(ProcessProject):
     ##
     ###### Initialize Nodemon
@@ -462,6 +582,24 @@ class TaskInitializeHapi(ProcessProject):
         MultiLogger().set_msg('9. Hapi: {}'.format(repo_name)).runtime().terminal()
 
         self.hapi_templates()
+
+        return self
+
+class TaskInitializeHapiCRUD(ProcessProject):
+    def __init__(self):
+        ProcessProject.__init__(self)
+        self.set_template_folder_key('hapi')
+
+    def crud_templates(self):
+
+        return self
+
+    def process(self):
+
+        repo_name = os.environ['GH_REPO']
+        MultiLogger().set_msg('10. Fix Me Hapi CRUD: {}'.format(repo_name)).runtime().terminal()
+
+        self.crud_templates()
 
         return self
 
@@ -515,7 +653,6 @@ class TaskInitializeModel(ProcessProject):
         self.db_deploy_templates()
 
         return self
-
 
 class TaskUpdateEnvironment(ProcessProject):
     ##

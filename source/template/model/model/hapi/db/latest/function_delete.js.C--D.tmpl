@@ -2,12 +2,22 @@
 'use strict';
 
 const Step = require('../../runner/step');
+// resource: <<RS_RESOURCE>> eg adopter
+// version: <<RS_VERSION>> eg 001
+// ${this.kind} api eg api
+// ${this.version} <<RS_VERSION>>
+// ${function_name} <<RS_RESOURCE>>_del
+// description: <<RS_DESCRIPTION>> ${description}
+// ${this.name} <<RS_??>> ${this.name}
+// ${this.baseVersion} <<RS_>>
+// ${this.params}) <<RS_PARAMS>>
+// ${this.method} <<RS_METHOD>>
 module.exports = class FunctionDelete extends Step {
   constructor(baseName, baseVersion) {
     super(baseName, baseVersion);
     // this.kind = kind;
 
-    let groupType = 'adoptee';
+    let resource = 'adoptee';
     let function_name = 'adoptee_del';
     this.role = 'api_user';
     // this.scope = 'api_user';
@@ -21,7 +31,7 @@ module.exports = class FunctionDelete extends Step {
     this.name = `${this.kind}_${this.version}.${function_name}`;
     this.desc = `${description}`;
 
-    this.pk = groupType;
+    this.pk = resource;
     this.sk = 'name';
 
     this.baseKind='base';
@@ -34,7 +44,7 @@ module.exports = class FunctionDelete extends Step {
 
     Declare result JSONB;
     BEGIN
-      -- [Function: delete api_${this.version}.{$groupType} given ${this.role}]
+      -- [Function: delete api_${this.version}.{$resource} given ${this.role}]
       -- [Description: ${description}]
       -- [Note: Only the owner can delete]
 
