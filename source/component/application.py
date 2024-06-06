@@ -2,6 +2,10 @@ import os
 from able import StringReader, \
                  Recorder
 
+#class MDReader(StringReader):
+#    def __new__(cls, folder_filename_list, recorder=None):
+#        super.__new__(cls)
+
 class Application(Recorder):
     ##
     ##### __Application__
