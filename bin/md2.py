@@ -7,6 +7,8 @@
 
 import os
 import sys
+import ast
+from pprint import pprint
 #SCRIPT_DIR = os.path.dirname(str(os.path.abspath(__file__)).replace('/bin','/source/component'))
 #sys.path.append(os.path.dirname(SCRIPT_DIR))
 #print('SCRIPT_DIR',SCRIPT_DIR)
@@ -16,7 +18,9 @@ from able import StringReader, \
                  EnvVarString,\
                  CloneRepo,\
                  DiagramString,\
-                 RuntimeLogger
+                 RuntimeLogger,\
+                 JSONString, NormalString, Stack, Level
+
 
 from functions import get_bin_folder, \
     get_template_folder, \
@@ -49,7 +53,7 @@ def main():
     ##### Process
 
     ##1. [Initialize MD2](#initialize-md2)
-    Auto(TaskMd2().set_application(app))
+    Auto(TaskInitializeEnv().set_application(app))
 
     ##1. [Configure MD2 Environment Values](#configure-md2-environment-values)
     Auto(TaskConfigure().set_application(app)) #(env_file_content_string, app)
@@ -81,9 +85,20 @@ def main():
     ##1. [Initialize Hapi](#initialize-hapi)
     Auto(TaskInitializeHapi().set_application(app))
 
+    resource_string = StringExpandMdTable(StringReader('{}/{}'.format(get_bin_folder(), 'app_starter.md')))
 
-    print('app_starter', ConvertMd2Json(StringReader('{}/{}'.format(get_bin_folder(), 'app_starter.md'))))
+    print('app_starter', resource_string)
+    print('DictMd',DictMd(resource_string))
+    pprint(DictMd(resource_string))
+    print('ResourceNames', ResourceNames(DictMd(resource_string)))
+    print('RoleNames',RoleNames(DictMd(resource_string)))
+    print('ProjectName',ProjectName(DictMd(resource_string)))
+    print('permissions', ResourcePermissions(DictMd(resource_string)))
+    pprint(ResourcePermissions(DictMd(resource_string)))
+    print('model', ResourceModel(DictMd(resource_string)))
+    pprint(ResourceModel(DictMd(resource_string)))
 
+    #print('xxx',JSONString((resource_string)))
     Auto(TaskInitializeHapiCRUD().set_application(app))
 
     ##1. [Initialize Postgres](#initialize-postgres)
@@ -101,71 +116,9 @@ def main():
 
 
 ##### Coversion
-class ConvertMd2Json(str):
-    def __new__(cls, md_text):
-        # ProcessProject.__init__(self)
-        print('ConvertMd2Json', md_text)
-        md_text = str(md_text).split('\n')
-        contents = []
-        tbl_cols = []
-        tbl_rows = []
-        tbl_spacer = False
-        tbl_type = ''
-        resource = ''
+#class TaskMdTableFlatten(str):
 
-        for ln in md_text:
-            # print('md2json ln', ln)
-            if len(ln.strip()):
-                contents.append('')
-            if ln.startswith('# '):
-                contents.append(ln)
-            elif ln.startswith('## '):
-                contents.append(ln)
-            elif ln.startswith('1.'):
-                contents.append(ln)
-            elif ln.startswith('| resource'):
-                tbl_cols = ln.replace(' ', '').split('|')
-                tbl_cols = [c for c in tbl_cols if c != '']
-                tbl_type = tbl_cols[0]
-                #contents.append('### {}:'.format(tbl_type))
-                #contents.append('### {}'.format())
-
-                # print('cols', tbl_cols)
-            elif ln.startswith('| data') and not tbl_spacer:
-                tbl_cols = ln.replace(' ', '').split('|')
-                tbl_cols = [c for c in tbl_cols if c != '']
-                tbl_type = tbl_cols[0]
-                # print('cols', tbl_cols)
-            elif ln.startswith('|-'):
-                tbl_spacer = True
-                # print('spacer')
-            elif ln.startswith('|') and tbl_spacer:
-                tbl_row = ln.replace(' ', '').split('|')
-                tbl_row = [r for r in tbl_row if r != '']
-                if tbl_spacer:
-                    tbl_spacer = False
-                    print('here', tbl_row[0], tbl_row)
-                    contents.append('### {}:'.format(tbl_row[0]))
-
-                # print('c', len(tbl_cols), tbl_cols)
-                print('r', len(tbl_row), tbl_row)
-                # print('range', range(len(tbl_row)))
-                tbl_row = ['1. {}: {}'.format(tbl_cols[i], tbl_row[i]) for i in range(len(tbl_row))]
-                # print('row\n', '\n'.join(tbl_row))
-                tbl_rows.append('\n'.join(tbl_row))
-
-            else:
-                tbl_spacer = False
-
-        print('tbl_type', tbl_type)
-        print('rows', '\n'.join(tbl_rows))
-        print('contents', contents)
-        # contents = '\n'.join(contents)
-        instance = super().__new__(cls, contents)
-        print('instance', instance)
-        return instance
-
-
+'''
 class ParseMd2Json_1(str):
     def __new__(cls, md_text):
         #ProcessProject.__init__(self)
@@ -211,13 +164,153 @@ class ParseMd2Json_1(str):
         #contents = '\n'.join(contents)
         instance = super().__new__(cls, contents)
         return instance
+'''
 
 
 
+#####
+class StringExpandMdTable(str):
+    def __new__(cls, md_text):
 
-##### Tasks
+        md_text = str(md_text).split('\n')
+        contents = []
+        tbl_cols = []
 
-class TaskMd2(ProcessProject):
+        table = False
+        for ln in md_text:
+            if len(ln.strip())==0:
+                contents.append('')
+            if not ln.startswith('|'):
+                table = False
+
+            if ln.startswith('|'):
+                if not table:
+                    table = True
+                    tbl_cols = ln.replace(' ', '').split('|')
+                    tbl_cols = [c for c in tbl_cols if c != '']
+                elif ln.startswith('|-'):
+                    pass
+                else:
+                    tbl_row = ln.replace(' ', '').split('|')
+                    tbl_row = [r for r in tbl_row if r != '']
+                    r = {tbl_cols[k]: tbl_row[k] for k in range(len(tbl_row))}
+                    contents.append('1. {}: {}'.format(tbl_row[0], r))
+                    # contents.append('1. {}: {}'.format(tbl_row[1], r))
+
+            else:
+                contents.append(ln)
+
+        contents = '\n'.join(contents)
+        instance = super().__new__(cls, contents)
+        return instance
+
+# with stack pointing to last and active
+
+# Lists and Dicts
+
+class DictMd(dict):
+
+    def __init__(self, md_text):
+        # skip spaces
+        # skip *
+        #stack = Stack()
+        ostack = Stack()
+        table = False
+
+        for ln in str(md_text).split('\n'):
+
+            if not ln.startswith('|'):
+                table = False
+
+            if ln.startswith('#'):
+                # print('DictMd level', Level(ln))
+                level = Level(ln)
+                ln = ln.replace(':', '')
+                ln = ln.split(' ')
+                if len(ln) < 2:
+                    raise Exception('Bad Line')
+                #while stack.size() >= level: stack.pop()
+                while ostack.size() >= level: ostack.pop()
+
+                if ostack.size() == 0: #1:  # projecrt
+
+                    self[ln[1].lower()] = {'name': ln[2].lower()}
+                    ostack.push(self[ln[1].lower()])
+
+                elif ostack.size() >= 1:  # project claims
+
+                    if len(ln) ==2:
+                        ostack.peek()[ln[1].lower()] = {}
+                        ostack.push(ostack.peek()[ln[1].lower()])
+
+                    elif len(ln) == 3:
+                        ostack.peek()[ln[1].lower()] = {'name': ln[2].lower()}
+                        ostack.push(ostack.peek()[ln[1].lower()])
+
+            elif ln.startswith('1.'):
+                ln = ln.replace('1. ','')
+                ln = ln.split(':', maxsplit=1)
+
+                line = ln[1].strip()
+
+                if line.startswith('{'):
+                    line = ast.literal_eval(line)
+                ostack.peek()[ln[0]] = line
+
+class ProjectName(str):
+    def __new__(cls, project_dict):
+
+        contents = project_dict['project']['name']
+
+        instance = super().__new__(cls, contents)
+        return instance
+
+class ResourceNames(list):
+    def __init__(self, project_dict):
+        for r in project_dict['project']['resources']:
+            self.append(r)
+
+class RoleNames(list):
+    def __init__(self, project_dict):
+
+        lst = []
+        for r in project_dict['project']['resources']:
+            for f in project_dict['project']['resources'][r]['model']:
+                for s in project_dict['project']['resources'][r]['model'][f]:
+                    if s.startswith('api_'):
+                        lst.append(s)
+
+        lst = set(lst)
+        for r in lst:
+            self.append(r)
+
+
+    # TASKS
+
+class ResourcePermissions(dict):
+    # { account: {id: {api_admin: R, api_guest:CR, api_user:RUD},...}
+    def __init__(self, project_dict):
+        for r in project_dict['project']['resources']:
+            self[r]={}
+            for f in project_dict['project']['resources'][r]['model']:
+                self[r][f] = {}
+                for s in project_dict['project']['resources'][r]['model'][f]:
+                    if s.startswith('api_'):
+                        self[r][f][s] = project_dict['project']['resources'][r]['model'][f][s]
+
+class ResourceModel(dict):
+    # { account: {id: {api_admin: R, api_guest:CR, api_user:RUD},...}
+    def __init__(self, project_dict):
+        for r in project_dict['project']['resources']:
+            self[r]={}
+            for f in project_dict['project']['resources'][r]['model']:
+                self[r][f] = {}
+                for s in project_dict['project']['resources'][r]['model'][f]:
+                    if not s.startswith('api_'):
+                        self[r][f][s] = project_dict['project']['resources'][r]['model'][f][s]
+
+# Task
+class TaskInitializeEnv(ProcessProject):
     ##
     ###### Initialize MD2
     ##
@@ -423,7 +516,7 @@ class TaskInitializeProjectSpace(ProcessProject):
 
     def process(self):
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('3. ProjectSpace: {}'.format(repo_name)).runtime().terminal()
+        MultiLogger().set_msg('5. ProjectSpace: {}'.format(repo_name)).runtime().terminal()
 
         self.projectspace_templates()
 
@@ -449,7 +542,7 @@ class TaskInitializeDocker(ProcessProject):
     def process(self):
 
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('5. Docker: {}'.format(repo_name)).runtime().terminal()
+        MultiLogger().set_msg('6. Docker: {}'.format(repo_name)).runtime().terminal()
 
         self.docker_templates()
 
@@ -475,7 +568,7 @@ class TaskInitializeHeroku(ProcessProject):
     def process(self):
 
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('6. Heroku: {}'.format(repo_name)).runtime().terminal()
+        MultiLogger().set_msg('7. Heroku: {}'.format(repo_name)).runtime().terminal()
 
         self.heroku_templates()
 
@@ -501,7 +594,7 @@ class TaskInitializeNode(ProcessProject):
     def process(self):
 
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('7. Node: {}'.format(repo_name)).runtime().terminal()
+        MultiLogger().set_msg('8. Node: {}'.format(repo_name)).runtime().terminal()
 
         self.node_templates()
 
@@ -527,7 +620,7 @@ class TaskInitializeJWT(ProcessProject):
     def process(self):
 
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('7. JWT: {}'.format(repo_name)).runtime().terminal()
+        MultiLogger().set_msg('9. JWT: {}'.format(repo_name)).runtime().terminal()
 
         self.jwt_templates()
 
@@ -553,7 +646,7 @@ class TaskInitializeNodemon(ProcessProject):
     def process(self):
 
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('8. Nodemon: {}'.format(repo_name)).runtime().terminal()
+        MultiLogger().set_msg('10. Nodemon: {}'.format(repo_name)).runtime().terminal()
 
         self.nodemon_templates()
 
@@ -579,7 +672,7 @@ class TaskInitializeHapi(ProcessProject):
     def process(self):
 
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('9. Hapi: {}'.format(repo_name)).runtime().terminal()
+        MultiLogger().set_msg('11. Hapi: {}'.format(repo_name)).runtime().terminal()
 
         self.hapi_templates()
 
@@ -597,7 +690,7 @@ class TaskInitializeHapiCRUD(ProcessProject):
     def process(self):
 
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('10. Fix Me Hapi CRUD: {}'.format(repo_name)).runtime().terminal()
+        MultiLogger().set_msg('12. Fix Me Hapi CRUD: {}'.format(repo_name)).runtime().terminal()
 
         self.crud_templates()
 
@@ -623,7 +716,7 @@ class TaskInitializePostgres(ProcessProject):
     def process(self):
 
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('10. Postgres: {}'.format(repo_name)).runtime().terminal()
+        MultiLogger().set_msg('13. Postgres: {}'.format(repo_name)).runtime().terminal()
 
         self.postgres_templates()
 
@@ -648,7 +741,7 @@ class TaskInitializeModel(ProcessProject):
 
     def process(self):
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('10. Model: {}'.format(repo_name)).runtime().terminal()
+        MultiLogger().set_msg('14. Model: {}'.format(repo_name)).runtime().terminal()
 
         self.db_deploy_templates()
 

@@ -25,11 +25,14 @@ __Terms__
 1. [Initialize Docker](#initialize-docker)
 1. [Initialize Heroku](#initialize-heroku)
 1. [Initialize Node](#initialize-node)
+1. [Initialize JWT](#initialize-jwt)
 1. [Initialize Nodemon](#initialize-nodemon)
 1. [Initialize Hapi](#initialize-hapi)
 1. [Initialize Postgres](#initialize-postgres)
+1. [Initialize Model](#initialize-model)
 1. [Update Environment Values](#update-md2-environment-variables)
-### Tasks
+### Coversion
+###
 
 #### Initialize MD2
 
@@ -81,6 +84,10 @@ __Terms__
 
 * Templatize Node templates
 
+#### Initialize Node
+
+* Templatize JWT templates
+
 #### Initialize Nodemon
 
 * Templatize Nodemon templates
@@ -92,6 +99,10 @@ __Terms__
 #### Initialize Postgres
 
 * Templatize Postgres templates
+
+#### Initialize Model
+
+* Templatize DB Deploy templates
 
 #### Update MD2 Environment Variables
 
