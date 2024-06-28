@@ -9,6 +9,7 @@ import os
 import sys
 import ast
 from pprint import pprint
+import re
 #SCRIPT_DIR = os.path.dirname(str(os.path.abspath(__file__)).replace('/bin','/source/component'))
 #sys.path.append(os.path.dirname(SCRIPT_DIR))
 #print('SCRIPT_DIR',SCRIPT_DIR)
@@ -19,7 +20,9 @@ from able import StringReader, \
                  CloneRepo,\
                  DiagramString,\
                  RuntimeLogger,\
-                 JSONString, NormalString, Stack, Level
+                 JSONString, NormalString, Stack, Level, \
+                 TemplateString, \
+                 TemplateList_Latest
 
 
 from functions import get_bin_folder, \
@@ -49,7 +52,6 @@ def main():
     ##
     MultiLogger('df').set_msg('start').runtime().terminal()
     app = ApplicationMD2().load_environment()
-
     ##### Process
 
     ##1. [Initialize MD2](#initialize-md2)
@@ -58,6 +60,11 @@ def main():
     ##1. [Configure MD2 Environment Values](#configure-md2-environment-values)
     Auto(TaskConfigure().set_application(app)) #(env_file_content_string, app)
 
+    ##1. [Initialize project_<<WS_PROJECT>>.md.C---.tmpl](#configure-md2-environment-values)
+    print('-----')
+    Auto(TaskInitializeProjecMd().set_application(app))  # (env_file_content_string, app)
+    print('-----')
+    exit(0)
     ##1. [Clone GitHub Repository](#clone-github-repository)
     Auto(TaskGithub().set_application(app))
 
@@ -83,23 +90,50 @@ def main():
     Auto(TaskInitializeNodemon().set_application(app))
 
     ##1. [Initialize Hapi](#initialize-hapi)
-    Auto(TaskInitializeHapi().set_application(app))
+    Auto(TaskInitializeHapi().set_application(app)) # move /templates to project, apply .env nv_list
+    '''
+    resource_string = StringExpandMdTable(StringReader('{}/{}'.format(get_bin_folder(), 'test_prj.md')))
+    # resource_string = StringExpandMdTable(StringReader('{}/{}'.format(get_bin_folder(), 'app_starter.md')))
 
-    resource_string = StringExpandMdTable(StringReader('{}/{}'.format(get_bin_folder(), 'app_starter.md')))
+    #print('app_starter', resource_string)
+    #print('DictMd',DictMd(resource_string))
+    #pprint(DictMd(resource_string))
+    #print('ResourceNames', ResourceNames(DictMd(resource_string)))
+    #print('RoleNames',RoleNames(DictMd(resource_string)))
+    #print('ProjectName',ProjectName(DictMd(resource_string)))
+    #print('permissions', ResourcePermissions(DictMd(resource_string)))
+    #print('--')
+    #pprint(ResourcePermissions(DictMd(resource_string)))
+    #print('--')
+    #print('model A', ResourceModel(DictMd(resource_string)))
+    #print('model B', ResourceModel(DictMd(resource_string),'account'))
+    #print('resource_string', resource_string)
+    print('--fields')
+    # {id:{}, owner:'' ...}
+    print('fields', ResourceFields(DictMd(resource_string),'account'))
+    #print('create form', ResourceFields(DictMd(resource_string),'account').getNewForm())
+    print('route_list', RouteConstantsJS(DictMd(resource_string)))
+    print('api_route_list', ApiRoutes(DictMd(resource_string)))
+    nv_list = [
+        {'<<ROUTE_CONST>>': RouteConstantsJS(DictMd(resource_string))},
+        {'<<API_ROUTES>>': ApiRoutes(DictMd(resource_string))}
+    ]
+    print('nv_list', nv_list)
+    #resource_fields = ResourceFields(DictMd(resource_string),'account')
+    # file.md --> DictMd -->
+    #pprint(ResourceModel(DictMd(resource_string)))
+    #print('--')
+    #pprint(ResourceModel(DictMd(resource_string), 'account2'))
+    #print('get()',ResourceModel(DictMd(resource_string)).get('account'))
+    #pprint(ResourceModel(DictMd(resource_string)).get('account'))
 
-    print('app_starter', resource_string)
-    print('DictMd',DictMd(resource_string))
-    pprint(DictMd(resource_string))
-    print('ResourceNames', ResourceNames(DictMd(resource_string)))
-    print('RoleNames',RoleNames(DictMd(resource_string)))
-    print('ProjectName',ProjectName(DictMd(resource_string)))
-    print('permissions', ResourcePermissions(DictMd(resource_string)))
-    pprint(ResourcePermissions(DictMd(resource_string)))
-    print('model', ResourceModel(DictMd(resource_string)))
-    pprint(ResourceModel(DictMd(resource_string)))
+    #print('pattern', ResourceFields(ResourceModel(DictMd(resource_string))))
 
     #print('xxx',JSONString((resource_string)))
-    Auto(TaskInitializeHapiCRUD().set_application(app))
+    #test_resource_fields()
+    #test_pattern()
+    '''
+    Auto(TaskInitializeHapiRoutes().set_application(app)) # -->
 
     ##1. [Initialize Postgres](#initialize-postgres)
     Auto(TaskInitializePostgres().set_application(app))
@@ -300,14 +334,177 @@ class ResourcePermissions(dict):
 
 class ResourceModel(dict):
     # { account: {id: {api_admin: R, api_guest:CR, api_user:RUD},...}
-    def __init__(self, project_dict):
-        for r in project_dict['project']['resources']:
-            self[r]={}
+    def __init__(self, project_dict, resource_name=None):
+        resource_list = project_dict['project']['resources']
+
+        if resource_name:
+            resource_list = {r: resource_list[r] for r in resource_list if r == resource_name}
+
+        for r in resource_list:
+            self[r] = {}
             for f in project_dict['project']['resources'][r]['model']:
                 self[r][f] = {}
                 for s in project_dict['project']['resources'][r]['model'][f]:
                     if not s.startswith('api_'):
                         self[r][f][s] = project_dict['project']['resources'][r]['model'][f][s]
+
+# new resource\
+#   account
+#   given scope 'api_user' or 'CRUD'
+#   given scope 'api_guest' or 'C'
+#   given scope 'api_admin' or 'U'
+
+
+class ResourceFields(dict):
+    def __init__(self, project_dict, resource_name):
+        resource_list = project_dict['project']['resources']
+
+        if resource_name:
+            resource_list = {r: resource_list[r] for r in resource_list if r == resource_name}
+
+        for r in resource_list:
+            for f in project_dict['project']['resources'][r]['model']:
+                self[f] = {'resource': r}
+                for s in project_dict['project']['resources'][r]['model'][f]:
+                    self[f][s] = project_dict['project']['resources'][r]['model'][f][s]
+                    self[f]['pattern']=Pattern(project_dict['project']['resources'][r]['model'][f])
+                    # print('xxx', self.Pattern(project_dict['project']['resources'][r]['model'][f]))
+
+    def depgetNewForm(self, default=None):
+        form = {}
+        for f in self:
+            if not default:
+                form[f]=''
+            else:
+                form[f]= default
+        return form
+    def depgetNewValidation(self, crud):
+        return {}
+    def depgetReadForm(self, crud):
+        return {}
+    def depgetUpdateForm(self, crud):
+        return {}
+    def depgetDelete(self, crud):
+        return {}
+
+class Pattern(str):
+    def __new__(cls, resource_field):
+        # resource_field is {'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'pattern': '^.{3,330}$', 'resource': 'account','size': '3-330', 'type': 'C', 'validate': 'R'}
+        contents = ''
+        if 'type' in resource_field:
+            if resource_field['type'] == 'C':
+                contents = '^<<TYPE>>{<<MIN>>,<<MAX>>}$'
+                contents = contents.replace('<<TYPE>>', '.')
+                min = resource_field['size'].split('-')[0]
+                max = resource_field['size'].split('-')[1]
+                contents = contents.replace('<<MIN>>', min).replace('<<MAX>>',max)
+            elif resource_field['type'] == 'L':
+                contents = '(True|False|Y|N|T|F|1|0)'
+                resource_field['size']='1-5' # eg True, False, Y, N, T, F, 1, or 0
+            elif resource_field['type']=='I':
+                contents = '-?\d{<<MIN>>,<<MAX>>}'
+                min = resource_field['size'].split('-')[0]
+                max = resource_field['size'].split('-')[1]
+                contents = contents.replace('<<MIN>>',min).replace('<<MAX>>',max)
+            elif resource_field['type'] == 'N':
+                contents = '-?\d{1,<<W>>}(\.\d{1,<<D>>})?' # .replace('<<W>',w).replace('<<D>>',d) # eg
+                w = resource_field['size'].split(',')[0]
+                d = resource_field['size'].replace('-', ',').split(',')[1]
+                contents = contents.replace('<<W>>', w).replace('<<D>>', d)
+            elif resource_field['type'] == 'D':
+                contents = '(\d{4}-\d{2}-\d{2})([T ]?)(\d{2}:\d{2}:\d{2})?(\.\d+)?(Z|([+-]\d{2}:\d{2}))?'
+                resource_field['size']='8-19' # eg 2024-06-23 18:30:00
+
+        instance = super().__new__(cls, contents)
+        return instance
+
+def test_resource_fields():
+    print('test_resource_fields')
+
+def test_pattern():
+    # character
+    resource_field = {'size': '3-330', 'type': 'C', 'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'resource': 'account', 'validate': 'R'}
+    # print('C', Pattern(resource_field))
+    assert(Pattern(resource_field) == '^.{3,330}$')
+    assert(re.match(Pattern(resource_field), 'abc!89'))
+    # logical
+    resource_field = {'size': '14,6', 'type': 'L', 'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'resource': 'account', 'validate': 'R'}
+    assert(Pattern(resource_field) == '(True|False|Y|N|T|F|1|0)')
+    assert(re.match(Pattern(resource_field), 'False'))
+    assert(re.match(Pattern(resource_field), 'True'))
+    assert(re.match(Pattern(resource_field), 'Y'))
+    assert(re.match(Pattern(resource_field), 'N'))
+    assert(re.match(Pattern(resource_field), 'T'))
+    assert(re.match(Pattern(resource_field), 'F'))
+    assert(re.match(Pattern(resource_field), '0'))
+    assert(re.match(Pattern(resource_field), '1'))
+    assert(not re.match(Pattern(resource_field), 'z'))
+    # integer
+    resource_field = {'size': '1-6', 'type': 'I', 'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'resource': 'account', 'validate': 'R'}
+    #print('integer',Pattern(resource_field))
+    assert(Pattern(resource_field) == '-?\d{1,6}')
+    assert (not re.match(Pattern(resource_field), 'a'))
+    assert (re.match(Pattern(resource_field), '1'))
+    assert (re.match(Pattern(resource_field), '-1'))
+    # number
+    resource_field = {'size': '14,6', 'type': 'N', 'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'resource': 'account', 'validate': 'R'}
+    assert (Pattern(resource_field) == '-?\d{1,14}(\.\d{1,6})?')
+    assert (not re.match(Pattern(resource_field), 'a'))
+    assert (re.match(Pattern(resource_field), '1'))
+    assert (re.match(Pattern(resource_field), '-1'))
+    assert (re.match(Pattern(resource_field), '1.1'))
+    # datetime
+    resource_field = {'size': '14,6', 'type': 'D', 'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'resource': 'account', 'validate': 'R'}
+    assert (Pattern(resource_field) == '(\d{4}-\d{2}-\d{2})([T ]?)(\d{2}:\d{2}:\d{2})?(\.\d+)?(Z|([+-]\d{2}:\d{2}))?')
+    assert (not re.match(Pattern(resource_field), 'a'))
+    assert (re.match(Pattern(resource_field), '2024-06-23'))
+    assert (re.match(Pattern(resource_field), '2024-06-23 18:30:00'))
+
+class RouteConstantsJS(str):
+    def __new__(cls,project_dict):
+        resource_list = project_dict['project']['resources']
+        lst = ['/* generated in RouteConstantsJS from {} */'.format(str(__file__))]
+        for r in resource_list:
+            # crud = CRUD_Collective(project_dict, r)
+            # if 'C' in crud:
+            lst.append('const {}_route_post = require(\'./routes/route_{}_post.js\');'.format(r,r))
+            lst.append('const {}_route_get = require(\'./routes/route_{}_get.js\');'.format(r,r))
+            lst.append('const {}_route_put = require(\'./routes/route_{}_put.js\');'.format(r,r))
+            lst.append('const {}_route_delete = require(\'./routes/route_{}_delete.js\');'.format(r,r))
+
+        contents = '\n'.join(lst)
+
+        instance = super().__new__(cls, contents)
+        return instance
+
+class ApiRoutes(str):
+    def __new__(cls,project_dict):
+        resource_list = project_dict['project']['resources']
+        # lst = ['/* generated in RouteConstantsJS from {} */'.format(str(__file__))]
+        lst=[]
+        for r in resource_list:
+            # crud = CRUD_Collective(project_dict, r)
+            # if 'C' in crud:
+            lst.append('  {}_route_post'.format(r))
+            lst.append('  {}_route_get'.format(r))
+            lst.append('  {}_route_put'.format(r))
+            lst.append('  {}_route_delete'.format(r))
+
+        contents = ',\n'.join(lst)
+
+        instance = super().__new__(cls, contents)
+        return instance
+
+
+
+
+class depResourcePatterns(str):
+    def __new__(cls, field_dict):
+        print('field_dict', field_dict)
+        contents = 'fixme'
+
+        instance = super().__new__(cls, contents)
+        return instance
 
 # Task
 class TaskInitializeEnv(ProcessProject):
@@ -362,11 +559,11 @@ class TaskConfigure(ProcessProject):
 
         ##1. Project Values
         ##    * __Configure__ WS_ORGANIZATION
-        self.set_env_var('WS_ORGANIZATION', 'test-org')
+        self.set_env_var('WS_ORGANIZATION', 'test_org')
         ##    * __Configure__ WS_WORKSPACE
-        self.set_env_var('WS_WORKSPACE', 'test-ws')
+        self.set_env_var('WS_WORKSPACE', 'test_ws')
         ##    * __Configure__ WS_PROJECT
-        self.set_env_var('WS_PROJECT', 'test-prj')
+        self.set_env_var('WS_PROJECT', 'test_prj')
         ##    * __Configure__ WS_REPO
         self.set_env_var('WS_REPO', 'py_test')
 
@@ -375,7 +572,7 @@ class TaskConfigure(ProcessProject):
         ##    * __Configure__ GH_TRUNK
         self.set_env_var('GH_TRUNK','main')
         ##    * __Configure__ GH_PROJECT
-        self.set_env_var('GH_PROJECT','test-prj')
+        self.set_env_var('GH_PROJECT','test_prj')
         ##    * __Configure__ GH_BRANCH
         self.set_env_var('GH_BRANCH','first')
         ##    * __Configure__ GH_REPO
@@ -399,6 +596,62 @@ class TaskConfigure(ProcessProject):
         MultiLogger().set_msg('2. Configure {}'.format(self.get_application().get_name())).runtime().terminal()
 
         self.configure_environment()
+
+        return self
+
+
+class TaskInitializeProjecMd(ProcessProject):
+    ##
+    ###### Configure MD2 Environment Values
+    def __init__(self): #, env_file_content_string): # , recorder):
+        ProcessProject.__init__(self)
+        self.set_template_folder_key('__project__')
+
+        # package is {nv_list, repo_folder, template_folder}
+        #
+    '''
+    def get_template_file_list(self, nv_list):
+        template_folder = self.get_template_folder()
+        template_list = TemplateList_Latest(folder_path=template_folder)
+        #template_list = {TemplateString(f,nv_list): template_list[f] for f in template_list}
+        #template_list['']
+        print('template_list', template_list)
+        lst = {}
+        for f in template_list:
+            print('f', f, TemplateString(f, nv_list))
+            lst[TemplateString(f, nv_list)] = []
+            for ff in template_list[f]:
+                lst[TemplateString(f, nv_list)][ff]=template_list[f][ff]
+                #print('ff', ff, template_list[f][ff] )
+                #template_list[ff]=TemplateString(template_list[ff], nv_list)
+
+        #template_list = {TemplateString(tmpl, nv_list): template_list[tmpl] for tmpl in template_list}
+        return lst
+    '''
+    def initialize_project_md(self):
+        # copy template/__project__/project_<<WS_PROJECT>>.md.C---.tmpl.tmpl
+        nv_list = self.get_template_key_list() # self.get_template_name_value_pairs()
+        #print('initialize_project_md nv_list',nv_list)
+        #nv_list = self.templatize_list(nv_list)
+        #print('initialize_project_md template_folder', nv_list)
+        #template_list = self.get_template_file_list(nv_list)
+        pprint(nv_list)
+        #print('initialize_project_md template_list',nv_list)
+        # self.templatize(nv_list=nv_list)
+        #for tmpl in template_list:
+        #    print('tmpl', TemplateString(tmpl,nv_list))
+        #tl = TemplateList_Latest(folder_path=self.get_template_folder())
+        #print('template list', tl)
+        project_folder = os.getcwd()
+        if project_folder.endswith('/bin'):
+            print('project folder', project_folder)
+            self.templatize(nv_list=nv_list,output_subfolder=project_folder)
+        return self
+
+    def process(self):
+        MultiLogger().set_msg('xxx. Initialize {}'.format(self.get_application().get_name())).runtime().terminal()
+
+        self.initialize_project_md()
 
         return self
 
@@ -656,10 +909,16 @@ class TaskInitializeHapi(ProcessProject):
     ##
     ###### Initialize Hapi
     ##
+    ## create singleton templates i.e. templates/hapi
+    ## applies .env values to templates
 
     def __init__(self):
         ProcessProject.__init__(self)
         self.set_template_folder_key('hapi')
+        nv_list = self.get_template_key_list() # self.get_template_name_value_pairs()
+        print('nv_list', nv_list)
+        resource_md = '{}/{}'.format('/'.join(str(__file__).split('/')[0:-1]), TemplateString('project_<<WS_PROJECT>>.md',nv_list))
+        print('project_<<WS_PROJECT>>.md.C---.tmpl', resource_md)
 
     def hapi_templates(self):
         if not self.get_application():
@@ -678,13 +937,38 @@ class TaskInitializeHapi(ProcessProject):
 
         return self
 
-class TaskInitializeHapiCRUD(ProcessProject):
+# create server_ext
+# merge server_ext with <<API_ROUTES>> TaskMergeHapiServerRouteNames
+# merge server_ext with <<ROUTE_CONST>> TaskMergeHapiServerRouteNames
+# intialize routes_*.js files TaskInitializeHapiRoutes
+
+#class TaskMergeHapiRoutes(ProcessProject):
+# update server_ext with <<API_ROUTES>> and <<ROUTE_CONST>> values from <project>.md
+# need to generate route_post,route_get, route_put, route_delete files
+class TaskInitializeHapiRoutes(ProcessProject):
+    # create CRUD files from CRUD template
+
+    # server_ext.js
+    # + ------------------------ +
+    # + require(route_const.js) + < -- route_const.js
+    # +                          +
+    # + [] + < -- route_list.js
+    # + ------------------------ +
+
     def __init__(self):
         ProcessProject.__init__(self)
-        self.set_template_folder_key('hapi')
+        self.set_template_folder_key('hapi_routes')
 
-    def crud_templates(self):
+    def route_templates(self):
+        # handle generated routes
+        # open 'bin/<project>.md'
 
+        # create a nv_list for <<API_ROUTES>> and <<ROUTE_CONST>>, eg [{name: '', value: ''},...]
+
+        # make template list for each resource (route_post,route_get, route_put, route_delete)
+        # remove routes not defined in the <project>.md
+        # apply nv_list to each template
+        # save to /<project>/lib/__routes__
         return self
 
     def process(self):
@@ -692,7 +976,7 @@ class TaskInitializeHapiCRUD(ProcessProject):
         repo_name = os.environ['GH_REPO']
         MultiLogger().set_msg('12. Fix Me Hapi CRUD: {}'.format(repo_name)).runtime().terminal()
 
-        self.crud_templates()
+        self.route_templates()
 
         return self
 

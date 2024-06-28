@@ -1,15 +1,20 @@
-# Project: sample
+# Project: sample <<WS_PROJECT>>
 
 ## Claims:
 
-| name      | aud       | iss                | sub        | user       | scope     | key |
-|-----------|-----------|--------------------|------------|------------|-----------|-----|
-| api_admin | lyttlebit | sample_api_client  | client_api | client_api | api_admin | ?   |
-| api_guest | lyttlebit | sample_api_client  | client_api | client_api | api_guest | 0   |
-| api_user  | lyttlebit | sample_api_client  | client_api | client_api | api_user  | ?   |
+| name      | aud                 | iss                       | sub        | user       | scope     | key |
+|-----------|---------------------|---------------------------|------------|------------|-----------|-----|
+| api_admin | <<WS_ORGANIZATION>> | <<WS_PROJECT>>_api_client | client_api | client_api | api_admin | ?   |
+| api_guest | <<WS_ORGANIZATION>> | <<WS_PROJECT>>_api_client | client_api | client_api | api_guest | 0   |
+| api_user  | <<WS_ORGANIZATION>> | <<WS_PROJECT>>_api_client | client_api | client_api | api_user  | ?   |
+
+* ? means value is unknown until runtime
 
 ## Resources
+
 ### Account
+Default resource
+
 1. version: 1.0.0
 
 #### Model:
@@ -31,13 +36,14 @@ Types
 * D is datetime, eg '2024-06-23' or '2024-06-23 18:30:00'
 
 Roles
-* C is Create
-* R is Read
-* U is Update
-* D is Delete
-* - is None
+* C is Create in the db
+* R is Read from the db
+* U is Update in the db
+* D is Delete from the db
+* \- is None, space holder
 
 #### Data:
+Default account data
 
 | id        | type    | owner                    | username                | displayname | password | scope     |
 |-----------|---------|--------------------------|-------------------------|-------------|----------|-----------|
@@ -47,28 +53,5 @@ Roles
 
 * Do not use same passwords in production
 * Set type to capitalized(resource)
-* ? means value is unknown until runtime
-* - means not applicable
-
-
-### Sample_resource
-1. version: 1.0.0
-
-#### Model:
-
-| field       | type | size   | validate | encrypt | api_admin | api_guest | api_user |
-|-------------|------|--------|----------|---------|-----------|-----------|----------|
-| id          | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-| type        | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-| owner       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-| s_integer   | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-| s_character | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-| s_number    | C    | 10-330 | R        | Y       | -         | CR        | UD       |
-| s_datetime  | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-
-server_ext.js
-+ ------------------------ +
-+ require(route_const.js)  + <-- route_const.js
-+                          +
-+ require(route_list.js)   + <-- route_list.js
-+ ------------------------ +
+* \- means not applicable
+  

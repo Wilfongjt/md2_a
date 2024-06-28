@@ -124,30 +124,44 @@ class ProcessProject(ProcessPackage):
         os.makedirs(folder_file, exist_ok=True)
         return self
 
-    def templatize(self):
+    def templatize(self, nv_list=None, output_folder=None):
         ##* __templatize__ convert templates to code
         # #* generate templates
         #template_folder = os.getcwd().replace('/component', '/template/{}'.format(self.get_template_subfolder()))
         #template_folder = template_folder.replace('/bin', '/source/template/{}'.format(self.get_template_subfolder()))
-
+        print('templatize 1')
         template_folder = self.get_template_folder()
+        print('templatize 1.1')
+
         # #* Convert Templates to Code
         # print('template_folder', template_folder)
+        print('templatize template_folder',template_folder)
         template_list = TemplateList_Latest(folder_path=template_folder)
+        print('templatize 1.2 template_list', template_list)
 
         # make list of template-keys and values
-        nv_list = self.get_template_key_list() # self.get_template_name_value_pairs()
+        if not nv_list: nv_list = self.get_template_key_list() # self.get_template_name_value_pairs()
+        print('templatize 1.3 nv_list',nv_list)
 
         # process list of specific templates
         for tmplt in template_list:
+            print('templatize 2')
 
             if self.get_application(): self.get_application().add('templatize')
             # handle multiple templates of the same name
             for template_folderfile in template_list[tmplt]['template']:
+                print('templatize 2.1')
 
                 # make input and output file names
-                repo_folderfile = '{}/{}'.format(self.get_repo_folder(), template_list[tmplt]['output_subfolder'])
-                repo_folderfile = repo_folderfile.replace('root/', '')
+                if not output_folder:
+                    output_subfolder = template_list[tmplt]['output_subfolder']
+                    repo_folderfile = '{}/{}'.format(self.get_repo_folder(), output_subfolder)
+                    repo_folderfile = repo_folderfile.replace('root/', '')
+                    #repo_folderfile = TemplateString(repo_folderfile,nv_list)
+                    #print('repo_folderfile',repo_folderfile)
+                else:
+                    repo_folderfile = output_folder
+
                 cmd = str(template_folderfile).split('/')[-1].split('.')[-2]
                 #print('template_folderfile',template_folderfile)
                 #print('repo_folderfile    ', repo_folderfile)
@@ -158,21 +172,34 @@ class ProcessProject(ProcessPackage):
                 # make target-file from templatized-content
                 self.makedirs(repo_folderfile) # make output folder
                 template_name = '/'.join(self.get_template_folder().split('/')[0:-1])
+                print('template_name',template_name)
                 MultiLogger().set_msg('   template({}) -> actual({})'.format(str(template_folderfile).replace(template_name,''), repo_folderfile.replace(self.get_branch_folder(),''))).runtime()
                 if 'd' in cmd or 'D' in cmd:  # delete target
+                    print('templatize 2.2')
+
                     if os.path.exists(repo_folderfile): os.remove(repo_folderfile)
 
                 if 'c' in cmd or 'C' in cmd:  # create from template
+                    print('templatize 2.3  ', repo_folderfile)
+
                     if not os.path.exists(repo_folderfile):
+                        print('templatize 2.3.1')
+
                         #template_content = StringReader(template_folderfile)
                         template_content = TemplateString(StringReader(template_folderfile), nv_list)
+                        print('write', repo_folderfile)
+                        print('write', template_content)
                         StringWriter(repo_folderfile, template_content)
 
                 if 'r' in cmd or 'R' in cmd:  # read from target
+                    print('templatize 2.4')
+
                     target_content = TemplateString(StringReader(repo_folderfile), nv_list)
                     template_content = TemplateString(StringReader(template_folderfile), nv_list)
 
                 if 'u' in cmd or 'U' in cmd:  # update
+                    print('templatize 2.5')
+
                     # read template
                     # read target
                     tmp = UpdaterString(target_content).updates(template_content)
@@ -186,6 +213,8 @@ class ProcessProject(ProcessPackage):
         #import subprocess
 
         #subprocess.run(["ls", "-l"])
+        print('templatize out')
+
         return self
 
     def process(self):
@@ -214,6 +243,8 @@ def main():
     assert (ProcessProject().get_repo_folder() == '/Users/jameswilfong/Development/<<WS_ORGANIZATION>>/<<WS_WORKSPACE>>/<<WS_PROJECT>>/<<GH_BRANCH>>/<<GH_REPO>>')
 
     ProcessProject().set_env_var('GH_TEST', 'TEST').configure_environment()
+
+    ProcessProject().set_template_folder_key('__project__').templatize()
 
 if __name__ == "__main__":
     # execute as docker
