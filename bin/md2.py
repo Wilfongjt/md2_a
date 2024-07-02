@@ -148,6 +148,83 @@ def main():
     MultiLogger().set_msg(xx).runtime().terminal()
     MultiLogger().set_msg('end').runtime().terminal()
 
+def getProjectString():
+    return '''
+    # Project: sample
+    
+    ## Claims:
+    
+    | name      | aud       | iss                | sub        | user       | scope     | key |
+    |-----------|-----------|--------------------|------------|------------|-----------|-----|
+    | api_admin | lyttlebit | sample_api_client  | client_api | client_api | api_admin | ?   |
+    | api_guest | lyttlebit | sample_api_client  | client_api | client_api | api_guest | 0   |
+    | api_user  | lyttlebit | sample_api_client  | client_api | client_api | api_user  | ?   |
+    
+    ## Resources
+    ### Account
+    1. version: 1.0.0
+    
+    #### Model:
+    
+    | field       | type | size   | validate | encrypt | api_admin | api_guest | api_user |
+    |-------------|------|--------|----------|---------|-----------|-----------|----------|
+    | id          | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | type        | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | owner       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | username    | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | displayname | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | password    | C    | 10-330 | R        | Y       | -         | CR        | UD       |
+    | scope       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    
+    Types
+    * C is character, any keyboard character
+    * L is logical aka boolean, eg ‘True', ‘False', ’T', ‘F', ‘Y', ’N', ‘1', ‘0' 
+    * N is numeric, eg ‘1' or ‘1.1' or ‘-1.1' 
+    * D is datetime, eg '2024-06-23' or '2024-06-23 18:30:00'
+    
+    Roles
+    * C is Create
+    * R is Read
+    * U is Update
+    * D is Delete
+    * - is None
+    
+    #### Data:
+    
+    | id        | type    | owner                    | username                | displayname | password | scope     |
+    |-----------|---------|--------------------------|-------------------------|-------------|----------|-----------|
+    | api_admin | ACCOUNT | api_admin@lyttlebit.com  | api_admin@lyttlebit.com | Admin       | a1A!aaa  | api_admin |
+    | api_guest | ACCOUNT | api_guest@lyttlebit.com  | api_guest@lyttlebit.com | Guest       | a1A!aaa  | api_guest |
+    | api_user  | ACCOUNT | api_user@lyttlebit.com   | api_user@lyttlebit.com  | User        | a1A!aaa  | api_user  |
+    
+    * Do not use same passwords in production
+    * Set type to capitalized(resource)
+    * ? means value is unknown until runtime
+    * - means not applicable
+    
+    
+    ### Sample_resource
+    1. version: 1.0.0
+    
+    #### Model:
+    
+    | field       | type | size   | validate | encrypt | api_admin | api_guest | api_user |
+    |-------------|------|--------|----------|---------|-----------|-----------|----------|
+    | id          | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | type        | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | owner       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | s_integer   | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | s_character | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | s_number    | C    | 10-330 | R        | Y       | -         | CR        | UD       |
+    | s_datetime  | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    
+    server_ext.js
+    + ------------------------ +
+    + require(route_const.js)  + <-- route_const.js
+    +                          +
+    + require(route_list.js)   + <-- route_list.js
+    + ------------------------ +
+    '''.replace('    ','')
 
 ##### Coversion
 #class TaskMdTableFlatten(str):
@@ -241,6 +318,83 @@ class StringExpandMdTable(str):
 # with stack pointing to last and active
 
 # Lists and Dicts
+def getProjectMDString():
+    return '''
+    # Project: sample
+
+    ## Claims:
+
+    | name      | aud       | iss                | sub        | user       | scope     | key |
+    |-----------|-----------|--------------------|------------|------------|-----------|-----|
+    | api_admin | lyttlebit | sample_api_client  | client_api | client_api | api_admin | ?   |
+    | api_guest | lyttlebit | sample_api_client  | client_api | client_api | api_guest | 0   |
+    | api_user  | lyttlebit | sample_api_client  | client_api | client_api | api_user  | ?   |
+
+    ## Resources
+    ### Account
+    1. version: 1.0.0
+
+    #### Model:
+
+    | field       | type | size   | validate | encrypt | api_admin | api_guest | api_user |
+    |-------------|------|--------|----------|---------|-----------|-----------|----------|
+    | id          | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | type        | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | owner       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | username    | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | displayname | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | password    | C    | 10-330 | R        | Y       | -         | CR        | UD       |
+    | scope       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+
+    Types
+    * C is character, any keyboard character
+    * L is logical aka boolean, eg ‘True', ‘False', ’T', ‘F', ‘Y', ’N', ‘1', ‘0' 
+    * N is numeric, eg ‘1' or ‘1.1' or ‘-1.1' 
+    * D is datetime, eg '2024-06-23' or '2024-06-23 18:30:00'
+
+    Roles
+    * C is Create
+    * R is Read
+    * U is Update
+    * D is Delete
+    * - is None
+
+    #### Data:
+
+    | id        | type    | owner                    | username                | displayname | password | scope     |
+    |-----------|---------|--------------------------|-------------------------|-------------|----------|-----------|
+    | api_admin | ACCOUNT | api_admin@lyttlebit.com  | api_admin@lyttlebit.com | Admin       | a1A!aaa  | api_admin |
+    | api_guest | ACCOUNT | api_guest@lyttlebit.com  | api_guest@lyttlebit.com | Guest       | a1A!aaa  | api_guest |
+    | api_user  | ACCOUNT | api_user@lyttlebit.com   | api_user@lyttlebit.com  | User        | a1A!aaa  | api_user  |
+
+    * Do not use same passwords in production
+    * Set type to capitalized(resource)
+    * ? means value is unknown until runtime
+    * - means not applicable
+
+
+    ### Sample_resource
+    1. version: 1.0.0
+
+    #### Model:
+
+    | field       | type | size   | validate | encrypt | api_admin | api_guest | api_user |
+    |-------------|------|--------|----------|---------|-----------|-----------|----------|
+    | id          | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | type        | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | owner       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | s_integer   | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | s_character | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | s_number    | C    | 10-330 | R        | Y       | -         | CR        | UD       |
+    | s_datetime  | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+
+    server_ext.js
+    + ------------------------ +
+    + require(route_const.js)  + <-- route_const.js
+    +                          +
+    + require(route_list.js)   + <-- route_list.js
+    + ------------------------ +
+    '''.replace('    ', '')
 
 class DictMd(dict):
 
@@ -250,14 +404,18 @@ class DictMd(dict):
         #stack = Stack()
         ostack = Stack()
         table = False
-
+        tbl_cols = []
+        last_key = ''
+        last_obj = {}
+        i  = 0
+        a = 0
         for ln in str(md_text).split('\n'):
-
+            #print('lineno',i)
+            #print('DictMd ln', ln)
             if not ln.startswith('|'):
                 table = False
-
             if ln.startswith('#'):
-                # print('DictMd level', Level(ln))
+                #print('DictMd level', Level(ln))
                 level = Level(ln)
                 ln = ln.replace(':', '')
                 ln = ln.split(' ')
@@ -267,21 +425,30 @@ class DictMd(dict):
                 while ostack.size() >= level: ostack.pop()
 
                 if ostack.size() == 0: #1:  # projecrt
-
                     self[ln[1].lower()] = {'name': ln[2].lower()}
+                    #self[ln[1].lower()] = {'name': ln[2].lower()}
                     ostack.push(self[ln[1].lower()])
 
                 elif ostack.size() >= 1:  # project claims
 
                     if len(ln) ==2:
-                        ostack.peek()[ln[1].lower()] = {}
+                        last_key = ln[1].lower()
+                        ostack.peek()[ln[1].lower()] = {} # table rows
+                        # ostack.peek()[ln[1].lower()] = {}
                         ostack.push(ostack.peek()[ln[1].lower()])
+                        last_obj = ostack.peek()
 
                     elif len(ln) == 3:
+                        last_key = ln[1].lower()
                         ostack.peek()[ln[1].lower()] = {'name': ln[2].lower()}
+                        # ostack.peek()[ln[1].lower()] = {'name': ln[2].lower()}
                         ostack.push(ostack.peek()[ln[1].lower()])
+                        last_obj = ostack.peek()
 
+                #print('1 peek', ostack.peek())
+                #print('last_obj', last_obj)
             elif ln.startswith('1.'):
+                #print('ln',ln)
                 ln = ln.replace('1. ','')
                 ln = ln.split(':', maxsplit=1)
 
@@ -289,7 +456,46 @@ class DictMd(dict):
 
                 if line.startswith('{'):
                     line = ast.literal_eval(line)
+                #print('xxx peek', ostack.peek())
+                #print('xxx ln[0]', ln[0])
+                #print('xxx line', line)
+
                 ostack.peek()[ln[0]] = line
+            elif ln.startswith('|') : # handle table
+                if not table:
+                    table=True
+                    tbl_cols = ln.split('|')
+                    tbl_cols = [c.strip() for c in tbl_cols if c != '']
+
+                    last_obj['rows'] = []
+                elif ln.startswith('|-'): # table line break
+                    pass
+                else: # row
+                    #print('table self       ', self)
+                    tbl_row = ln.split('|')
+                    tbl_row = [c.strip() for c in tbl_row if c != '']
+                    #
+                    tbl_row = {tbl_cols[i]: tbl_row[i] for i in range(len(tbl_row))}
+
+                    ostack.peek()['rows'].append(tbl_row)
+
+                    #last_obj['rows'].append(tbl_row)
+
+            i+=1
+        #print('DictMd', self)
+        #pprint(self)
+
+def test_dict_md():
+
+    filename_md = 'project_test_prj.md'
+    folderfilename_md = '{}/{}'.format(os.getcwd(), filename_md)
+    #print('folderfilename_md', folderfilename_md)
+    resource_string = getProjectMDString() # StringReader(folderfilename_md)
+    #print('resource_string',resource_string)
+    project_dict = DictMd(resource_string)
+    #print('route_templates project_dict', project_dict)
+    #pprint(project_dict)
+    # ResourceNames(project_dict)
 
 class ProjectName(str):
     def __new__(cls, project_dict):
@@ -298,40 +504,70 @@ class ProjectName(str):
 
         instance = super().__new__(cls, contents)
         return instance
+def test_project_name():
+    actual = ProjectName(DictMd(getProjectMDString()))
+    print('        project_name:', actual)
+    assert(actual == 'sample')
+
 
 class ResourceNames(list):
     def __init__(self, project_dict):
         for r in project_dict['project']['resources']:
             self.append(r)
+def test_resource_names():
+    actual = ResourceNames(DictMd(getProjectMDString()))
+    print('      resource_names:', actual)
+    assert(actual == ['account', 'sample_resource'] )
 
 class RoleNames(list):
     def __init__(self, project_dict):
-
         lst = []
         for r in project_dict['project']['resources']:
             for f in project_dict['project']['resources'][r]['model']:
                 for s in project_dict['project']['resources'][r]['model'][f]:
-                    if s.startswith('api_'):
-                        lst.append(s)
-
-        lst = set(lst)
+                    for x in s:
+                        if x.startswith('api_'):
+                            lst.append(x)
+        #print('lst', lst)
+        lst = set(lst) # get rid of duplicates
         for r in lst:
             self.append(r)
 
-
     # TASKS
+def test_role_names():
+    actual = RoleNames(DictMd(getProjectMDString()))
+    print('          role_names:', actual)
+    assert('api_admin' in actual)
+    assert('api_guest' in actual)
+    assert('api_user' in actual)
 
 class ResourcePermissions(dict):
     # { account: {id: {api_admin: R, api_guest:CR, api_user:RUD},...}
     def __init__(self, project_dict):
+        #print('project_dict',project_dict)
+        #pprint(project_dict)
+        # self {}
         for r in project_dict['project']['resources']:
+            # {account: {}, ...}
             self[r]={}
-            for f in project_dict['project']['resources'][r]['model']:
-                self[r][f] = {}
-                for s in project_dict['project']['resources'][r]['model'][f]:
-                    if s.startswith('api_'):
-                        self[r][f][s] = project_dict['project']['resources'][r]['model'][f][s]
+            for m in project_dict['project']['resources'][r]['model']:
+                for row in project_dict['project']['resources'][r]['model']['rows']:
+                    for fld in row:
+                        if fld=='field':
+                            # {account: {id: {}, ...}, ...}
+                            self[r][row[fld]]={}
+                            fld_key= fld
+                        if fld.startswith('api_'):
+                            # {account: {id: {api_admin: R, ... }, ...}, ...}
+                            self[r][row['field']][fld] = row[fld]
 
+def test_resource_permissions():
+    resource_permissions = ResourcePermissions(DictMd(getProjectMDString()))
+    print('resource_permissions:', resource_permissions)
+    assert('account' in resource_permissions)
+    assert('id' in resource_permissions['account'])
+    assert('api_admin' in resource_permissions['account']['id'])
+'''
 class ResourceModel(dict):
     # { account: {id: {api_admin: R, api_guest:CR, api_user:RUD},...}
     def __init__(self, project_dict, resource_name=None):
@@ -347,7 +583,7 @@ class ResourceModel(dict):
                 for s in project_dict['project']['resources'][r]['model'][f]:
                     if not s.startswith('api_'):
                         self[r][f][s] = project_dict['project']['resources'][r]['model'][f][s]
-
+'''
 # new resource\
 #   account
 #   given scope 'api_user' or 'CRUD'
@@ -361,14 +597,21 @@ class ResourceFields(dict):
 
         if resource_name:
             resource_list = {r: resource_list[r] for r in resource_list if r == resource_name}
+        for r in project_dict['project']['resources']:
+            # {account: {}, ...}
+            self[r] = {}
+            for m in project_dict['project']['resources'][r]['model']:
+                for row in project_dict['project']['resources'][r]['model']['rows']:
 
-        for r in resource_list:
-            for f in project_dict['project']['resources'][r]['model']:
-                self[f] = {'resource': r}
-                for s in project_dict['project']['resources'][r]['model'][f]:
-                    self[f][s] = project_dict['project']['resources'][r]['model'][f][s]
-                    self[f]['pattern']=Pattern(project_dict['project']['resources'][r]['model'][f])
-                    # print('xxx', self.Pattern(project_dict['project']['resources'][r]['model'][f]))
+                    for fld in row:
+                        if fld=='field':
+                            # {account: {id: {}, ...}, ...}
+                            self[r][row[fld]]={}
+                            #fld_key= fld
+                        # {account: {id: {field: id, ... }, ...}, ...}
+                        self[r][row['field']][fld] = row[fld]
+                        # {account: {id: {field: id, pattern: ^.{3,330}$, ... }, ...}, ...}
+                        self[r][row['field']]['pattern'] = Pattern(row)
 
     def depgetNewForm(self, default=None):
         form = {}
@@ -386,6 +629,13 @@ class ResourceFields(dict):
         return {}
     def depgetDelete(self, crud):
         return {}
+
+def test_resource_fields():
+    resource_fields = ResourceFields(DictMd(getProjectMDString()),'account')
+    print('     resource_fields:', resource_fields)
+    assert('id' in resource_fields['account'])
+    assert('field' in resource_fields['account']['id'])
+
 
 class Pattern(str):
     def __new__(cls, resource_field):
@@ -418,17 +668,17 @@ class Pattern(str):
         instance = super().__new__(cls, contents)
         return instance
 
-def test_resource_fields():
-    print('test_resource_fields')
-
 def test_pattern():
     # character
-    resource_field = {'size': '3-330', 'type': 'C', 'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'resource': 'account', 'validate': 'R'}
+    resource_field = {'size': '3-330', 'type': 'C'}
+    #resource_field = {'size': '3-330', 'type': 'C', 'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'resource': 'account', 'validate': 'R'}
     # print('C', Pattern(resource_field))
+    print('   character pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
     assert(Pattern(resource_field) == '^.{3,330}$')
     assert(re.match(Pattern(resource_field), 'abc!89'))
     # logical
-    resource_field = {'size': '14,6', 'type': 'L', 'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'resource': 'account', 'validate': 'R'}
+    resource_field = {'size': '14,6', 'type': 'L'}
+    print('     logical pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
     assert(Pattern(resource_field) == '(True|False|Y|N|T|F|1|0)')
     assert(re.match(Pattern(resource_field), 'False'))
     assert(re.match(Pattern(resource_field), 'True'))
@@ -440,25 +690,58 @@ def test_pattern():
     assert(re.match(Pattern(resource_field), '1'))
     assert(not re.match(Pattern(resource_field), 'z'))
     # integer
-    resource_field = {'size': '1-6', 'type': 'I', 'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'resource': 'account', 'validate': 'R'}
+    resource_field = {'size': '1-6', 'type': 'I'}
     #print('integer',Pattern(resource_field))
+    print('     integer pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
     assert(Pattern(resource_field) == '-?\d{1,6}')
     assert (not re.match(Pattern(resource_field), 'a'))
     assert (re.match(Pattern(resource_field), '1'))
     assert (re.match(Pattern(resource_field), '-1'))
+
     # number
-    resource_field = {'size': '14,6', 'type': 'N', 'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'resource': 'account', 'validate': 'R'}
+    resource_field = {'size': '14,6', 'type': 'N'}
+    print('      number pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
     assert (Pattern(resource_field) == '-?\d{1,14}(\.\d{1,6})?')
     assert (not re.match(Pattern(resource_field), 'a'))
     assert (re.match(Pattern(resource_field), '1'))
     assert (re.match(Pattern(resource_field), '-1'))
     assert (re.match(Pattern(resource_field), '1.1'))
     # datetime
-    resource_field = {'size': '14,6', 'type': 'D', 'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'resource': 'account', 'validate': 'R'}
+    resource_field = {'size': '14,6', 'type': 'D'}
+    print('    datetime pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
     assert (Pattern(resource_field) == '(\d{4}-\d{2}-\d{2})([T ]?)(\d{2}:\d{2}:\d{2})?(\.\d+)?(Z|([+-]\d{2}:\d{2}))?')
     assert (not re.match(Pattern(resource_field), 'a'))
     assert (re.match(Pattern(resource_field), '2024-06-23'))
     assert (re.match(Pattern(resource_field), '2024-06-23 18:30:00'))
+
+
+class ResourcePatterns(dict):
+    def __init__(self, project_dict, resource_name):
+        resource_list = project_dict['project']['resources']
+
+        if resource_name:
+            resource_list = {r: resource_list[r] for r in resource_list if r == resource_name}
+        for r in project_dict['project']['resources']:
+            # {account: {}, ...}
+            self[r] = {}
+            for m in project_dict['project']['resources'][r]['model']:
+                for row in project_dict['project']['resources'][r]['model']['rows']:
+
+                    for fld in row:
+                        if fld == 'field':
+                            # {account: {id: {}, ...}, ...}
+                            self[r][row[fld]] = {}
+                            # fld_key= fld
+
+                        # {account: {id: {pattern: ^.{3,330}$, ... }, ...}, ...}
+                        self[r][row['field']]['pattern'] = Pattern(row)
+
+def test_resource_patterns():
+    actual = ResourcePatterns(DictMd(getProjectMDString()),'account')
+    print('   resource_patterns:', actual)
+    assert('account' in actual)
+    assert('id' in actual['account'])
+    assert('pattern' in actual['account']['id'])
 
 class RouteConstantsJS(str):
     def __new__(cls,project_dict):
@@ -476,6 +759,12 @@ class RouteConstantsJS(str):
 
         instance = super().__new__(cls, contents)
         return instance
+def test_route_constants_js():
+    route_constants = RouteConstantsJS(DictMd(getProjectMDString()))
+    route_constants = ['                      {}'.format(x) for x in route_constants.split('\n')]
+    print('  route_constants_js:', '\n'.join(route_constants).strip())
+    assert("                      const account_route_post = require('./routes/route_account_post.js');" in route_constants)
+    assert("                      const account_route_delete = require('./routes/route_account_delete.js');" in route_constants)
 
 class ApiRoutes(str):
     def __new__(cls,project_dict):
@@ -494,17 +783,14 @@ class ApiRoutes(str):
 
         instance = super().__new__(cls, contents)
         return instance
+def test_api_routes():
+    api_routes = ApiRoutes(DictMd(getProjectMDString()))
+    api_routes = ['                    {}'.format(x) for x in api_routes.split('\n')]
+    print('          api_routes:', '\n'.join(api_routes).strip())
+    assert('                      account_route_post,' in api_routes)
+    assert('                      account_route_delete,' in api_routes)
 
 
-
-
-class depResourcePatterns(str):
-    def __new__(cls, field_dict):
-        print('field_dict', field_dict)
-        contents = 'fixme'
-
-        instance = super().__new__(cls, contents)
-        return instance
 
 # Task
 class TaskInitializeEnv(ProcessProject):
@@ -599,7 +885,6 @@ class TaskConfigure(ProcessProject):
 
         return self
 
-
 class TaskInitializeProjecMd(ProcessProject):
     ##
     ###### Configure MD2 Environment Values
@@ -608,44 +893,16 @@ class TaskInitializeProjecMd(ProcessProject):
         self.set_template_folder_key('__project__')
 
         # package is {nv_list, repo_folder, template_folder}
-        #
-    '''
-    def get_template_file_list(self, nv_list):
-        template_folder = self.get_template_folder()
-        template_list = TemplateList_Latest(folder_path=template_folder)
-        #template_list = {TemplateString(f,nv_list): template_list[f] for f in template_list}
-        #template_list['']
-        print('template_list', template_list)
-        lst = {}
-        for f in template_list:
-            print('f', f, TemplateString(f, nv_list))
-            lst[TemplateString(f, nv_list)] = []
-            for ff in template_list[f]:
-                lst[TemplateString(f, nv_list)][ff]=template_list[f][ff]
-                #print('ff', ff, template_list[f][ff] )
-                #template_list[ff]=TemplateString(template_list[ff], nv_list)
 
-        #template_list = {TemplateString(tmpl, nv_list): template_list[tmpl] for tmpl in template_list}
-        return lst
-    '''
+
     def initialize_project_md(self):
         # copy template/__project__/project_<<WS_PROJECT>>.md.C---.tmpl.tmpl
         nv_list = self.get_template_key_list() # self.get_template_name_value_pairs()
-        #print('initialize_project_md nv_list',nv_list)
-        #nv_list = self.templatize_list(nv_list)
-        #print('initialize_project_md template_folder', nv_list)
-        #template_list = self.get_template_file_list(nv_list)
-        pprint(nv_list)
-        #print('initialize_project_md template_list',nv_list)
-        # self.templatize(nv_list=nv_list)
-        #for tmpl in template_list:
-        #    print('tmpl', TemplateString(tmpl,nv_list))
-        #tl = TemplateList_Latest(folder_path=self.get_template_folder())
-        #print('template list', tl)
+
         project_folder = os.getcwd()
         if project_folder.endswith('/bin'):
-            print('project folder', project_folder)
-            self.templatize(nv_list=nv_list,output_subfolder=project_folder)
+            #print('project folder', project_folder)
+            self.templatize(nv_list=nv_list,output_folder=project_folder)
         return self
 
     def process(self):
@@ -915,10 +1172,10 @@ class TaskInitializeHapi(ProcessProject):
     def __init__(self):
         ProcessProject.__init__(self)
         self.set_template_folder_key('hapi')
-        nv_list = self.get_template_key_list() # self.get_template_name_value_pairs()
-        print('nv_list', nv_list)
-        resource_md = '{}/{}'.format('/'.join(str(__file__).split('/')[0:-1]), TemplateString('project_<<WS_PROJECT>>.md',nv_list))
-        print('project_<<WS_PROJECT>>.md.C---.tmpl', resource_md)
+        #nv_list = self.get_template_key_list() # self.get_template_name_value_pairs()
+        #print('nv_list', nv_list)
+        #resource_md = '{}/{}'.format('/'.join(str(__file__).split('/')[0:-1]), TemplateString('project_<<WS_PROJECT>>.md',nv_list))
+        #print('project_<<WS_PROJECT>>.md.C---.tmpl', resource_md)
 
     def hapi_templates(self):
         if not self.get_application():
@@ -945,6 +1202,7 @@ class TaskInitializeHapi(ProcessProject):
 #class TaskMergeHapiRoutes(ProcessProject):
 # update server_ext with <<API_ROUTES>> and <<ROUTE_CONST>> values from <project>.md
 # need to generate route_post,route_get, route_put, route_delete files
+
 class TaskInitializeHapiRoutes(ProcessProject):
     # create CRUD files from CRUD template
 
@@ -960,8 +1218,8 @@ class TaskInitializeHapiRoutes(ProcessProject):
         self.set_template_folder_key('hapi_routes')
 
     def route_templates(self):
-        # handle generated routes
-        # open 'bin/<project>.md'
+        # handle generated routes for each resource
+        # open 'bin/<project>.md' (by default, <project>.md enables the ACCOUNT resource)
 
         # create a nv_list for <<API_ROUTES>> and <<ROUTE_CONST>>, eg [{name: '', value: ''},...]
 
@@ -969,6 +1227,15 @@ class TaskInitializeHapiRoutes(ProcessProject):
         # remove routes not defined in the <project>.md
         # apply nv_list to each template
         # save to /<project>/lib/__routes__
+        nv_list = self.get_template_key_list()
+        filename_md = TemplateString('project_<<WS_PROJECT>>.md', nv_list)
+        folderfilename_md = '{}/{}'.format(os.getcwd(), filename_md)
+        print('folderfilename_md',folderfilename_md)
+        resource_string = StringReader(folderfilename_md)
+        #print('resource_string',resource_string)
+        project_dict = DictMd(resource_string)
+        print('route_templates project_dict', project_dict)
+        #ResourceNames(project_dict)
         return self
 
     def process(self):
@@ -1099,4 +1366,19 @@ class Auto():
 
 if __name__ == "__main__":
     # execute as docker
-    main()
+    test = True
+    if test:
+        print('Testing...')
+        test_dict_md()
+        test_project_name()
+        test_resource_names()
+        test_role_names()
+        test_resource_permissions()
+        test_resource_fields()
+        test_pattern()
+        test_resource_patterns()
+        test_route_constants_js()
+        test_api_routes()
+        print('Testing Complete')
+    if not test:
+        main()
