@@ -1,12 +1,12 @@
-# Project: <<WS_PROJECT>>
+# Project: test_prj
 
 ## Claims:
 
 | name      | aud                 | iss                       | sub        | user       | scope     | key |
 |-----------|---------------------|---------------------------|------------|------------|-----------|-----|
-| api_admin | <<WS_ORGANIZATION>> | <<WS_PROJECT>>_api_client | client_api | client_api | api_admin | ?   |
-| api_guest | <<WS_ORGANIZATION>> | <<WS_PROJECT>>_api_client | client_api | client_api | api_guest | 0   |
-| api_user  | <<WS_ORGANIZATION>> | <<WS_PROJECT>>_api_client | client_api | client_api | api_user  | ?   |
+| api_admin | test_org | test_prj_api_client | client_api | client_api | api_admin | ?   |
+| api_guest | test_org | test_prj_api_client | client_api | client_api | api_guest | 0   |
+| api_user  | test_org | test_prj_api_client | client_api | client_api | api_user  | ?   |
 
 * ? means value is unknown until runtime
 
