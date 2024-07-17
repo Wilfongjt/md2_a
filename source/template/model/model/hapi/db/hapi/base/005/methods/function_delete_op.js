@@ -8,8 +8,8 @@ module.exports = class CreateFunctionDeleteOP extends Step {
 
     this.name = 'delete';
     this.name = `${this.kind}_${this.version}.${this.name}`;
-    this.params = 'owner_id OWNERID, primary_key PRIMARYKEY';
-    this.types = 'OWNERID, PRIMARYKEY';
+    this.params = 'owner_id OWNER_ID, primary_key PRIMARYKEY';
+    this.types = 'OWNER_ID, PRIMARYKEY';
     this.sql = `
     -- DROP FUNCTION if exists base_0_0_1.delete(OWNER, PRIMARYKEY);    
 
@@ -104,7 +104,7 @@ module.exports = class CreateFunctionDeleteOP extends Step {
 
     /* Doesnt work in Hobby
         
-    grant EXECUTE on FUNCTION ${this.name}(TRIPLE,OWNERID) to api_user;
+    grant EXECUTE on FUNCTION ${this.name}(TRIPLE,OWNER_ID) to api_user;
     */
     `;
     // console.log('-- [Create Delete Function]\n', this.sql);

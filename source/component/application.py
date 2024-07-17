@@ -17,6 +17,11 @@ class Application(Recorder):
         Recorder.__init__(self)
         #self.name = name
         self['name']=name
+    def isStringNone(self, a_str):
+        print('isStringNone', a_str)
+        if not a_str:
+            return None
+        return a_str
 
     def get_name(self):
         ##* __get_name__, get repository name (aka repo-name)

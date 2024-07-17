@@ -15,12 +15,12 @@ module.exports = class FunctionAdopterPut extends Step {
     this.method = 'PUT';
     this.baseKind='base';
     this.baseVersion=baseVersion;
-    this.params = 'token TOKEN, owner OWNERID, id IDENTITY, form JSONB';
-    this.types = 'TOKEN,  OWNERID, IDENTITY, JSONB';
+    this.params = 'token TOKEN, owner OwnerId, id IDENTITY, form JSONB';
+    this.types = 'TOKEN,  OwnerId, IDENTITY, JSONB';
 
     // 
     this.sql = `
-    DROP FUNCTION if exists ${this.name}(TOKEN,  OWNERID, IDENTITY, JSONB);    
+    DROP FUNCTION if exists ${this.name}(TOKEN,  OwnerId, IDENTITY, JSONB);
     DROP FUNCTION if exists ${this.name}(${this.types}); 
     
     CREATE OR REPLACE FUNCTION ${this.name}(${this.params})  RETURNS JSONB AS $$
@@ -30,7 +30,7 @@ module.exports = class FunctionAdopterPut extends Step {
     Declare tmp TEXT;
     BEGIN
 
-      -- [Function: adopter given user_token TOKEN, form JSONB, owner_key OWNERID]
+      -- [Function: adopter given user_token TOKEN, form JSONB, owner_key OwnerId]
       -- [Description: Update an existing user/ adopter]
       -- not supported under Hobby
 

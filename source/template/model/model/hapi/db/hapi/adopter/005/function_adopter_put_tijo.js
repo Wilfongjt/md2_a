@@ -15,8 +15,8 @@ module.exports = class FunctionAdopterPut extends Step {
     this.method = 'PUT';
     this.baseKind='base';
     this.baseVersion=baseVersion;
-    this.params = 'token TOKEN, id IDENTITY, form JSONB, owner OWNERID';
-    this.types = 'TOKEN, IDENTITY, JSONB, OWNERID';
+    this.params = 'token TOKEN, id IDENTITY, form JSONB, owner OWNER_ID';
+    this.types = 'TOKEN, IDENTITY, JSONB, OwnerId';
 
     this.sql = `
         DROP FUNCTION if exists ${this.name}(TOKEN, IDENTITY, JSONB, OWNER_ID);    
@@ -30,7 +30,7 @@ module.exports = class FunctionAdopterPut extends Step {
     Declare tmp TEXT;
     BEGIN
           
-      -- [Function: adopter given user_token TOKEN, form JSONB, owner_key OWNERID]
+      -- [Function: adopter given user_token TOKEN, form JSONB, owner_key OwnerId]
       -- [Description: Update an existing user/ adopter]
       -- not supported under Hobby
       
@@ -87,7 +87,7 @@ module.exports = class FunctionAdopterPut extends Step {
     $$ LANGUAGE plpgsql;
 
     /* Doesnt work in Hobby
-    grant EXECUTE on FUNCTION ${this.name}(TOKEN,JSONB,OWNERID) to ${this.role};
+    grant EXECUTE on FUNCTION ${this.name}(TOKEN,JSONB,OwnerId) to ${this.role};
     */
 
     `;

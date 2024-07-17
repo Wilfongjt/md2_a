@@ -16,8 +16,8 @@ module.exports = class FunctionAdopterPut extends Step {
     this.baseKind='base';
     this.baseVersion=baseVersion;
     // this.params = 'token TEXT, id TEXT, form JSON';
-    this.params = 'token TOKEN, id IDENTITY, form JSON, owner OWNERID';
-    this.types = 'TOKEN, IDENTITY, JSON, OWNERID';
+    this.params = 'token TOKEN, id IDENTITY, form JSON, owner OWNER_ID';
+    this.types = 'TOKEN, IDENTITY, JSON, OWNER_ID';
 
     this.sql = `
     
@@ -33,7 +33,7 @@ module.exports = class FunctionAdopterPut extends Step {
     Declare tmp TEXT;
     BEGIN
           
-      -- [Function: adopter given user_token TOKEN, form JSON, owner_key OWNERID]
+      -- [Function: adopter given user_token TOKEN, form JSON, owner_key OwnerId]
       -- [Description: Update an existing user/ adopter]
       -- not supported under Hobby
       

@@ -14,8 +14,8 @@ module.exports = class FunctionAdopterGetToi extends Step {
     
     this.baseKind='base';
     this.baseVersion=baseVersion;
-    this.params = 'token TOKEN, owner OWNERID, id IDENTITY';
-    this.types = 'TOKEN, OWNERID,IDENTITY';
+    this.params = 'token TOKEN, owner OwnerId, id IDENTITY';
+    this.types = 'TOKEN, OwnerId,IDENTITY';
 
     this.method = 'GET';
     this.sql = `
@@ -25,7 +25,7 @@ module.exports = class FunctionAdopterGetToi extends Step {
       Declare result JSONB; 
       Declare chelate JSONB ='{"pk":"replaceme", "sk":"const#USER"}'::JSONB;
     BEGIN
-      -- [Function: get ${this.name} given user_token TEXT, owner OWNERID, id TEXT]
+      -- [Function: get ${this.name} given user_token TEXT, owner OwnerId, id TEXT]
 
       -- [Validate id parameter]
       if id is NULL then
@@ -54,7 +54,7 @@ module.exports = class FunctionAdopterGetToi extends Step {
     $$ LANGUAGE plpgsql;
     */
     /* Doesnt work in Hobby
-    grant EXECUTE on FUNCTION ${this.name}(TOKEN,OWNERID,IDENTITY) to ${this.role};
+    grant EXECUTE on FUNCTION ${this.name}(TOKEN,OwnerId,IDENTITY) to ${this.role};
     */
 
     `;

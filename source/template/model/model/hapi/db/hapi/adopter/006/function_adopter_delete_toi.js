@@ -14,8 +14,8 @@ module.exports = class FunctionAdopterDeleteToi extends Step {
 
     this.baseKind='base';
     this.baseVersion=baseVersion;
-    this.params = 'token TOKEN, owner OWNERID, id IDENTITY';
-    this.types = 'TOKEN, OWNERID, IDENTITY';
+    this.params = 'token TOKEN, owner OwnerId, id IDENTITY';
+    this.types = 'TOKEN, OwnerId, IDENTITY';
 
     this.method = 'DELETE';
     this.sql = `
@@ -26,7 +26,7 @@ module.exports = class FunctionAdopterDeleteToi extends Step {
     Declare result JSONB;
     -- Declare tmp TEXT;
     Declare criteria JSONB ='{"pk":"<id>", "sk":"${this.sk}"}'::JSONB;
-    Declare owner_id OWNERID;
+    Declare owner_id OwnerId;
     BEGIN
       -- [Function: get api_${this.version}.adopter_del given user_token TOKEN, owner OWNERID, id IDENTITY]
       -- [Description: get an existing api_${this.version}.adopter]

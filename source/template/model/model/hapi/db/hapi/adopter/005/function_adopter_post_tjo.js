@@ -8,8 +8,8 @@ module.exports = class FunctionAdopterPost extends Step {
     this.name = `${this.kind}_${this.version}.${this.name}`;
     this.baseKind='base';
     this.baseVersion=baseVersion;
-    this.params = 'token TOKEN, form JSONB, owner OWNERID';
-    this.types = 'TOKEN, JSONB, OWNERID';
+    this.params = 'token TOKEN, form JSONB, owner OWNER_ID';
+    this.types = 'TOKEN, JSONB, OwnerId';
 
     this.method = 'POST';
     this.roles = 'api_admin';
@@ -94,7 +94,7 @@ module.exports = class FunctionAdopterPost extends Step {
 
     $$ LANGUAGE plpgsql;
     /* Doesnt work in Hobby
-    grant EXECUTE on FUNCTION ${this.name}(TOKEN,JSONB,OWNERID) to api_guest;
+    grant EXECUTE on FUNCTION ${this.name}(TOKEN,JSONB,OwnerId) to api_guest;
     */
     `;
     // console.log('CreateFunction', this.sql);

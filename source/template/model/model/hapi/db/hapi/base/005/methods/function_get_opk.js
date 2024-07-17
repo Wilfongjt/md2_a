@@ -10,8 +10,8 @@ module.exports = class CreateFunctionGetOPK extends Step {
     // this.kind = kind;
     this.name = 'get';
     this.name = `${this.kind}_${this.version}.${this.name}`;
-    this.params = 'owner OWNERID, primary_key PRIMARYKEY, kindd KIND';
-    this.types = 'OWNERID, PRIMARYKEY, KIND';
+    this.params = 'owner OWNER_ID, primary_key PRIMARYKEY, kindd KIND';
+    this.types = 'OWNER_ID, PRIMARYKEY, KIND';
     this.return = 'JSONB';
     this.sql = `
     DROP FUNCTION if exists ${this.name}(${this.types});    
@@ -22,7 +22,7 @@ module.exports = class CreateFunctionGetOPK extends Step {
     BEGIN
         -- [Function: Get ]
         -- [Description: General get]
-         -- [Validate OwnerId]
+         -- [Validate OWNER_ID]
         
         if kindd is NULL then
             -- [Fail 400 when a kindd parameter is NULL]
@@ -34,7 +34,7 @@ module.exports = class CreateFunctionGetOPK extends Step {
           return '{"status":"400","msg":"Bad Request", "extra":"kindd.name is NULL"}'::JSONB;
         end if; 
                        
-        -- [Validate OwnerId]
+        -- [Validate OWNER_ID]
         
         if owner_id is NULL then
             -- [Fail 400 when a owner_id parameter is NULL]
