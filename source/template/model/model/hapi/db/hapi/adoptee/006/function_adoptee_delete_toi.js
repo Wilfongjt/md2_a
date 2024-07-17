@@ -16,7 +16,7 @@ module.exports = class FunctionAdopteeDeleteToi extends Step {
     
     this.baseKind='base';
     this.baseVersion=baseVersion;
-    this.params = 'token TOKEN, _owner OWNERID, id IDENTITY';
+    this.params = 'token TOKEN, _owner OwnerId, id IDENTITY';
 
     this.method = 'DELETE';
     this.sql = `
@@ -31,7 +31,7 @@ module.exports = class FunctionAdopteeDeleteToi extends Step {
     Declare tmp TEXT;
     Declare criteria JSONB ='{"pk":"${this.pk}", "sk":"${this.sk}"}'::JSONB;
     BEGIN
-      -- [Function: get api_${this.version}.adoptee given user_token TOKEN, _owner OWNERID, id IDENTITY]
+      -- [Function: get api_${this.version}.adoptee given user_token TOKEN, _owner OwnerId, id IDENTITY]
       -- [Description: get an existing api_${this.version}.adoptee]
       -- [Note: Only the owner can delete]       
       -- [Validate id parameter]
@@ -60,7 +60,7 @@ module.exports = class FunctionAdopteeDeleteToi extends Step {
 
     $$ LANGUAGE plpgsql;
     /* Doesnt work in Hobby
-    grant EXECUTE on FUNCTION ${this.name}(TOKEN, OWNERID, IDENTITY) to ${this.role};
+    grant EXECUTE on FUNCTION ${this.name}(TOKEN, OwnerId, IDENTITY) to ${this.role};
     */
     `;
   }    

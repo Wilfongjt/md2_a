@@ -113,7 +113,7 @@ module.exports = class CreateFunctionGetMBRK extends Step {
   $$ LANGUAGE plpgsql;     
   
   /* Doesnt work in Hobby
-  grant EXECUTE on FUNCTION ${this.name}(JSONB,OWNERID,PRIMARYKEY) to api_user;
+  grant EXECUTE on FUNCTION ${this.name}(JSONB,OWNER_ID,PRIMARYKEY) to api_user;
   */
     `;
     // console.log('-- Create GET Function\n', this.sql);

@@ -14,7 +14,7 @@ module.exports = class FunctionAdopterGetTIO extends Step {
     
     this.baseKind='base';
     this.baseVersion=baseVersion;
-    this.params = 'token TOKEN, id IDENTITY, owner OWNERID';
+    this.params = 'token TOKEN, id IDENTITY, owner OwnerId';
     this.method = 'GET';
     this.sql = `CREATE OR REPLACE FUNCTION ${this.name}(${this.params})  RETURNS JSONB AS $$
       Declare result JSONB; 

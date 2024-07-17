@@ -2,9 +2,9 @@
 // [query by MBR]
 // [query by pk, sk]
 // [query by pk, sk, owner]
-// query(PrimaryKey, OwnerId)
-// query(SecondaryKey, OwnerId)
-// query(TertiaryKey, OwnerId)
+// query(PrimaryKey, OWNER_ID)
+// query(SecondaryKey, OWNER_ID)
+// query(TertiaryKey, OWNER_ID)
 
 const Step = require('../../../lib/runner/step');
 module.exports = class FunctionQuery extends Step {

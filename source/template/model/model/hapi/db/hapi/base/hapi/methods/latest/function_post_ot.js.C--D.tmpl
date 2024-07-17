@@ -8,8 +8,8 @@ module.exports = class CreateFunctionPostOT extends Step {
 
     this.name = 'post';
     this.name = `${this.kind}_${this.version}.${this.name}`;
-    this.params = 'owner OWNERID, trip TRIPLE';
-    this.types = 'OWNERID, TRIPLE';
+    this.params = 'owner OWNER_ID, trip TRIPLE';
+    this.types = 'OWNER_ID, TRIPLE';
 
     this.sql = `
 DROP FUNCTION if exists ${this.name}(${this.types});    
@@ -21,7 +21,7 @@ CREATE OR REPLACE FUNCTION ${this.name}(${this.params}) RETURNS JSONB
       declare _extra TEXT;
     
     BEGIN
-        -- [Validate OwnerId]
+        -- [Validate OWNER_ID]
         
         if owner is NULL then
             -- [Fail 400 when a owner parameter is NULL]
@@ -116,7 +116,7 @@ CREATE OR REPLACE FUNCTION ${this.name}(${this.params}) RETURNS JSONB
     
     /* Doesnt work in Hobby
         
-    grant EXECUTE on FUNCTION ${this.name}(TRIPLE,OWNERID) to api_user;
+    grant EXECUTE on FUNCTION ${this.name}(TRIPLE,OwnerId) to api_user;
     */
     `;
     // console.log('-- Create Post Function\n', this.sql);

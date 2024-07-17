@@ -9,6 +9,7 @@
 | api_user  | test_org | test_prj_api_client | client_api | client_api | api_user  | ?   |
 
 * ? means value is unknown until runtime
+* table name is dependent on project name
 
 ## Resources
 

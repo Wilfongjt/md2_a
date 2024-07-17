@@ -2,9 +2,9 @@
 // [query by MBR]
 // [query by pk, sk]
 // [query by pk, sk, owner]
-// query(PrimaryKey, OwnerId)
-// query(SecondaryKey, OwnerId)
-// query(TertiaryKey, OwnerId)
+// query(PrimaryKey, OWNER_ID)
+// query(SecondaryKey, OWNER_ID)
+// query(TertiaryKey, OWNER_ID)
 
 const Step = require('../../../lib/runner/step');
 module.exports = class FunctionQuery extends Step {
@@ -15,7 +15,7 @@ module.exports = class FunctionQuery extends Step {
 
     this.name = 'query';
     this.name = `${this.version}.${this.name}`;
-    this.params = 'chelate JSONB, owner_key OWNERID';
+    this.params = 'chelate JSONB, owner_key OWNER_ID';
     this.types = 'JSONB, OWNER_ID';
 
     this.return = 'JSONB';

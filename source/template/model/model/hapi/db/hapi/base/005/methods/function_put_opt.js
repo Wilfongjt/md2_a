@@ -8,8 +8,8 @@ module.exports = class CreateFunctionPutOPT extends Step {
     // this.kind = kind;
     this.name = 'put';
     this.name = `${this.kind}_${this.version}.${this.name}`;
-    this.params = 'owner OWNERID, id PRIMARYKEY, trip TRIPLE';
-    this.types = 'OWNERID, PRIMARYKEY, TRIPLE';
+    this.params = 'owner OWNER_ID, id PRIMARYKEY, trip TRIPLE';
+    this.types = 'OWNER_ID, PRIMARYKEY, TRIPLE';
 
     this.return = 'JSONB';
     this.sql = `
@@ -26,7 +26,7 @@ module.exports = class CreateFunctionPutOPT extends Step {
         -- [Function: Update with single triple for a given owner]
         -- [Description: General update]
         
-       -- [Validate OwnerId]
+       -- [Validate OWNER_ID]
         
         if owner is NULL then
             -- [Fail 400 when a owner parameter is NULL]
@@ -139,7 +139,7 @@ module.exports = class CreateFunctionPutOPT extends Step {
   $$ LANGUAGE plpgsql;     
   
   /* Doesnt work in Hobby
-  grant EXECUTE on FUNCTION ${this.name}(JSONB,OWNERID,PRIMARYKEY) to api_user;
+  grant EXECUTE on FUNCTION ${this.name}(JSONB,OWNER_ID,PRIMARYKEY) to api_user;
   */
     `;
     console.log('-- Create PUT Function', this.sql);

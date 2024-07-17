@@ -10,8 +10,8 @@ module.exports = class CreateFunctionGetOP extends Step {
     // this.kind = kind;
     this.name = 'get';
     this.name = `${this.kind}_${this.version}.${this.name}`;
-    this.params = 'owner_id OWNERID, primary_key PRIMARYKEY';
-    this.types = 'OWNERID, PRIMARYKEY';
+    this.params = 'owner_id OWNER_ID, primary_key PRIMARYKEY';
+    this.types = 'OWNER_ID, PRIMARYKEY';
     this.return = 'JSONB';
     this.sql = `
         
@@ -25,7 +25,7 @@ module.exports = class CreateFunctionGetOP extends Step {
         -- [Function: Get ]
         -- [Description: General get]
                 
-        -- [Validate OwnerId]
+        -- [Validate OWNER_ID]
         
         if owner_id is NULL then
             -- [Fail 400 when a owner_id parameter is NULL]

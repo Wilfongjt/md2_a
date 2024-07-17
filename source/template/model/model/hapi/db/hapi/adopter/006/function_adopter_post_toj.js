@@ -9,15 +9,15 @@ module.exports = class FunctionAdopterPost extends Step {
     this.name = `${this.kind}_${this.version}.${this.name}`;
     this.baseKind='base';
     this.baseVersion=baseVersion;
-    this.params = 'token TOKEN, owner OWNERID, form JSONB';
-    this.types = 'TOKEN, OWNERID, JSONB';
+    this.params = 'token TOKEN, owner OwnerId, form JSONB';
+    this.types = 'TOKEN, OwnerId, JSONB';
 
     this.method = 'POST';
     this.roles = 'api_admin';
     this.scope = 'api_admin';
     this.sql = `
     
-    DROP FUNCTION if exists ${this.name}(TOKEN, OWNERID, JSONB);    
+    DROP FUNCTION if exists ${this.name}(TOKEN, OwnerId, JSONB);
     DROP FUNCTION if exists ${this.name}(${this.types});
     /*
     CREATE OR REPLACE FUNCTION ${this.name}(${this.params})  RETURNS JSONB AS $$
@@ -33,7 +33,7 @@ module.exports = class FunctionAdopterPost extends Step {
                                    "active": true}'::JSONB;
         
     BEGIN
-      -- [Function: adopter given an admin_token TOKEN, OWNERID and form JSONB]
+      -- [Function: adopter given an admin_token TOKEN, OwnerId and form JSONB]
       -- [Description: Add a new user by Admin]
 
       -- [Validate Token]
@@ -48,7 +48,7 @@ module.exports = class FunctionAdopterPost extends Step {
     -- [* Determine the owner key]
 
     if owner.id = '*' then
-      owner := format('(%s)',uuid_generate_v4())::OWNERID;
+      owner := format('(%s)',uuid_generate_v4())::OwnerId;
     end if;
    
     -- [Sync tk and owner only needed for adopter]
@@ -96,7 +96,7 @@ module.exports = class FunctionAdopterPost extends Step {
     $$ LANGUAGE plpgsql;
     */
     /* Doesnt work in Hobby
-    grant EXECUTE on FUNCTION ${this.name}(TOKEN,OWNERID,JSONB) to api_guest;
+    grant EXECUTE on FUNCTION ${this.name}(TOKEN,OwnerId,JSONB) to api_guest;
     */
     `;
     // console.log('CreateFunction', this.sql);
