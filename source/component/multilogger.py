@@ -2,7 +2,6 @@ import os
 import datetime
 import __main__
 
-#filename = __main__.__file__
 class MultiLogger():
     ##
     ##### MultiLogger
@@ -41,8 +40,28 @@ class MultiLogger():
         log_foldefile = '{}/runtime.log'.format(self.log_folder)
         with open(log_foldefile, 'a') as f:
             f.write('{}\n'.format(self.format()))
+            #if 'PY_TEST' in os.environ and eval(os.environ['PY_TEST']):
+            #    print('MultiLogger', self.format())
         return self
 
     def terminal(self):
         print(self.format())
         return self
+
+def main(status):
+    #if 'PY_TEST' in os.environ and eval(os.environ['PY_TEST']):
+    #    print('MultiLogger test')
+    status.addTitle('MultiLogger test')
+
+    status.addBullet('no tests for multilogger')
+
+
+if __name__ == "__main__":
+    from source.component.status import Status
+    from source.component.status_report import StatusReport
+
+    status = Status()
+    # execute as docker
+
+    main(status)
+    print(StatusReport(status))

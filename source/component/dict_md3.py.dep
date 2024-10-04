@@ -1,0 +1,354 @@
+import re
+import ast
+from able import Stack, Level
+
+#def getProjectString():
+#    # used for testing
+#    return
+
+class Pattern(str):
+    def __new__(cls, resource_field):
+        # resource_field is {'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'pattern': '^.{3,330}$', 'resource': 'account','size': '3-330', 'type': 'C', 'validate': 'R'}
+        contents = ''
+        if 'type' in resource_field:
+            if resource_field['type'] == 'C':
+                contents = '^<<TYPE>>{<<MIN>>,<<MAX>>}$'
+                contents = contents.replace('<<TYPE>>', '.')
+                min = resource_field['size'].split('-')[0]
+                max = resource_field['size'].split('-')[1]
+                contents = contents.replace('<<MIN>>', min).replace('<<MAX>>', max)
+            elif resource_field['type'] == 'L':
+                contents = '(True|False|Y|N|T|F|1|0)'
+                resource_field['size'] = '1-5'  # eg True, False, Y, N, T, F, 1, or 0
+            elif resource_field['type'] == 'I':
+                contents = '-?\d{<<MIN>>,<<MAX>>}'
+                min = resource_field['size'].split('-')[0]
+                max = resource_field['size'].split('-')[1]
+                contents = contents.replace('<<MIN>>', min).replace('<<MAX>>', max)
+            elif resource_field['type'] == 'N':
+                contents = '-?\d{1,<<W>>}(\.\d{1,<<D>>})?'  # .replace('<<W>',w).replace('<<D>>',d) # eg
+                w = resource_field['size'].split(',')[0]
+                d = resource_field['size'].replace('-', ',').split(',')[1]
+                contents = contents.replace('<<W>>', w).replace('<<D>>', d)
+            elif resource_field['type'] == 'D':
+                contents = '(\d{4}-\d{2}-\d{2})([T ]?)(\d{2}:\d{2}:\d{2})?(\.\d+)?(Z|([+-]\d{2}:\d{2}))?'
+                resource_field['size'] = '8-19'  # eg 2024-06-23 18:30:00
+
+        instance = super().__new__(cls, contents)
+        return instance
+
+def test_pattern():
+    # character
+    resource_field = {'size': '3-330', 'type': 'C'}
+    # resource_field = {'size': '3-330', 'type': 'C', 'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'resource': 'account', 'validate': 'R'}
+    # print('C', Pattern(resource_field))
+    print('   character pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
+    assert (Pattern(resource_field) == '^.{3,330}$')
+    assert (re.match(Pattern(resource_field), 'abc!89'))
+    # logical
+    resource_field = {'size': '14,6', 'type': 'L'}
+    print('     logical pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
+    assert (Pattern(resource_field) == '(True|False|Y|N|T|F|1|0)')
+    assert (re.match(Pattern(resource_field), 'False'))
+    assert (re.match(Pattern(resource_field), 'True'))
+    assert (re.match(Pattern(resource_field), 'Y'))
+    assert (re.match(Pattern(resource_field), 'N'))
+    assert (re.match(Pattern(resource_field), 'T'))
+    assert (re.match(Pattern(resource_field), 'F'))
+    assert (re.match(Pattern(resource_field), '0'))
+    assert (re.match(Pattern(resource_field), '1'))
+    assert (not re.match(Pattern(resource_field), 'z'))
+    # integer
+    resource_field = {'size': '1-6', 'type': 'I'}
+    # print('integer',Pattern(resource_field))
+    print('     integer pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
+    assert (Pattern(resource_field) == '-?\d{1,6}')
+    assert (not re.match(Pattern(resource_field), 'a'))
+    assert (re.match(Pattern(resource_field), '1'))
+    assert (re.match(Pattern(resource_field), '-1'))
+
+    # number
+    resource_field = {'size': '14,6', 'type': 'N'}
+    print('      number pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
+    assert (Pattern(resource_field) == '-?\d{1,14}(\.\d{1,6})?')
+    assert (not re.match(Pattern(resource_field), 'a'))
+    assert (re.match(Pattern(resource_field), '1'))
+    assert (re.match(Pattern(resource_field), '-1'))
+    assert (re.match(Pattern(resource_field), '1.1'))
+    # datetime
+    resource_field = {'size': '14,6', 'type': 'D'}
+    print('    datetime pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
+    assert (Pattern(resource_field) == '(\d{4}-\d{2}-\d{2})([T ]?)(\d{2}:\d{2}:\d{2})?(\.\d+)?(Z|([+-]\d{2}:\d{2}))?')
+    assert (not re.match(Pattern(resource_field), 'a'))
+    assert (re.match(Pattern(resource_field), '2024-06-23'))
+    assert (re.match(Pattern(resource_field), '2024-06-23 18:30:00'))
+
+
+class Min(int):
+    def __new__(cls, resource_field):
+        # resource_field is {'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'pattern': '^.{3,330}$', 'resource': 'account','size': '3-330', 'type': 'C', 'validate': 'R'}
+        contents = ''
+        if 'type' in resource_field:
+            if resource_field['type'] == 'C': # Character
+                # contents = '^<<TYPE>>{<<MIN>>,<<MAX>>}$'
+                min = resource_field['size'].split('-')[0]
+                contents = int(min)
+            elif resource_field['type'] == 'L': # Boolean Logical
+                # contents = '(True|False|Y|N|T|F|1|0)'
+                contents = 1
+            elif resource_field['type'] == 'I': # Integer
+                # contents = '-?\d{<<MIN>>,<<MAX>>}'
+                contents = 1
+            elif resource_field['type'] == 'N': # Number
+                # contents = '-?\d{1,<<W>>}(\.\d{1,<<D>>})?'  # .replace('<<W>',w).replace('<<D>>',d) # eg
+                contents = 1
+            elif resource_field['type'] == 'D': # Datetime
+                # contents = '(\d{4}-\d{2}-\d{2})([T ]?)(\d{2}:\d{2}:\d{2})?(\.\d+)?(Z|([+-]\d{2}:\d{2}))?'
+                contents = 8
+            else:
+                print('setting default type for resource_field', resource_field)
+
+        instance = super().__new__(cls, contents)
+        return instance
+
+def test_min():
+    resource_field = {'size': '3-330', 'type': 'C'}
+    print('        characer min:', Min(resource_field))
+    assert (Min(resource_field) == 3)
+
+    resource_field = {'size': '1-14', 'type': 'I'}
+    print('         integer min:', Min(resource_field))
+    assert (Min(resource_field) == 1)
+
+    resource_field = {'size': '14,6', 'type': 'N'}
+    print('          number min:', Min(resource_field))
+    assert (Min(resource_field) == 1)
+
+    resource_field = {'size': '8-19', 'type': 'D'}
+    print('            date min:', Min(resource_field))
+    assert (Min(resource_field) == 8)
+
+
+class Max(int):
+    def __new__(cls, resource_field):
+        # resource_field is {'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'pattern': '^.{3,330}$', 'resource': 'account','size': '3-330', 'type': 'C', 'validate': 'R'}
+        contents = ''
+        if 'type' in resource_field:
+            if resource_field['type'] == 'C':
+                # contents = '^<<TYPE>>{<<MIN>>,<<MAX>>}$'
+                max = resource_field['size'].split('-')[1]
+                contents = int(max)
+            elif resource_field['type'] == 'L':
+                # contents = '(True|False|Y|N|T|F|1|0)'
+                contents = 5
+            elif resource_field['type'] == 'I':
+                # contents = '-?\d{<<MIN>>,<<MAX>>}'
+                max = int(resource_field['size'].split('-')[1])
+                contents = max
+            elif resource_field['type'] == 'N':
+                # contents = '-?\d{1,<<W>>}(\.\d{1,<<D>>})?'  # .replace('<<W>',w).replace('<<D>>',d) # eg
+                max = int(resource_field['size'].split(',')[0])
+                contents = int(max)
+            elif resource_field['type'] == 'D':
+                # contents = '(\d{4}-\d{2}-\d{2})([T ]?)(\d{2}:\d{2}:\d{2})?(\.\d+)?(Z|([+-]\d{2}:\d{2}))?'
+                contents = 19
+        instance = super().__new__(cls, contents)
+        return instance
+
+def test_max():
+    resource_field = {'size': '3-330', 'type': 'C'}
+    print('        characer min:', Max(resource_field))
+    assert (Max(resource_field) == 330)
+
+    resource_field = {'size': '1-14', 'type': 'I'}
+    print('         integer min:', Max(resource_field))
+    assert (Max(resource_field) == 14)
+
+    resource_field = {'size': '14,6', 'type': 'N'}
+    print('          number min:', Max(resource_field))
+    assert (Max(resource_field) == 14)
+
+    resource_field = {'size': '8-19', 'type': 'D'}
+    print('            date min:', Max(resource_field))
+    assert (Max(resource_field) == 19)
+
+
+class DictMd(dict):
+
+    def __init__(self, md_text):
+        # skip spaces
+        # skip *
+        # stack = Stack()
+        ostack = Stack()
+        table = False
+        tbl_cols = []
+        last_key = ''
+        last_obj = {}
+        i = 0
+        a = 0
+        resource_name = ''
+        for ln in str(md_text).split('\n'):
+            # print('lineno',i)
+            #print('DictMd ln', ln)
+            if not ln.startswith('|'):
+                table = False
+            if ln.startswith('#'):
+                # print('DictMd level', Level(ln))
+                level = Level(ln)
+                ln = ln.replace(':', '')
+                ln = ln.split(' ')
+                if len(ln) < 2:
+                    raise Exception('Bad Line')
+                # while stack.size() >= level: stack.pop()
+                while ostack.size() >= level: ostack.pop()
+
+                if ostack.size() == 0:  # 1:  # projecrt
+                    self[ln[1].lower()] = {'name': ln[2].lower()}
+                    # self[ln[1].lower()] = {'name': ln[2].lower()}
+                    ostack.push(self[ln[1].lower()])
+
+                elif ostack.size() >= 1:  # project claim
+
+                    if len(ln) == 2:
+                        # print('2 split ', ln)
+                        if 'resource' == ln[0].lower(): resource_name = ln[1].lower()
+                        last_key = ln[1].lower()
+                        ostack.peek()[ln[1].lower()] = {}  # table rows
+                        # ostack.peek()[ln[1].lower()] = {}
+                        ostack.push(ostack.peek()[ln[1].lower()])
+                        last_obj = ostack.peek()
+                        # print('  ostack', ostack)
+                        # print('  self', self)
+                    elif len(ln) == 3:
+                        # print('3 split ', ln)
+                        if 'resource' == ln[1].lower():
+                            # print('resource found')
+                            resource_name = ln[2].lower()
+
+                        last_key = ln[2].lower()
+                        ostack.peek()[ln[2].lower()] = {'name': ln[2].lower()}
+                        # last_key = ln[1].lower()
+                        # ostack.peek()[ln[1].lower()] = {'name': ln[2].lower()}
+                        # ostack.peek()[ln[1].lower()] = {'name': ln[2].lower()}
+                        ostack.push(ostack.peek()[ln[2].lower()])
+                        # ostack.push(ostack.peek()[ln[1].lower()])
+
+                        last_obj = ostack.peek()
+
+                # print('1 peek', ostack.peek())
+                # print('last_obj', last_obj)
+            elif ln.startswith('1.'):
+                # print('ln',ln)
+                ln = ln.replace('1. ', '')
+                ln = ln.split(':', maxsplit=1)
+
+                line = ln[1].strip()
+
+                if line.startswith('{'):
+                    line = ast.literal_eval(line)
+                # print('xxx peek', ostack.peek())
+                # print('xxx ln[0]', ln[0])
+                # print('xxx line', line)
+
+                ostack.peek()[ln[0]] = line
+            elif ln.startswith('|'):  # handle table
+                if not table:
+                    table = True
+                    tbl_cols = ln.split('|')
+                    tbl_cols = [c.strip() for c in tbl_cols if c != '']
+
+                    last_obj['rows'] = []
+                elif ln.startswith('|-'):  # table line break
+                    pass
+                else:  # row
+                    # print('table self       ', self)
+                    tbl_row = ln.split('|')
+                    tbl_row = [c.strip() for c in tbl_row if c != '']
+                    #
+                    tbl_row = {tbl_cols[i]: tbl_row[i] for i in range(len(tbl_row))}
+                    if 'field' in tbl_row:
+                        tbl_row['resource'] = resource_name
+                        tbl_row['pattern'] = Pattern(tbl_row)
+                        tbl_row['min'] = Min(tbl_row)
+                        tbl_row['max'] = Max(tbl_row)
+
+                    ostack.peek()['rows'].append(tbl_row)
+
+                    # last_obj['rows'].append(tbl_row)
+
+            i += 1
+        # print('DictMd')
+        # pprint(self)
+        # print('DictMd', self)
+        # pprint(self)
+
+def test_dict_md():
+    from project_string import ProjectString
+    from pprint import pprint
+    # filename_md = 'project_test_prj.md'
+    # folderfilename_md = '{}/{}'.format(os.getcwd(), filename_md)
+    # print('folderfilename_md', folderfilename_md)
+    # resource_string = getProjectMDString(DictMd(getProjectString())) # StringReader(folderfilename_md)
+    # print('resource_string',resource_string)
+    # project_dict = DictMd(getProjectString())
+    project_dict = DictMd(ProjectString())
+    print('project_dict')
+    pprint(project_dict)
+    assert ('project' in project_dict)
+    assert ('resource' in project_dict['project'])
+    assert ('account' in project_dict['project']['resource'])
+    assert ('model' in project_dict['project']['resource']['account'])
+    assert ('rows' in project_dict['project']['resource']['account']['model'])
+    assert ('sample_resource' in project_dict['project']['resource'])
+    assert ('model' in project_dict['project']['resource']['sample_resource'])
+    assert ('rows' in project_dict['project']['resource']['sample_resource']['model'])
+
+
+    # print('route_templates project_dict', project_dict)
+    # pprint(project_dict)
+    # ResourceNames(project_dict)
+
+def test_dict_md2():
+    from project_string import ProjectString
+    from pprint import pprint
+    # filename_md = 'project_test_prj.md'
+    # folderfilename_md = '{}/{}'.format(os.getcwd(), filename_md)
+    # print('folderfilename_md', folderfilename_md)
+    # resource_string = getProjectMDString(DictMd(getProjectString())) # StringReader(folderfilename_md)
+    # print('resource_string',resource_string)
+    # project_dict = DictMd(getProjectString())
+    md_string = '''
+# project: <project_name>
+## claim: <claim_name>
+## resource: <resource_name>
+### model: <model_name>
+### data: <data_name>
+    '''
+    project_dict = DictMd(md_string)
+    print('project_dict')
+    pprint(project_dict)
+    assert ('project' in project_dict)
+    assert ('resource' in project_dict['project'])
+    assert ('account' in project_dict['project']['resource'])
+    assert ('model' in project_dict['project']['resource']['account'])
+    assert ('rows' in project_dict['project']['resource']['account']['model'])
+    assert ('sample_resource' in project_dict['project']['resource'])
+    assert ('model' in project_dict['project']['resource']['sample_resource'])
+    assert ('rows' in project_dict['project']['resource']['sample_resource']['model'])
+
+
+    # print('route_templates project_dict', project_dict)
+    # pprint(project_dict)
+    # ResourceNames(project_dict)
+
+
+
+def main():
+    test_min()
+    test_max()
+    test_dict_md()
+    test_dict_md2()
+
+if __name__ == "__main__":
+    # execute as docker
+    main()

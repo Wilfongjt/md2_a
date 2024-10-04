@@ -1,6 +1,8 @@
 # Project: sample
+    1. schema: api
+    1. version: 1.0.0
 
-## Claims:
+## Claim:
 
 | name      | aud       | iss                | sub        | user       | scope     | key |
 |-----------|-----------|--------------------|------------|------------|-----------|-----|

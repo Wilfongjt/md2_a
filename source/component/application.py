@@ -2,7 +2,7 @@ import os
 from able import StringReader, \
                  Recorder
 
-#class MDReader(StringReader):
+#class TierMD(StringReader):
 #    def __new__(cls, folder_filename_list, recorder=None):
 #        super.__new__(cls)
 
@@ -39,7 +39,12 @@ class Application(Recorder):
     def get_template_folder(self, subfolder=None):
         ##* __get_template_folder__, eg "\<repo>/source/template" (aka template-folder)
         if subfolder:
-            return str(os.getcwd()).replace('/bin', '/source/template/{}').replace('/component', '/template', subfolder)
+            # print('subfolder',subfolder)
+            tmp = str(os.getcwd()).replace('/bin', '/source/template').replace('/component', '/template')
+            tmp = '{}/{}'.format(tmp,subfolder)
+            # print('tmp',tmp)
+
+            return tmp
 
         return str(os.getcwd()).replace('/bin', '/source/template').replace('/component','/template')
 
@@ -50,7 +55,7 @@ class Application(Recorder):
 
     def get_environment_template_filename(self):
         ##* __get_environment_template_filename__, eg "\<repo>/bin/\<name>.env" (aka app-env)
-        return '{}/__project__/latest/{}.env.tmpl'.format(self.get_template_folder(), self.get_name())
+        return '{}/__project__/002/{}.env.tmpl'.format(self.get_template_folder(), self.get_name())
 
         #return '{}/{}.env.tmpl'.format(self.get_template_folder(), self.get_name())
 
@@ -75,24 +80,38 @@ class Application(Recorder):
 
         return self
 
-def main():
+def main(status):
+    #if 'PY_TEST' in os.environ and eval(os.environ['PY_TEST']):
+    #    print('Application test')
+    status.addTitle('Application test')
     app_name = str(os.getcwd()).split('/')[8]
     #print('project', app_name, str(os.getcwd()).split('/')[0:9] )
     actual = Application(name=app_name)
     #print('get_bin_folder', actual.get_bin_folder())
     assert(actual.get_name()==app_name)
+    status.addBullet('get_name ok')
     # print('template_folder', actual.get_template_folder())
     assert(actual.get_template_folder().endswith('{}/source/template'.format(app_name)))
-
+    status.addBullet('get_template_folder ok')
     #get_environment_filename
     # print('environment_filename', actual.get_environment_filename())
     assert(actual.get_environment_filename().endswith('{}/{}.env'.format('/bin', app_name)))
+    status.addBullet('get_environment_filename ok')
     #get_environment_template_filename
     # print('get_environment_template_filename', actual.get_environment_template_filename())
-    assert(actual.get_environment_template_filename().endswith('/source/template/__project__/latest/{}.env.tmpl'.format(app_name)))
+    assert(actual.get_environment_template_filename().endswith('/source/template/__project__/002/{}.env.tmpl'.format(app_name)))
+    status.addBullet('get_environment_template_filename ok')
+
     #get_environment_varable_names
     #load_environment
     actual.load_environment()
+
 if __name__ == "__main__":
+    from source.component.status import Status
+    from source.component.status_report import StatusReport
+
+    status = Status()
     # execute as docker
-    main()
+
+    main(status)
+    print(StatusReport(status))
