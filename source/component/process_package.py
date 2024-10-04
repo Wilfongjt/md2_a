@@ -55,16 +55,29 @@ class ProcessPackage(dict):
     #                        for itm in NameValuePairs(multi_line_string=EnvVarString())]
 
 
-def main():
+def process_package_test(status):
     from able import DiagramString
+    #if 'PY_TEST' in os.environ and eval(os.environ['PY_TEST']):
+    #    print('Process Package test')
+    status.addTitle('Process Package test')
     os.environ['GH_TEST'] = 'TEST'
 
     #print('ProcessPackage',ProcessPackage().set('A','a') )
 
-    assert(ProcessPackage() == {})
+    status.assert_test("ProcessPackage() == {}",ProcessPackage() == {})
+    status.addBullet('init ProcessPackage() to {}')
     assert('A' in ProcessPackage().set('A', 'a'))
+    status.addBullet("'A' in ProcessPackage().set('A', 'a') ok")
 
+def main(status):
+    process_package_test(status)
 
 if __name__ == "__main__":
+    from source.component.status import Status
+    from source.component.status_report import StatusReport
+
+    status = Status()
     # execute as docker
-    main()
+
+    main(status)
+    print(StatusReport(status))

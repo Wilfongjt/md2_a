@@ -6,10 +6,11 @@
 ## __Strategy__: break down process into tasks and code those tasks in classes. Run the classes in order.
 
 import os
-import sys
-import ast
-from pprint import pprint
 import re
+from source.component import Tier
+from source.component.markdown.helper import RouteScopes
+from source.component.markdown.project_string_default import ProjectStringDefault
+
 # SCRIPT_DIR = os.path.dirname(str(os.path.abspath(__file__)).replace('/bin','/source/component'))
 # sys.path.append(os.path.dirname(SCRIPT_DIR))
 # print('SCRIPT_DIR',SCRIPT_DIR)
@@ -20,15 +21,11 @@ from able import StringReader, \
     CloneRepo, \
     DiagramString, \
     RuntimeLogger, \
-    JSONString, NormalString, Stack, Level, \
-    TemplateString, \
-    TemplateList_Latest
+    TemplateString
 
 from source.component.nv_list import NVList
 
-from functions import get_bin_folder, \
-    get_template_folder, \
-    get_env_variable_values_string
+from functions import get_env_variable_values_string
 # get_env_var,\
 
 from source.component import ProcessProject, Application, MultiLogger
@@ -58,232 +55,118 @@ def main():
     ##### Process
 
     ##1. [Initialize MD2](#initialize-md2)
-    Auto(TaskInitializeEnv(no=app.incNo()).set_application(app))
+    Auto(Task_InitializeEnv(no=app.incNo()).set_application(app))
 
     ##1. [Configure MD2 Environment Values](#configure-md2-environment-values)
-    Auto(TaskConfigure(no=app.incNo()).set_application(app))  # (env_file_content_string, app)
+    Auto(Task_Configure(no=app.incNo()).set_application(app))  # (env_file_content_string, app)
 
     ##1. [Initialize project_<<WS_PROJECT>>.md.C---.tmpl](#configure-md2-environment-values)
     print('-----')
-    Auto(TaskInitializeProjecMd(no=app.incNo()).set_application(app))  # (env_file_content_string, app)
+    Auto(Task_InitializeProjecMd(no=app.incNo()).set_application(app))  # (env_file_content_string, app)
     print('-----')
     # exit(0)
     ##1. [Clone GitHub Repository](#clone-github-repository)
-    Auto(TaskGithub(no=app.incNo()).set_application(app))
-
+    Auto(Task_Github(no=app.incNo()).set_application(app))
+    #Test_TemplateOutputs().test(template_folder=app.get_template_folder(subfolder='github'))
+    # assert ('' in StringReader())
+    #exit(0)
+    print('-----')
     ##1. [Patch Clone](#patch-clone)
-    Auto(TaskGithubPatch(no=app.incNo()).set_application(app))
-
+    Auto(Task_GithubPatch(no=app.incNo()).set_application(app))
+    #exit(0)
+    print('-----')
     ##1. [Initialize ProjectSpace](#initialize-projectspace)
-    Auto(TaskInitializeProjectSpace(no=app.incNo()).set_application(app))
-
+    Auto(Task_InitializeProjectSpace(no=app.incNo()).set_application(app))
+    #exit(0)
+    print('-----')
     ##1. [Initialize Docker](#initialize-docker)
-    Auto(TaskInitializeDocker(no=app.incNo()).set_application(app))
-
+    Auto(Task_InitializeDocker(no=app.incNo()).set_application(app))
+    #exit(0)
+    print('-----')
     ##1. [Initialize Heroku](#initialize-heroku)
-    Auto(TaskInitializeHeroku(no=app.incNo()).set_application(app))
-
+    Auto(Task_InitializeHeroku(no=app.incNo()).set_application(app))
+    #exit(0)
+    print('-----')
     ##1. [Initialize Node](#initialize-node)
-    Auto(TaskInitializeNode(no=app.incNo()).set_application(app))
-
+    Auto(Task_InitializeNode(no=app.incNo()).set_application(app))
+    #exit(0)
+    print('-----')
     ##1. [Initialize JWT](#initialize-jwt)
-    Auto(TaskInitializeJWT(no=app.incNo()).set_application(app))
-
+    Auto(Task_InitializeJWT(no=app.incNo()).set_application(app))
+    print('-----')
     ##1. [Initialize Nodemon](#initialize-nodemon)
-    Auto(TaskInitializeNodemon(no=app.incNo()).set_application(app))
-
+    Auto(Task_InitializeNodemon(no=app.incNo()).set_application(app))
+    print('-----')
     ##1. [Initialize Hapi](#initialize-hapi)
-    Auto(TaskInitializeHapi(no=app.incNo()).set_application(app))  # move /templates to project, apply .env nv_list
+    Auto(Task_InitializeHapi(no=app.incNo()).set_application(app))  # move /templates to project, apply .env nv_list
+
     '''
-    resource_string = StringExpandMdTable(StringReader('{}/{}'.format(get_bin_folder(), 'test_prj.md')))
-    # resource_string = StringExpandMdTable(StringReader('{}/{}'.format(get_bin_folder(), 'app_starter.md')))
+    resource_string = ConvertMdTableToListString(StringReader('{}/{}'.format(get_bin_folder(), 'test_prj.md')))
+    # resource_string = ConvertMdTableToListString(StringReader('{}/{}'.format(get_bin_folder(), 'app_starter.md')))
 
     #print('app_starter', resource_string)
-    #print('DictMd',DictMd(resource_string))
-    #pprint(DictMd(resource_string))
-    #print('ResourceNames', ResourceNames(DictMd(resource_string)))
-    #print('RoleNames',RoleNames(DictMd(resource_string)))
-    #print('ProjectName',ProjectName(DictMd(resource_string)))
-    #print('permissions', ResourcePermissions(DictMd(resource_string)))
+    #print('Tier',Tier(resource_string))
+    #pprint(Tier(resource_string))
+    #print('ResourceNames', ResourceNames(Tier(resource_string)))
+    #print('RoleNames',RoleNames(Tier(resource_string)))
+    #print('ProjectName',ProjectName(Tier(resource_string)))
+    #print('permissions', ResourcePermissions(Tier(resource_string)))
     #print('--')
-    #pprint(ResourcePermissions(DictMd(resource_string)))
+    #pprint(ResourcePermissions(Tier(resource_string)))
     #print('--')
-    #print('model A', ResourceModel(DictMd(resource_string)))
-    #print('model B', ResourceModel(DictMd(resource_string),'account'))
+    #print('model A', ResourceModel(Tier(resource_string)))
+    #print('model B', ResourceModel(Tier(resource_string),'account'))
     #print('resource_string', resource_string)
     print('--fields')
     # {id:{}, owner:'' ...}
-    print('fields', ResourceFields(DictMd(resource_string),'account'))
-    #print('create form', ResourceFields(DictMd(resource_string),'account').getNewForm())
-    print('route_list', RouteConstantsJS(DictMd(resource_string)))
-    print('api_route_list', ApiRoutes(DictMd(resource_string)))
+    print('fields', ResourceFields(Tier(resource_string),'account'))
+    #print('create form', ResourceFields(Tier(resource_string),'account').getNewForm())
+    print('route_list', RouteConstantsJS(Tier(resource_string)))
+    print('api_route_list', ApiRoutes(Tier(resource_string)))
     nv_list = [
-        {'<<ROUTE_CONST>>': RouteConstantsJS(DictMd(resource_string))},
-        {'<<API_ROUTES>>': ApiRoutes(DictMd(resource_string))}
+        {'<<ROUTE_CONST>>': RouteConstantsJS(Tier(resource_string))},
+        {'<<API_ROUTES>>': ApiRoutes(Tier(resource_string))}
     ]
     print('nv_list', nv_list)
-    #resource_fields = ResourceFields(DictMd(resource_string),'account')
-    # file.md --> DictMd -->
-    #pprint(ResourceModel(DictMd(resource_string)))
+    #resource_fields = ResourceFields(Tier(resource_string),'account')
+    # file.md --> Tier -->
+    #pprint(ResourceModel(Tier(resource_string)))
     #print('--')
-    #pprint(ResourceModel(DictMd(resource_string), 'account2'))
-    #print('get()',ResourceModel(DictMd(resource_string)).get('account'))
-    #pprint(ResourceModel(DictMd(resource_string)).get('account'))
+    #pprint(ResourceModel(Tier(resource_string), 'account2'))
+    #print('get()',ResourceModel(Tier(resource_string)).get('account'))
+    #pprint(ResourceModel(Tier(resource_string)).get('account'))
 
-    #print('pattern', ResourceFields(ResourceModel(DictMd(resource_string))))
+    #print('pattern', ResourceFields(ResourceModel(Tier(resource_string))))
 
     #print('xxx',JSONString((resource_string)))
     #test_resource_fields()
     #test_pattern()
     '''
+    print('-----')
     ##1. [Initialize Hapi Routes](#initialize-hapi-routes)
-    Auto(TaskInitializeHapiRoutes(no=app.incNo()).set_application(app))  # -->
+    Auto(Task_InitializeHapiRoutes(no=app.incNo()).set_application(app))  # -->
     # exit(0)
     ##1. [Initialize Postgres](#initialize-postgres)
-    Auto(TaskInitializePostgres(no=app.incNo()).set_application(app))
-
+    print('-----')
+    Auto(Task_InitializePostgres(no=app.incNo()).set_application(app))
+    print('-----')
     ##1. [Initialize Model](#initialize-model)
-    Auto(TaskInitializeModel(no=app.incNo()).set_application(app))
-
+    Auto(Task_InitializeModel(no=app.incNo()).set_application(app))
+    exit(0)
+    print('-----')
     ##1. [Update Environment Values](#update-md2-environment-variables)
-    Auto(TaskUpdateEnvironment(no=app.incNo()).set_application(app))
+    Auto(Task_UpdateEnvironment(no=app.incNo()).set_application(app))
 
     xx = 'Summary {} {}'.format(app.get_name(), DiagramString(app))
     MultiLogger().set_msg(xx).runtime().terminal()
     MultiLogger().set_msg('end').runtime().terminal()
 
+# Defaults
+from source.component.env.env_string_default import EnvStringDefault
 
-def getEnvString():
-    return '''# #
-# ### Environment
-# #* last github organization
-WS_ORGANIZATION=test_org
+# String to String Conversions
 
-# #* last workspace
-WS_WORKSPACE=test_ws
-
-# #* last project
-WS_PROJECT=test_prj
-
-WS_REPO=py_test
-
-# #* last trunk
-GH_TRUNK=main
-
-# #* last branch
-GH_BRANCH=first
-
-# #* last repo
-GH_REPO=py_test
-
-GH_PROJECT=test_prj
-
-# #* last user
-GH_USER=wilfongjt
-
-# #* last message
-GH_MESSAGE=init
-
-# #* last token
-GH_TOKEN=<<GH_TOKEN>>
-
-# #* MD2DM_INPUT_FOLDER defines where to get input
-MD2DM_INPUT_FOLDER=<<MD2DM_INPUT_FOLDER>>
-
-# #* MD2DM_OUTPUT_FOLDER defines where to send output
-MD2DM_OUTPUT_FOLDER=<<MD2DM_OUTPUT_FOLDER>>
-
-# #* MD2DM_OUTPUT_FILENAME defines the name of the output file
-MD2DM_OUTPUT_FILENAME=<<MD2DM_OUTPUT_FILENAME>>
-
-
-'''
-
-
-def getProjectString():
-    # used for testing
-    return '''
-    # Project: sample
-
-    ## Claims:
-
-    | name      | aud       | iss                | sub        | user       | scope     | key |
-    |-----------|-----------|--------------------|------------|------------|-----------|-----|
-    | api_admin | lyttlebit | sample_api_client  | client_api | client_api | api_admin | ?   |
-    | api_guest | lyttlebit | sample_api_client  | client_api | client_api | api_guest | 0   |
-    | api_user  | lyttlebit | sample_api_client  | client_api | client_api | api_user  | ?   |
-
-    ## Resources
-    ### Resource: Account
-    1. version: 1.0.0
-
-    #### Model:
-
-    | field       | type | size   | validate | encrypt | api_admin | api_guest | api_user |
-    |-------------|------|--------|----------|---------|-----------|-----------|----------|
-    | id          | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | type        | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | owner       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | username    | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | displayname | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | password    | C    | 10-330 | R        | Y       | -         | CR        | UD       |
-    | scope       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-
-    Types
-    * C is character, any keyboard character
-    * L is logical aka boolean, eg ‘True', ‘False', ’T', ‘F', ‘Y', ’N', ‘1', ‘0' 
-    * N is numeric, eg ‘1' or ‘1.1' or ‘-1.1' 
-    * D is datetime, eg '2024-06-23' or '2024-06-23 18:30:00'
-
-    Roles
-    * C is Create
-    * R is Read
-    * U is Update
-    * D is Delete
-    * - is None
-
-    #### Data:
-
-    | id        | type    | owner                    | username                | displayname | password | scope     |
-    |-----------|---------|--------------------------|-------------------------|-------------|----------|-----------|
-    | api_admin | ACCOUNT | api_admin@lyttlebit.com  | api_admin@lyttlebit.com | Admin       | a1A!aaa  | api_admin |
-    | api_guest | ACCOUNT | api_guest@lyttlebit.com  | api_guest@lyttlebit.com | Guest       | a1A!aaa  | api_guest |
-    | api_user  | ACCOUNT | api_user@lyttlebit.com   | api_user@lyttlebit.com  | User        | a1A!aaa  | api_user  |
-
-    * Do not use same passwords in production
-    * Set type to capitalized(resource)
-    * ? means value is unknown until runtime
-    * - means not applicable
-
-
-    ### Resource: Sample_resource
-    1. version: 1.0.0
-
-    #### Model:
-
-    | field       | type | size   | validate | encrypt | api_admin | api_guest | api_user |
-    |-------------|------|--------|----------|---------|-----------|-----------|----------|
-    | id          | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | type        | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | owner       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | s_integer   | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | s_character | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | s_number    | C    | 10-330 | R        | Y       | -         | CR        | UD       |
-    | s_datetime  | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-
-    server_ext.js
-    + ------------------------ +
-    + require(route_const.js)  + <-- route_const.js
-    +                          +
-    + require(route_list.js)   + <-- route_list.js
-    + ------------------------ +
-    '''.replace('    ', '')
-
-
-##### Coversion
-
-#####
-class StringExpandMdTable(str):
+class ConvertMdTableToListString(str):
     def __new__(cls, md_text):
 
         md_text = str(md_text).split('\n')
@@ -297,121 +180,47 @@ class StringExpandMdTable(str):
             if not ln.startswith('|'):
                 table = False
 
-            if ln.startswith('|'):
-                if not table:
+            if ln.startswith('|'): # start processing a table line
+                if not table: # get the column headers
                     table = True
                     tbl_cols = ln.replace(' ', '').split('|')
                     tbl_cols = [c for c in tbl_cols if c != '']
-                elif ln.startswith('|-'):
+                elif ln.startswith('|-'): # skip the header line
                     pass
-                else:
+                else: # process the row line into list of name-value pairs
+                    # eg '| abc | 123 |' -> '|abc|123|'
                     tbl_row = ln.replace(' ', '').split('|')
+                    # get rid of blank lines
                     tbl_row = [r for r in tbl_row if r != '']
+                    # convert row values to name-value pairs
                     r = {tbl_cols[k]: tbl_row[k] for k in range(len(tbl_row))}
+                    # append name-value pair to str
                     contents.append('1. {}: {}'.format(tbl_row[0], r))
                     # contents.append('1. {}: {}'.format(tbl_row[1], r))
 
             else:
+                # append non-row lines to str
                 contents.append(ln)
 
         contents = '\n'.join(contents)
         instance = super().__new__(cls, contents)
         return instance
-
-
 # with stack pointing to last and active
 
 # Lists and Dicts
-def getProjectMDString():
-    return '''
-    # Project: sample
-
-    ## Claims:
-
-    | name      | aud       | iss                | sub        | user       | scope     | key |
-    |-----------|-----------|--------------------|------------|------------|-----------|-----|
-    | api_admin | lyttlebit | sample_api_client  | client_api | client_api | api_admin | ?   |
-    | api_guest | lyttlebit | sample_api_client  | client_api | client_api | api_guest | 0   |
-    | api_user  | lyttlebit | sample_api_client  | client_api | client_api | api_user  | ?   |
-
-    ## Resources
-    ### Resource: Account
-    1. version: 1.0.0
-
-    #### Model:
-
-    | field       | type | size   | validate | encrypt | api_admin | api_guest | api_user |
-    |-------------|------|--------|----------|---------|-----------|-----------|----------|
-    | id          | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | type        | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | owner       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | username    | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | displayname | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | password    | C    | 10-330 | R        | Y       | -         | CR        | UD       |
-    | scope       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-
-    Types
-    * C is character, any keyboard character
-    * L is logical aka boolean, eg ‘True', ‘False', ’T', ‘F', ‘Y', ’N', ‘1', ‘0' 
-    * N is numeric, eg ‘1' or ‘1.1' or ‘-1.1' 
-    * D is datetime, eg '2024-06-23' or '2024-06-23 18:30:00'
-
-    Roles
-    * C is Create
-    * R is Read
-    * U is Update
-    * D is Delete
-    * - is None
-
-    #### Data:
-
-    | id        | type    | owner                    | username                | displayname | password | scope     |
-    |-----------|---------|--------------------------|-------------------------|-------------|----------|-----------|
-    | api_admin | ACCOUNT | api_admin@lyttlebit.com  | api_admin@lyttlebit.com | Admin       | a1A!aaa  | api_admin |
-    | api_guest | ACCOUNT | api_guest@lyttlebit.com  | api_guest@lyttlebit.com | Guest       | a1A!aaa  | api_guest |
-    | api_user  | ACCOUNT | api_user@lyttlebit.com   | api_user@lyttlebit.com  | User        | a1A!aaa  | api_user  |
-
-    * Do not use same passwords in production
-    * Set type to capitalized(resource)
-    * ? means value is unknown until runtime
-    * - means not applicable
 
 
-    ### Resource: Sample_resource
-    1. version: 1.0.0
+# Assemblers
 
-    #### Model:
-
-    | field       | type | size   | validate | encrypt | api_admin | api_guest | api_user |
-    |-------------|------|--------|----------|---------|-----------|-----------|----------|
-    | id          | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | type        | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | owner       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | s_integer   | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | s_character | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | s_number    | C    | 10-330 | R        | Y       | -         | CR        | UD       |
-    | s_datetime  | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-
-    server_ext.js
-    + ------------------------ +
-    + require(route_const.js)  + <-- route_const.js
-    +                          +
-    + require(route_list.js)   + <-- route_list.js
-    + ------------------------ +
-    '''.replace('    ', '')
-
-
-class ListEnv(NVList):
+class NVListEnv(NVList):
     def __init__(self, env_string):
         pattern = re.compile(r'^\s*[A-Za-z0-9_]+=[A-Za-z0-9]+\s*$')
         for ln in env_string.split('\n'):
             if pattern.match(ln):
                 pts = [l.strip() for l in ln.split('=')]
                 self.append({'name': pts[0], 'value': pts[1]})
-
-
 def test_list_env():
-    nv_list = ListEnv(getEnvString())
+    nv_list = NVListEnv(EnvStringDefault())
     print('            list_env:', nv_list)
     assert ({'name': 'GH_TRUNK', 'value': 'main'} in nv_list)
     assert ({'name': 'GH_BRANCH', 'value': 'first'} in nv_list)
@@ -419,189 +228,12 @@ def test_list_env():
     assert ({'name': 'GH_MESSAGE', 'value': 'init'} in nv_list)
 
 
-class DictMd(dict):
-
-    def __init__(self, md_text):
-        # skip spaces
-        # skip *
-        # stack = Stack()
-        ostack = Stack()
-        table = False
-        tbl_cols = []
-        last_key = ''
-        last_obj = {}
-        i = 0
-        a = 0
-        resource_name = ''
-        for ln in str(md_text).split('\n'):
-            # print('lineno',i)
-            # print('DictMd ln', ln)
-            if not ln.startswith('|'):
-                table = False
-            if ln.startswith('#'):
-                # print('DictMd level', Level(ln))
-                level = Level(ln)
-                ln = ln.replace(':', '')
-                ln = ln.split(' ')
-                if len(ln) < 2:
-                    raise Exception('Bad Line')
-                # while stack.size() >= level: stack.pop()
-                while ostack.size() >= level: ostack.pop()
-
-                if ostack.size() == 0:  # 1:  # projecrt
-                    self[ln[1].lower()] = {'name': ln[2].lower()}
-                    # self[ln[1].lower()] = {'name': ln[2].lower()}
-                    ostack.push(self[ln[1].lower()])
-
-                elif ostack.size() >= 1:  # project claims
-
-                    if len(ln) == 2:
-                        # print('2 split ', ln)
-                        if 'resource' == ln[0].lower(): resource_name = ln[1].lower()
-                        last_key = ln[1].lower()
-                        ostack.peek()[ln[1].lower()] = {}  # table rows
-                        # ostack.peek()[ln[1].lower()] = {}
-                        ostack.push(ostack.peek()[ln[1].lower()])
-                        last_obj = ostack.peek()
-                        # print('  ostack', ostack)
-                        # print('  self', self)
-                    elif len(ln) == 3:
-                        # print('3 split ', ln)
-                        if 'resource' == ln[1].lower():
-                            # print('resource found')
-                            resource_name = ln[2].lower()
-
-                        last_key = ln[2].lower()
-                        ostack.peek()[ln[2].lower()] = {'name': ln[2].lower()}
-                        # last_key = ln[1].lower()
-                        # ostack.peek()[ln[1].lower()] = {'name': ln[2].lower()}
-                        # ostack.peek()[ln[1].lower()] = {'name': ln[2].lower()}
-                        ostack.push(ostack.peek()[ln[2].lower()])
-                        # ostack.push(ostack.peek()[ln[1].lower()])
-
-                        last_obj = ostack.peek()
-
-                # print('1 peek', ostack.peek())
-                # print('last_obj', last_obj)
-            elif ln.startswith('1.'):
-                # print('ln',ln)
-                ln = ln.replace('1. ', '')
-                ln = ln.split(':', maxsplit=1)
-
-                line = ln[1].strip()
-
-                if line.startswith('{'):
-                    line = ast.literal_eval(line)
-                # print('xxx peek', ostack.peek())
-                # print('xxx ln[0]', ln[0])
-                # print('xxx line', line)
-
-                ostack.peek()[ln[0]] = line
-            elif ln.startswith('|'):  # handle table
-                if not table:
-                    table = True
-                    tbl_cols = ln.split('|')
-                    tbl_cols = [c.strip() for c in tbl_cols if c != '']
-
-                    last_obj['rows'] = []
-                elif ln.startswith('|-'):  # table line break
-                    pass
-                else:  # row
-                    # print('table self       ', self)
-                    tbl_row = ln.split('|')
-                    tbl_row = [c.strip() for c in tbl_row if c != '']
-                    #
-                    tbl_row = {tbl_cols[i]: tbl_row[i] for i in range(len(tbl_row))}
-                    if 'field' in tbl_row:
-                        tbl_row['resource'] = resource_name
-                        tbl_row['pattern'] = Pattern(tbl_row)
-                        tbl_row['min'] = Min(tbl_row)
-                        tbl_row['max'] = Max(tbl_row)
-
-                    ostack.peek()['rows'].append(tbl_row)
-
-                    # last_obj['rows'].append(tbl_row)
-
-            i += 1
-        # print('DictMd')
-        # pprint(self)
-        # print('DictMd', self)
-        # pprint(self)
+# class ProjectResource()
 
 
-def test_dict_md():
-    # filename_md = 'project_test_prj.md'
-    # folderfilename_md = '{}/{}'.format(os.getcwd(), filename_md)
-    # print('folderfilename_md', folderfilename_md)
-    # resource_string = getProjectMDString(DictMd(getProjectString())) # StringReader(folderfilename_md)
-    # print('resource_string',resource_string)
-    project_dict = DictMd(getProjectString())
-    assert ('project' in project_dict)
-    assert ('resources' in project_dict['project'])
-    assert ('account' in project_dict['project']['resources'])
-    assert ('model' in project_dict['project']['resources']['account'])
-    assert ('rows' in project_dict['project']['resources']['account']['model'])
-    assert ('sample_resource' in project_dict['project']['resources'])
-    assert ('model' in project_dict['project']['resources']['sample_resource'])
-    assert ('rows' in project_dict['project']['resources']['sample_resource']['model'])
-
-    # print('route_templates project_dict', project_dict)
-    # pprint(project_dict)
-    # ResourceNames(project_dict)
 
 
-class ProjectName(str):
-    def __new__(cls, project_dict):
-        contents = project_dict['project']['name']
-
-        instance = super().__new__(cls, contents)
-        return instance
-
-
-def test_project_name():
-    actual = ProjectName(DictMd(getProjectMDString()))
-    print('        project_name:', actual)
-    assert (actual == 'sample')
-
-
-class ResourceNames(list):
-    def __init__(self, project_dict):
-        for r in project_dict['project']['resources']:
-            print('Resource Names', r)
-            self.append(r)
-
-
-def test_resource_names():
-    actual = ResourceNames(DictMd(getProjectMDString()))
-    print('      resource_names:', actual)
-    assert (actual == ['account', 'sample_resource'])
-
-
-class RoleNames(list):
-    def __init__(self, project_dict):
-        lst = []
-        for r in project_dict['project']['resources']:
-            for f in project_dict['project']['resources'][r]['model']:
-                for s in project_dict['project']['resources'][r]['model'][f]:
-                    for x in s:
-                        if x.startswith('api_'):
-                            lst.append(x)
-        # print('lst', lst)
-        lst = set(lst)  # get rid of duplicates
-        for r in lst:
-            self.append(r)
-
-    # TASKS
-
-
-def test_role_names():
-    actual = RoleNames(DictMd(getProjectMDString()))
-    print('          role_names:', actual)
-    assert ('api_admin' in actual)
-    assert ('api_guest' in actual)
-    assert ('api_user' in actual)
-
-
+# TASKS
 '''
 class depResourcePermissions(dict):
     # { account: {id: {api_admin: R, api_guest:CR, api_user:RUD},...}
@@ -609,11 +241,11 @@ class depResourcePermissions(dict):
         #print('project_dict',project_dict)
         #pprint(project_dict)
         # self {}
-        for r in project_dict['project']['resources']:
+        for r in project_dict['project']['resource']:
             # {account: {}, ...}
             self[r]={}
-            for m in project_dict['project']['resources'][r]['model']:
-                for row in project_dict['project']['resources'][r]['model']['rows']:
+            for m in project_dict['project']['resource'][r]['model']:
+                for row in project_dict['project']['resource'][r]['model']['rows']:
                     for fld in row:
                         if fld=='field':
                             # {account: {id: {}, ...}, ...}
@@ -624,7 +256,7 @@ class depResourcePermissions(dict):
                             self[r][row['field']][fld] = row[fld]
 
 def test_resource_permissions():
-    resource_permissions = ResourcePermissions(DictMd(getProjectMDString()))
+    resource_permissions = ResourcePermissions(Tier(getProjectMDString()))
     print('resource_permissions:', resource_permissions)
     assert('account' in resource_permissions)
     assert('id' in resource_permissions['account'])
@@ -633,15 +265,15 @@ def test_resource_permissions():
 '''
 class depResourceFields(dict):
     def __init__(self, project_dict, resource_name):
-        resource_list = project_dict['project']['resources']
+        resource_list = project_dict['project']['resource']
 
         if resource_name:
             resource_list = {r: resource_list[r] for r in resource_list if r == resource_name}
-        for r in project_dict['project']['resources']:
+        for r in project_dict['project']['resource']:
             # {account: {}, ...}
             self[r] = {}
-            for m in project_dict['project']['resources'][r]['model']:
-                for row in project_dict['project']['resources'][r]['model']['rows']:
+            for m in project_dict['project']['resource'][r]['model']:
+                for row in project_dict['project']['resource'][r]['model']['rows']:
 
                     for fld in row:
                         if fld=='field':
@@ -672,7 +304,7 @@ class depResourceFields(dict):
     def depgetDelete(self, crud):
         return {}
 def test_resource_fields():
-    resource_fields = ResourceFields(DictMd(getProjectMDString()),'account')
+    resource_fields = ResourceFields(Tier(getProjectMDString()),'account')
     print('     resource_fields:', resource_fields)
     assert('id' in resource_fields['account'])
     assert('field' in resource_fields['account']['id'])
@@ -681,17 +313,17 @@ def test_resource_fields():
 
 # class ResourceFieldSizes(dict):
 #    def __init__(self, project_dict, resource_name):
-#        #resource_list = project_dict['project']['resources']
+#        #resource_list = project_dict['project']['resource']
 
 #        #if resource_name:
 #        #    resource_list = {r: resource_list[r] for r in resource_list if r == resource_name}
 
-#        for r in project_dict['project']['resources']:
+#        for r in project_dict['project']['resource']:
 #            # {account: {}, ...}
 #            self[r] = {}
-#            for m in project_dict['project']['resources'][r]['model']:
+#            for m in project_dict['project']['resource'][r]['model']:
 
-#                for row in project_dict['project']['resources'][r]['model']['rows']:
+#                for row in project_dict['project']['resource'][r]['model']['rows']:
 #                    print('row', row)
 #    for fld in row:
 #        if fld=='field':
@@ -704,186 +336,23 @@ def test_resource_fields():
 #        self[r][row['field']]['pattern'] = Pattern(row)
 
 # def test_resource_field_sizes():
-#    actual = ResourceFieldSizes(DictMd(getProjectMDString()),'account')
-
-class Pattern(str):
-    def __new__(cls, resource_field):
-        # resource_field is {'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'pattern': '^.{3,330}$', 'resource': 'account','size': '3-330', 'type': 'C', 'validate': 'R'}
-        contents = ''
-        if 'type' in resource_field:
-            if resource_field['type'] == 'C':
-                contents = '^<<TYPE>>{<<MIN>>,<<MAX>>}$'
-                contents = contents.replace('<<TYPE>>', '.')
-                min = resource_field['size'].split('-')[0]
-                max = resource_field['size'].split('-')[1]
-                contents = contents.replace('<<MIN>>', min).replace('<<MAX>>', max)
-            elif resource_field['type'] == 'L':
-                contents = '(True|False|Y|N|T|F|1|0)'
-                resource_field['size'] = '1-5'  # eg True, False, Y, N, T, F, 1, or 0
-            elif resource_field['type'] == 'I':
-                contents = '-?\d{<<MIN>>,<<MAX>>}'
-                min = resource_field['size'].split('-')[0]
-                max = resource_field['size'].split('-')[1]
-                contents = contents.replace('<<MIN>>', min).replace('<<MAX>>', max)
-            elif resource_field['type'] == 'N':
-                contents = '-?\d{1,<<W>>}(\.\d{1,<<D>>})?'  # .replace('<<W>',w).replace('<<D>>',d) # eg
-                w = resource_field['size'].split(',')[0]
-                d = resource_field['size'].replace('-', ',').split(',')[1]
-                contents = contents.replace('<<W>>', w).replace('<<D>>', d)
-            elif resource_field['type'] == 'D':
-                contents = '(\d{4}-\d{2}-\d{2})([T ]?)(\d{2}:\d{2}:\d{2})?(\.\d+)?(Z|([+-]\d{2}:\d{2}))?'
-                resource_field['size'] = '8-19'  # eg 2024-06-23 18:30:00
-
-        instance = super().__new__(cls, contents)
-        return instance
+#    actual = ResourceFieldSizes(Tier(getProjectMDString()),'account')
 
 
-def test_pattern():
-    # character
-    resource_field = {'size': '3-330', 'type': 'C'}
-    # resource_field = {'size': '3-330', 'type': 'C', 'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'resource': 'account', 'validate': 'R'}
-    # print('C', Pattern(resource_field))
-    print('   character pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
-    assert (Pattern(resource_field) == '^.{3,330}$')
-    assert (re.match(Pattern(resource_field), 'abc!89'))
-    # logical
-    resource_field = {'size': '14,6', 'type': 'L'}
-    print('     logical pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
-    assert (Pattern(resource_field) == '(True|False|Y|N|T|F|1|0)')
-    assert (re.match(Pattern(resource_field), 'False'))
-    assert (re.match(Pattern(resource_field), 'True'))
-    assert (re.match(Pattern(resource_field), 'Y'))
-    assert (re.match(Pattern(resource_field), 'N'))
-    assert (re.match(Pattern(resource_field), 'T'))
-    assert (re.match(Pattern(resource_field), 'F'))
-    assert (re.match(Pattern(resource_field), '0'))
-    assert (re.match(Pattern(resource_field), '1'))
-    assert (not re.match(Pattern(resource_field), 'z'))
-    # integer
-    resource_field = {'size': '1-6', 'type': 'I'}
-    # print('integer',Pattern(resource_field))
-    print('     integer pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
-    assert (Pattern(resource_field) == '-?\d{1,6}')
-    assert (not re.match(Pattern(resource_field), 'a'))
-    assert (re.match(Pattern(resource_field), '1'))
-    assert (re.match(Pattern(resource_field), '-1'))
 
-    # number
-    resource_field = {'size': '14,6', 'type': 'N'}
-    print('      number pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
-    assert (Pattern(resource_field) == '-?\d{1,14}(\.\d{1,6})?')
-    assert (not re.match(Pattern(resource_field), 'a'))
-    assert (re.match(Pattern(resource_field), '1'))
-    assert (re.match(Pattern(resource_field), '-1'))
-    assert (re.match(Pattern(resource_field), '1.1'))
-    # datetime
-    resource_field = {'size': '14,6', 'type': 'D'}
-    print('    datetime pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
-    assert (Pattern(resource_field) == '(\d{4}-\d{2}-\d{2})([T ]?)(\d{2}:\d{2}:\d{2})?(\.\d+)?(Z|([+-]\d{2}:\d{2}))?')
-    assert (not re.match(Pattern(resource_field), 'a'))
-    assert (re.match(Pattern(resource_field), '2024-06-23'))
-    assert (re.match(Pattern(resource_field), '2024-06-23 18:30:00'))
-
-
-class Min(int):
-    def __new__(cls, resource_field):
-        # resource_field is {'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'pattern': '^.{3,330}$', 'resource': 'account','size': '3-330', 'type': 'C', 'validate': 'R'}
-        contents = ''
-        if 'type' in resource_field:
-            if resource_field['type'] == 'C':
-                # contents = '^<<TYPE>>{<<MIN>>,<<MAX>>}$'
-                min = resource_field['size'].split('-')[0]
-                contents = int(min)
-            elif resource_field['type'] == 'L':
-                # contents = '(True|False|Y|N|T|F|1|0)'
-                contents = 1
-            elif resource_field['type'] == 'I':
-                # contents = '-?\d{<<MIN>>,<<MAX>>}'
-                contents = 1
-            elif resource_field['type'] == 'N':
-                # contents = '-?\d{1,<<W>>}(\.\d{1,<<D>>})?'  # .replace('<<W>',w).replace('<<D>>',d) # eg
-                contents = 1
-            elif resource_field['type'] == 'D':
-                # contents = '(\d{4}-\d{2}-\d{2})([T ]?)(\d{2}:\d{2}:\d{2})?(\.\d+)?(Z|([+-]\d{2}:\d{2}))?'
-                contents = 8
-        instance = super().__new__(cls, contents)
-        return instance
-
-
-def test_min():
-    resource_field = {'size': '3-330', 'type': 'C'}
-    print('        characer min:', Min(resource_field))
-    assert (Min(resource_field) == 3)
-
-    resource_field = {'size': '1-14', 'type': 'I'}
-    print('         integer min:', Min(resource_field))
-    assert (Min(resource_field) == 1)
-
-    resource_field = {'size': '14,6', 'type': 'N'}
-    print('          number min:', Min(resource_field))
-    assert (Min(resource_field) == 1)
-
-    resource_field = {'size': '8-19', 'type': 'D'}
-    print('            date min:', Min(resource_field))
-    assert (Min(resource_field) == 8)
-
-
-class Max(int):
-    def __new__(cls, resource_field):
-        # resource_field is {'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'pattern': '^.{3,330}$', 'resource': 'account','size': '3-330', 'type': 'C', 'validate': 'R'}
-        contents = ''
-        if 'type' in resource_field:
-            if resource_field['type'] == 'C':
-                # contents = '^<<TYPE>>{<<MIN>>,<<MAX>>}$'
-                max = resource_field['size'].split('-')[1]
-                contents = int(max)
-            elif resource_field['type'] == 'L':
-                # contents = '(True|False|Y|N|T|F|1|0)'
-                contents = 5
-            elif resource_field['type'] == 'I':
-                # contents = '-?\d{<<MIN>>,<<MAX>>}'
-                max = int(resource_field['size'].split('-')[1])
-                contents = max
-            elif resource_field['type'] == 'N':
-                # contents = '-?\d{1,<<W>>}(\.\d{1,<<D>>})?'  # .replace('<<W>',w).replace('<<D>>',d) # eg
-                max = int(resource_field['size'].split(',')[0])
-                contents = int(max)
-            elif resource_field['type'] == 'D':
-                # contents = '(\d{4}-\d{2}-\d{2})([T ]?)(\d{2}:\d{2}:\d{2})?(\.\d+)?(Z|([+-]\d{2}:\d{2}))?'
-                contents = 19
-        instance = super().__new__(cls, contents)
-        return instance
-
-
-def test_max():
-    resource_field = {'size': '3-330', 'type': 'C'}
-    print('        characer min:', Max(resource_field))
-    assert (Max(resource_field) == 330)
-
-    resource_field = {'size': '1-14', 'type': 'I'}
-    print('         integer min:', Max(resource_field))
-    assert (Max(resource_field) == 14)
-
-    resource_field = {'size': '14,6', 'type': 'N'}
-    print('          number min:', Max(resource_field))
-    assert (Max(resource_field) == 14)
-
-    resource_field = {'size': '8-19', 'type': 'D'}
-    print('            date min:', Max(resource_field))
-    assert (Max(resource_field) == 19)
 
 
 class ResourcePatterns(dict):
     def __init__(self, project_dict, resource_name):
-        resource_list = project_dict['project']['resources']
+        resource_list = project_dict['project']['resource']
 
         if resource_name:
             resource_list = {r: resource_list[r] for r in resource_list if r == resource_name}
-        for r in project_dict['project']['resources']:
+        for r in project_dict['project']['resource']:
             # {account: {}, ...}
             self[r] = {}
-            for m in project_dict['project']['resources'][r]['model']:
-                for row in project_dict['project']['resources'][r]['model']['rows']:
+            for m in project_dict['project']['resource'][r]['model']:
+                for row in project_dict['project']['resource'][r]['model']['rows']:
 
                     for fld in row:
                         if fld == 'field':
@@ -893,10 +362,8 @@ class ResourcePatterns(dict):
 
                         # {account: {id: {pattern: ^.{3,330}$, ... }, ...}, ...}
                         self[r][row['field']]['pattern'] = Pattern(row)
-
-
 def test_resource_patterns():
-    actual = ResourcePatterns(DictMd(getProjectMDString()), 'account')
+    actual = ResourcePatterns(Tier(ProjectStringDefault()), 'account')
     print('   resource_patterns:', actual)
     assert ('account' in actual)
     assert ('id' in actual['account'])
@@ -905,7 +372,7 @@ def test_resource_patterns():
 
 class RouteConstantsJS(str):
     def __new__(cls, project_dict):
-        resource_list = project_dict['project']['resources']
+        resource_list = project_dict['project']['resource']
         lst = ['/* generated in RouteConstantsJS from {} */'.format(str(__file__))]
         for r in resource_list:
             # crud = CRUD_Collective(project_dict, r)
@@ -919,10 +386,8 @@ class RouteConstantsJS(str):
 
         instance = super().__new__(cls, contents)
         return instance
-
-
 def test_route_constants_js():
-    route_constants = RouteConstantsJS(DictMd(getProjectMDString()))
+    route_constants = RouteConstantsJS(Tier(ProjectStringDefault()))
     route_constants = ['                      {}'.format(x) for x in route_constants.split('\n')]
     print('  route_constants_js:', '\n'.join(route_constants).strip())
     assert (
@@ -933,7 +398,7 @@ def test_route_constants_js():
 
 class ApiRoutes(str):
     def __new__(cls, project_dict):
-        resource_list = project_dict['project']['resources']
+        resource_list = project_dict['project']['resource']
         # lst = ['/* generated in RouteConstantsJS from {} */'.format(str(__file__))]
         lst = []
         # lst_comments=[]
@@ -954,12 +419,10 @@ class ApiRoutes(str):
 
         instance = super().__new__(cls, contents)
         return instance
-
-
 '''
 class ApiRoutes(str):
     def __new__(cls,project_dict):
-        resource_list = project_dict['project']['resources']
+        resource_list = project_dict['project']['resource']
         # lst = ['/* generated in RouteConstantsJS from {} */'.format(str(__file__))]
         lst=[]
         #lst_comments=[]
@@ -977,10 +440,8 @@ class ApiRoutes(str):
         instance = super().__new__(cls, contents)
         return instance
 '''
-
-
 def test_api_routes():
-    api_routes = ApiRoutes(DictMd(getProjectMDString()))
+    api_routes = ApiRoutes(Tier(ProjectStringDefault()))
     api_routes = ['                    {}'.format(x) for x in api_routes.split('\n')]
     print('          api_routes:', '\n'.join(api_routes).strip())
     print()
@@ -988,135 +449,54 @@ def test_api_routes():
     assert ('                    server.route(account_route_delete);' in api_routes)
 
 
-'''
-class NVEnv(NVList):
-    def __init__(self, env_list):
 
-        for nv in [{'name': '<<{}>>'.format(nv['name']), 'value': nv['value']} for nv in env_list]:
-            self.append(nv)
-
-def test_nv_env():
-    actual = NVEnv(ListEnv(getEnvString()))
-    print('              nv_env:', actual)
-    assert ({'name': '<<GH_TRUNK>>', 'value': 'main'} in actual)
-    assert ({'name': '<<GH_BRANCH>>', 'value': 'first'} in actual)
-    assert ({'name': '<<GH_USER>>', 'value': 'wilfongjt'} in actual)
-    assert ({'name': '<<GH_MESSAGE>>', 'value': 'init'} in actual)
-'''
-
-
-class NVField(NVList):  # name value field
-    # NV an individual resource field
-    # apply to a template
-    def __init__(self, project_dict, resource_name, field_name):
-        if resource_name not in project_dict['project']['resources']:
-            raise Exception('Resource Name Not Found: {}'.format(resource_name))
-        row_dict = {row['field']: row for row in project_dict['project']['resources'][resource_name]['model']['rows']}
-        if field_name not in row_dict:
-            raise Exception('Resource Field Name Not Found: {}'.format(field_name))
-
-        # rc = [{'name': '<<{}_{}>>'.format(field_name.upper(), fld.upper()), 'value': row_dict[field_name][fld] } for fld in row_dict[field_name]]
-        # for x in rc: self.add(x)
-        # print('NVField resource', resource_name)
-        # pprint([{'name': '<<{}_{}>>'.format(field_name.upper(), fld.upper()), 'value': row_dict[field_name][fld], 'resource': resource_name } for fld in row_dict[field_name]])
-
-        self.extend([{'name': '<<{}_{}>>'.format(field_name.upper(), fld.upper()), 'value': row_dict[field_name][fld],
-                      'resource': resource_name} for fld in row_dict[field_name]]
-                    )
-
-
-def test_nv_field():
-    actual = NVField(DictMd(getProjectMDString()), 'account', 'id')
-    print('            nv_field:', actual)
-    assert ({'name': '<<ID_FIELD>>', 'value': 'id', 'resource': 'account'} in actual)
-    assert ({'name': '<<ID_MIN>>', 'value': 3, 'resource': 'account'} in actual)
-    assert ({'name': '<<ID_MAX>>', 'value': 330, 'resource': 'account'} in actual)
-    assert ({'name': '<<ID_RESOURCE>>', 'value': 'account', 'resource': 'account'} in actual)
-    assert ({'name': '<<ID_PATTERN>>', 'value': '^.{3,330}$', 'resource': 'account'} in actual)
-
-    actual = NVField(DictMd(getProjectMDString()), 'account', 'owner')
-    print('            nv_field:', actual)
-    assert ({'name': '<<OWNER_FIELD>>', 'value': 'owner', 'resource': 'account'} in actual)
-    assert ({'name': '<<OWNER_MIN>>', 'value': 3, 'resource': 'account'} in actual)
-    assert ({'name': '<<OWNER_MAX>>', 'value': 330, 'resource': 'account'} in actual)
-    assert ({'name': '<<OWNER_RESOURCE>>', 'value': 'account', 'resource': 'account'} in actual)
-    assert ({'name': '<<OWNER_PATTERN>>', 'value': '^.{3,330}$', 'resource': 'account'} in actual)
-
-
-class NVResourceFields(NVList):
-    # NV all resource fields
-    # apply to a template
+class NVResourceMethodScopes(NVList):
+    # NVResourceMethodScopes(project_dict, resource_name)
     def __init__(self, project_dict, resource_name):
-        # upsert = True
-        # print('B resource_name', resource_name)
-        if resource_name not in project_dict['project']['resources']:
+        print('NVResourceMethodScopes type', type(project_dict))
+        print('NVResourceMethodScopes dict',project_dict)
+
+        if resource_name not in project_dict['project']['resource']:
+            # print('project_dict', project_dict['project']['resource'])
             raise Exception('Resource Name Not Found: {}'.format(resource_name))
-        for row in project_dict['project']['resources'][resource_name]['model']['rows']:
-            # print('NVResourceFields', resource_name)
-            self.extend(NVField(project_dict, resource_name, row['field']))
+        # Route Scopes
+        self.add({'name': '<<DELETE_SCOPE>>', 'value': RouteScopes(project_dict, resource_name, 'DELETE')})
+        self.add({'name': '<<GET_SCOPE>>', 'value': RouteScopes(project_dict, resource_name, 'GET')})
+        self.add({'name': '<<POST_SCOPE>>', 'value': RouteScopes(project_dict, resource_name, 'POST')})
+        self.add({'name': '<<PUT_SCOPE>>', 'value': RouteScopes(project_dict, resource_name, 'PUT')})
+
+def test_nv_resource_method_scopes():
+    actual = NVResourceMethodScopes(Tier(ProjectStringDefault()), 'account')
+    print('         resource method scope:', actual)
+    for nv in actual:
+        assert ('name' in nv)
+        assert ('value' in nv)
+        assert (nv['name'] in ['<<DELETE_SCOPE>>', '<<GET_SCOPE>>','<<POST_SCOPE>>','<<PUT_SCOPE>>'])
+        assert (nv['value'][0] in ['api_admin', 'api_guest', 'api_user'])
 
 
-def test_nv_resource_fields():
-    actual = NVResourceFields(DictMd(getProjectMDString()), 'account')
-    print('  nv_resource_fields:', actual)
-    # pprint(actual)
-    assert ({'name': '<<ID_FIELD>>', 'value': 'id', 'resource': 'account'} in actual)
-    assert ({'name': '<<ID_MIN>>', 'value': 3, 'resource': 'account'} in actual)
-    assert ({'name': '<<ID_MAX>>', 'value': 330, 'resource': 'account'} in actual)
-    assert ({'name': '<<ID_RESOURCE>>', 'value': 'account', 'resource': 'account'} in actual)
-    assert ({'name': '<<ID_PATTERN>>', 'value': '^.{3,330}$', 'resource': 'account'} in actual)
-    assert ({'name': '<<OWNER_FIELD>>', 'value': 'owner', 'resource': 'account'} in actual)
-    assert ({'name': '<<OWNER_MIN>>', 'value': 3, 'resource': 'account'} in actual)
-    assert ({'name': '<<OWNER_MAX>>', 'value': 330, 'resource': 'account'} in actual)
-    assert ({'name': '<<OWNER_RESOURCE>>', 'value': 'account', 'resource': 'account'} in actual)
-    assert ({'name': '<<OWNER_PATTERN>>', 'value': '^.{3,330}$', 'resource': 'account'} in actual)
 
 
-class NVResource(NVList):  # name value resource
-    # NV a resource_name
-    # apply to a template
+class NVResourceSchemaVersion(NVList):
     def __init__(self, project_dict, resource_name):
-        if resource_name not in project_dict['project']['resources']:
-            # print('project_dict', project_dict['project']['resources'])
-            raise Exception('Resource Name Not Found: {}'.format(resource_name))
-        self.add({'name': '<<API_RESOURCE>>', 'value': resource_name})
-        # print('NVResource', resource_name)
-        self.extend(NVResourceFields(project_dict, resource_name))
+        schema = 'api'
+        print('project_dict',project_dict)
+        #print('resource_name',resource_name)
+        if 'schema' in project_dict['project']['resource'][resource_name]:  # schema:
+            schema = project_dict['project']['resource'][resource_name]['schema']
+        version = '0.0.1'
+        if 'version' in project_dict['project']['resource'][resource_name]:  # schema:
+            version = project_dict['project']['resource'][resource_name]['version']
 
+        self.add({'name': '<<API_SCHEMA>>', 'value': '{}_{}'.format(schema, version.replace('.', '_'))})
+def test_nv_resource_schema_version():
+    actual = NVResourceSchemaVersion(Tier(ProjectStringDefault()), 'account')
+    print('nv resource schema version', actual)
+    assert(actual == [{'name': '<<API_SCHEMA>>', 'value': 'api_0_0_0'}])
 
-def test_nv_resource():
-    actual = NVResource(DictMd(getProjectMDString()), 'account')
-    print('         nv_resource:', actual)
-    assert ({'name': '<<API_RESOURCE>>', 'value': 'account'} in actual)
-    assert ({'name': '<<ID_FIELD>>', 'value': 'id', 'resource': 'account'} in actual)
-    assert ({'name': '<<ID_MIN>>', 'value': 3, 'resource': 'account'} in actual)
-    assert ({'name': '<<ID_MAX>>', 'value': 330, 'resource': 'account'} in actual)
-    assert ({'name': '<<ID_RESOURCE>>', 'value': 'account', 'resource': 'account'} in actual)
-    assert ({'name': '<<ID_PATTERN>>', 'value': '^.{3,330}$', 'resource': 'account'} in actual)
-    assert ({'name': '<<OWNER_FIELD>>', 'value': 'owner', 'resource': 'account'} in actual)
-    assert ({'name': '<<OWNER_MIN>>', 'value': 3, 'resource': 'account'} in actual)
-    assert ({'name': '<<OWNER_MAX>>', 'value': 330, 'resource': 'account'} in actual)
-    assert ({'name': '<<OWNER_RESOURCE>>', 'value': 'account', 'resource': 'account'} in actual)
-    assert ({'name': '<<OWNER_PATTERN>>', 'value': '^.{3,330}$', 'resource': 'account'} in actual)
+# Tasks
 
-    actual = NVResource(DictMd(getProjectMDString()), 'sample_resource')
-    print('         nv_resource:', actual)
-    assert ({'name': '<<API_RESOURCE>>', 'value': 'sample_resource'} in actual)
-    assert ({'name': '<<ID_FIELD>>', 'value': 'id', 'resource': 'sample_resource'} in actual)
-    assert ({'name': '<<ID_MIN>>', 'value': 3, 'resource': 'sample_resource'} in actual)
-    assert ({'name': '<<ID_MAX>>', 'value': 330, 'resource': 'sample_resource'} in actual)
-    assert ({'name': '<<ID_RESOURCE>>', 'value': 'sample_resource', 'resource': 'sample_resource'} in actual)
-    assert ({'name': '<<ID_PATTERN>>', 'value': '^.{3,330}$', 'resource': 'sample_resource'} in actual)
-    assert ({'name': '<<OWNER_FIELD>>', 'value': 'owner', 'resource': 'sample_resource'} in actual)
-    assert ({'name': '<<OWNER_MIN>>', 'value': 3, 'resource': 'sample_resource'} in actual)
-    assert ({'name': '<<OWNER_MAX>>', 'value': 330, 'resource': 'sample_resource'} in actual)
-    assert ({'name': '<<OWNER_RESOURCE>>', 'value': 'sample_resource', 'resource': 'sample_resource'} in actual)
-    assert ({'name': '<<OWNER_PATTERN>>', 'value': '^.{3,330}$', 'resource': 'sample_resource'} in actual)
-
-
-# Task
-
-class TaskInitializeEnv(ProcessProject):
+class Task_InitializeEnv(ProcessProject):
     ##
     ###### Initialize MD2
     ##
@@ -1156,7 +536,7 @@ class TaskInitializeEnv(ProcessProject):
         return self
 
 
-class TaskConfigure(ProcessProject):
+class Task_Configure(ProcessProject):
     ##
     ###### Configure MD2 Environment Values
     def __init__(self, no=0):  # , env_file_content_string): # , recorder):
@@ -1214,7 +594,7 @@ class TaskConfigure(ProcessProject):
         return self
 
 
-class TaskInitializeProjecMd(ProcessProject):
+class Task_InitializeProjecMd(ProcessProject):
     ##
     ###### Configure MD2 Environment Values
     def __init__(self, no=0):  # , env_file_content_string): # , recorder):
@@ -1236,14 +616,14 @@ class TaskInitializeProjecMd(ProcessProject):
 
     def process(self):
         MultiLogger().set_msg(
-            '{}. TaskInitializeProjecMd {}'.format(self.no, self.get_application().get_name())).runtime().terminal()
+            '{}. Task_InitializeProjecMd {}'.format(self.no, self.get_application().get_name())).runtime().terminal()
 
         self.initialize_project_md()
 
         return self
 
 
-class TaskGithub(ProcessProject):
+class Task_Github(ProcessProject):
     ##
     ###### Clone GitHub Repository
     ## Create and Configure a Project Repository.
@@ -1292,7 +672,7 @@ class TaskGithub(ProcessProject):
         return self
 
 
-class TaskGithubPatch(ProcessProject):
+class Task_GithubPatch(ProcessProject):
     ##
     ###### Patch Clone
     ##
@@ -1342,7 +722,7 @@ class TaskGithubPatch(ProcessProject):
         return self
 
 
-class TaskInitializeProjectSpace(ProcessProject):
+class Task_InitializeProjectSpace(ProcessProject):
     ##
     ###### Initialize ProjectSpace
     ##
@@ -1369,7 +749,7 @@ class TaskInitializeProjectSpace(ProcessProject):
         return self
 
 
-class TaskInitializeDocker(ProcessProject):
+class Task_InitializeDocker(ProcessProject):
     ##
     ###### Initialize Docker
     ##
@@ -1396,7 +776,7 @@ class TaskInitializeDocker(ProcessProject):
         return self
 
 
-class TaskInitializeHeroku(ProcessProject):
+class Task_InitializeHeroku(ProcessProject):
     ##
     ###### Initialize Heroku
     ##
@@ -1423,7 +803,7 @@ class TaskInitializeHeroku(ProcessProject):
         return self
 
 
-class TaskInitializeNode(ProcessProject):
+class Task_InitializeNode(ProcessProject):
     ##
     ###### Initialize Node
     ##
@@ -1450,7 +830,7 @@ class TaskInitializeNode(ProcessProject):
         return self
 
 
-class TaskInitializeJWT(ProcessProject):
+class Task_InitializeJWT(ProcessProject):
     ##
     ###### Initialize Node
     ##
@@ -1477,7 +857,7 @@ class TaskInitializeJWT(ProcessProject):
         return self
 
 
-class TaskInitializeNodemon(ProcessProject):
+class Task_InitializeNodemon(ProcessProject):
     ##
     ###### Initialize Nodemon
     ##
@@ -1503,8 +883,8 @@ class TaskInitializeNodemon(ProcessProject):
 
         return self
 
-
-class TaskInitializeHapi(ProcessProject):
+# /lib/route/__routes__
+class Task_InitializeHapi(ProcessProject):
     ##
     ###### Initialize Hapi
     ##
@@ -1524,15 +904,24 @@ class TaskInitializeHapi(ProcessProject):
     def hapi_templates(self):
         if not self.get_application():
             raise Exception('Application Not Found!')
-        self.get_application().add('hapi')
+
+        print('ProcessProject', ProcessProject())
+
+        #self.get_application().add('hapi')
+        self.get_application().add(self.get_template_folder_key())
         ##* Templatize Hapi templates in '/template/hapi'
+        ##* Extract ENVironment name-value pairs from memory
         nv_list = self.get_template_key_list()
+        ##* Read project file from user provided bin/project_??.md file
         filename_md = TemplateString('project_<<WS_PROJECT>>.md', nv_list)
         folderfilename_md = '{}/{}'.format(os.getcwd(), filename_md)
         print('folderfilename_md', folderfilename_md)
         resource_string = StringReader(folderfilename_md)
-        project_dict = DictMd(resource_string)
+        ##* Convert project file contents to Dictionary
+        project_dict = Tier(resource_string)
+        ##* Extract ROUTE_CONST name-value pairs from project dictionary
         nv_list.append({'name': '<<ROUTE_CONST>>', 'value': RouteConstantsJS(project_dict)})
+        ##* Extract API_ROUTES name-value pairs from project dictionary
         nv_list.append({'name': '<<API_ROUTES>>', 'value': ApiRoutes(project_dict)})
 
         print('nv_list', nv_list)
@@ -1552,62 +941,17 @@ class TaskInitializeHapi(ProcessProject):
 
 
 # create server_ext
-# merge server_ext with <<API_ROUTES>> TaskMergeHapiServerRouteNames
-# merge server_ext with <<ROUTE_CONST>> TaskMergeHapiServerRouteNames
-# intialize routes_*.js files TaskInitializeHapiRoutes
+# merge server_ext with <<API_ROUTES>> Task_MergeHapiServerRouteNames
+# merge server_ext with <<ROUTE_CONST>> Task_MergeHapiServerRouteNames
+# intialize routes_*.js files Task_InitializeHapiRoutes
+from task_initialize_hapi_routes import Task_InitializeHapiRoutes
 
-class TaskInitializeHapiRoutes(ProcessProject):
-    ##
-    #### TaskInitializeHapiRoutes
-    ##
-    ##* generate hapi route defintions into 'lib/route/__routes__'
-    ##* direct dependent on /bin/project_??.md
-    ##* indirect dependency on /bin/md2.env
-
-    def __init__(self, no=0):
-        ProcessProject.__init__(self)
-        self.set_template_folder_key('hapi_routes')
-        self.no = no
-
-    def route_templates(self):
-        # handle generated routes for each resource
-        # open 'bin/<project>.md' (by default, <project>.md enables the ACCOUNT resource)
-
-        # create a nv_list for <<API_ROUTES>> and <<ROUTE_CONST>>, eg [{name: '', value: ''},...]
-
-        # make template list for each resource (route_post,route_get, route_put, route_delete)
-        # remove routes not defined in the <project>.md
-        # apply nv_list to each template
-        # save to /<project>/lib/__routes__
-
-        nv_list = self.get_template_key_list()
-        filename_md = TemplateString('project_<<WS_PROJECT>>.md', nv_list)
-        folderfilename_md = '{}/{}'.format(os.getcwd(), filename_md)
-        resource_string = StringReader(folderfilename_md)
-        project_dict = DictMd(resource_string)
-
-        for resource_name in ResourceNames(project_dict):
-            nv_list = self.get_template_key_list()  # reset nv_list
-            nv_list.extend(NVResource(project_dict, resource_name))  # add field attributes
-
-            self.templatize(nv_list=nv_list)
-
-        return self
-
-    def process(self):
-        print('TaskInitializeHapiRoutes process')
-        repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('{}. TaskInitializeHapiRoutes: {}'.format(self.no, repo_name)).runtime().terminal()
-
-        self.route_templates()
-
-        return self
-
-
-class TaskInitializePostgres(ProcessProject):
+class Task_InitializePostgres(ProcessProject):
     ##
     ###### Initialize Postgres
     ##
+
+    ## Templates source/template/postgress
 
     def __init__(self, no=0):
         ProcessProject.__init__(self)
@@ -1631,11 +975,13 @@ class TaskInitializePostgres(ProcessProject):
         return self
 
 
-class TaskInitializeModel(ProcessProject):
+class Task_InitializeModel(ProcessProject):
     ##
     ###### Initialize Model
     ##
-
+    ## Generate javascript
+    ##
+    ## Templates in source/template/model
     def __init__(self, no=0):
         ProcessProject.__init__(self)
         self.set_template_folder_key('model')
@@ -1644,9 +990,20 @@ class TaskInitializeModel(ProcessProject):
     def db_deploy_templates(self):
         if not self.get_application():
             raise Exception('Application Not Found!')
-        self.get_application().add(self.get_template_folder_key())
+        # self.get_application().add(self.get_template_folder_key())
+        # customize nv_list
         ##* Templatize DB Deploy templates
-        self.templatize()
+        nv_list = self.get_template_key_list()
+        project_dict = self.get_project_dictionary()
+        # get resource
+        #for xxx in project_dict['project']:
+        #    print('xxx',xxx)
+        #print('xxx done')
+        #nv_list = nv_list.extend(NVResource(project_dict=project_dict))
+        for resource in project_dict['project']['resource']:
+            print('resource', resource)
+
+        self.templatize(nv_list=nv_list)
         return self
 
     def process(self):
@@ -1658,7 +1015,7 @@ class TaskInitializeModel(ProcessProject):
         return self
 
 
-class TaskUpdateEnvironment(ProcessProject):
+class Task_UpdateEnvironment(ProcessProject):
     ##
     ###### Update MD2 Environment Variables
     ##
@@ -1724,7 +1081,7 @@ class Auto():
     ##
     ###### Auto
     ##
-    ## Launch/run task
+    ## Launch/run Task_
     def __init__(self, process):
         process.run()
 
@@ -1736,10 +1093,11 @@ class Auto():
 
 if __name__ == "__main__":
     # execute as docker
+    test = True
     test = False
     if test:
         print('Testing...')
-        test_dict_md()
+        # test_dict_md()
 
         test_project_name()
         test_resource_names()
@@ -1747,17 +1105,22 @@ if __name__ == "__main__":
         # test_resource_permissions()
         # test_resource_fields()
         # dep test_resource_field_sizes()
-        test_pattern()
+        #test_pattern()
         test_resource_patterns()
         test_route_constants_js()
         test_api_routes()
-        test_min()
-        test_max()
+        #test_min()
+        #test_max()
         test_list_env()
         # test_nv_env()
         # test_nv_field()
         # test_nv_resource_fields()
         test_nv_resource()
+
+        test_route_scope()
+
+        test_nv_resource_method_scopes()
+        test_nv_resource_schema_version()
 
         print('Testing Complete')
     if not test:

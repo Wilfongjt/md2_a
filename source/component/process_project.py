@@ -1,17 +1,17 @@
-import os, stat
+import os
 from pprint import pprint
 from source.component import ProcessPackage, MultiLogger, Permissions
+from source.component.markdown.tier_md import TierMD
+
+from source.component.markdown.project_string_default import ProjectStringDefault
+# from source.component.project_string import ProjectStringDefault
 from able import TemplateString, \
                  EnvVarString, \
                  NameValuePairs, \
-                 CloneRepo, \
-                 StringWriter, \
+    StringWriter, \
                  TemplateList_Latest,\
                  StringReader, \
-                 UpserterString,\
-                 Recorder, \
-                 DiagramString,\
-                 Inputable, \
+    Inputable, \
                  UpdaterString
 
 
@@ -56,6 +56,20 @@ class ProcessProject(ProcessPackage):
 
         self.e_var.append({'name': name, 'value': value})
         return self
+
+    def get_project_dictionary(self):
+        # set resource_string to default
+        resource_string = ProjectStringDefault()
+        nv_list = self.get_template_key_list()
+        # attempt to open project
+        filename_md = TemplateString('project_<<WS_PROJECT>>.md', nv_list)
+        if '<<' not in filename_md:
+            folderfilename_md = '{}/{}'.format(os.getcwd(), filename_md)
+            resource_string = StringReader(folderfilename_md)
+        #else:
+        #    print('**** ProjectStringDefault is set to Default...use for testing ****')
+        project_dict = TierMD(resource_string)
+        return project_dict
 
     def get_template_key_list(self):
         ##* __get_template_key_list__, list of template formated env vars, eg. [{\<\<GH_A>>:'abc'}, ...]
@@ -123,103 +137,262 @@ class ProcessProject(ProcessPackage):
             folder_file = '/'.join(str(folder_file).split('/')[0:-1])
         os.makedirs(folder_file, exist_ok=True)
         return self
+    '''
+    def templatize_a(self, body_text, crud, nv_list):
+        operations = ''
 
-    def templatize(self, nv_list=None, output_folder=None):
+        if 'd' in crud or 'D' in crud:  # delete target
+            operations += 'D'
+            if os.path.exists(repo_folderfile):
+                # print('D ', repo_folderfile)
+                os.remove(repo_folderfile)
+        else:
+            operations += '-'
+
+        if 'c' in crud or 'C' in crud:  # create from template
+            # print('templatize 2.3 create', repo_folderfile)
+
+            # if not os.path.exists(repo_folderfile):
+            operations += 'C'
+
+            if not os.path.exists(TemplateString(repo_folderfile, nv_list)):
+                # print('templatize 2.3.1')
+
+                # template_content = StringReader(template_folderfile)
+                template_content = TemplateString(StringReader(template_folderfile), nv_list)
+                # print('write', repo_folderfile)
+                # print('write', template_content)
+                if active_resource:  # active: Y or N
+                    # print('templatize 2.3 create', repo_folderfile)
+                    # print('C ', repo_folderfile)
+                    StringWriter(TemplateString(repo_folderfile, nv_list), template_content)
+                # else:
+                #    print(TemplateString('  Inactive Resource <<API_RESOURCE>>',nv_list))
+                # StringWriter(repo_folderfile, template_content)
+        else:
+            operations += '-'
+
+        if 'r' in crud or 'R' in crud:  # read from target
+            # print('templatize 2.4')
+            operations += 'R'
+            print('repo_folderfile', repo_folderfile)
+            print('repo_folderfile exits', os.path.exists(repo_folderfile))
+            print('repo_folderfile', StringReader(repo_folderfile))
+            print('A .env     exits', os.path.exists(
+                '/Users/jameswilfong/Development/test_org/test_ws/test_prj/first/py_test/.env'))
+            print('B .env          ', StringReader(
+                '/Users/jameswilfong/Development/test_org/test_ws/test_prj/first/py_test/.env').replace('\n', '|'))
+
+            print('README.md     exits',
+                  os.path.exists('/Users/jameswilfong/Development/test_org/test_ws/test_prj/first/py_test/README.md'))
+            print('README.md          ',
+                  StringReader('/Users/jameswilfong/Development/test_org/test_ws/test_prj/first/py_test/README.md'))
+
+            target_content = TemplateString(StringReader(repo_folderfile), nv_list)
+            print('target_content', target_content, repo_folderfile)
+            template_content = TemplateString(StringReader(template_folderfile), nv_list)
+            print('template_content', template_content)
+            if target_content:
+                print('  R target_content  ', target_content.replace('\n', '|'))
+            if template_content:
+                print('  R template_content', template_content.replace('\n', '|'))
+
+        else:
+            operations += '-'
+
+        if 'u' in crud or 'U' in crud:  # update
+            # print('templatize 2.5')
+            operations += 'U'
+            print('U', StringReader(repo_folderfile))
+            # read template
+            # read target
+            tmp = UpdaterString(target_content).updates(template_content)
+            ## print('file {} nv-list {}'.format(repo_folderfile,nv_list), nv_list)
+            if repo_folderfile.endswith('.env'):
+                # print('  U repo_folderfile ',repo_folderfile)
+                # print('  U target_content  ', target_content.replace('\n','|'))
+                # print('  U template_content', template_content.replace('\n','|'))
+                print('  U tmp             ', tmp.replace('\n', '|'))
+            # here StringWriter(repo_folderfile, TemplateString(tmp, nv_list))
+            ## print('tmp', tmp)
+        else:
+            operations += '-'
+
+        return body_text
+    '''
+    def templatize(self, nv_list=None, output_folder=None, active_resource=True, verbose=False):
         ##* __templatize__ convert templates to code
-        # #* generate templates
-        #template_folder = os.getcwd().replace('/component', '/template/{}'.format(self.get_template_subfolder()))
-        #template_folder = template_folder.replace('/bin', '/source/template/{}'.format(self.get_template_subfolder()))
+        ##* generate templates
+        # C - Create out-file when it doesn't exist
+        # R - Read contents of out-file when it exists
+        # U - Update contents of out-file when it exists
+        # D - Delete out-file when it exits
+
         # print('templatize 1')
         template_folder = self.get_template_folder()
-        # print('templatize 1.1')
 
         # #* Convert Templates to Code
-        # # print('template_folder', template_folder)
-        # print('templatize template_folder',template_folder)
-        template_list = TemplateList_Latest(folder_path=template_folder)
-        # print('templatize 1.2 template_list', template_list)
 
-        # make list of template-keys and values
+        # get list of templates i.e., files ending in .tmpl
+        template_list = TemplateList_Latest(folder_path=template_folder)
+
+        # make list of template-keys and values ... {key: value, key: value, ...}
         if not nv_list: nv_list = self.get_template_key_list() # self.get_template_name_value_pairs()
-        # print('templatize 1.3 nv_list',nv_list)
 
         # process list of specific templates
+        #print('nv_list', nv_list)
         for tmplt in template_list:
-            # print('templatize 2')
-
+            #print('templatize 2 tmplt', tmplt)
+            # ??
             if self.get_application(): self.get_application().add('templatize')
+
             # handle multiple templates of the same name
             for template_folderfile in template_list[tmplt]['template']:
                 # print('templatize 2.1')
-
+                operations = ''
                 # make input and output file names
                 if not output_folder:
                     output_subfolder = template_list[tmplt]['output_subfolder']
                     repo_folderfile = '{}/{}'.format(self.get_repo_folder(), output_subfolder)
                     repo_folderfile = repo_folderfile.replace('root/', '')
-                    #repo_folderfile = TemplateString(repo_folderfile,nv_list)
-                    ## print('repo_folderfile',repo_folderfile)
+
                 else:
                     #repo_folderfile = output_folder
                     repo_folderfile = '{}/{}'.format(output_folder, template_list[tmplt]['output_subfolder'])
-                ## print('output_subfolder',template_list[tmplt]['output_subfolder'])
-                # print('repo_folderfile',repo_folderfile)
 
+                # make the command string e.g., whatever.js.CRUD.tmpl -> CRUD
                 cmd = str(template_folderfile).split('/')[-1].split('.')[-2]
-                ## print('template_folderfile',template_folderfile)
-                ## print('repo_folderfile    ', repo_folderfile)
+
                 # make templatized-content from template
                 #new_content = TemplateString(StringReader(template_folderfile), nv_list)
                 target_content = ''
                 template_content = ''
                 # make target-file from templatized-content
                 self.makedirs(repo_folderfile) # make output folder
+                # make the template folder e.g., /template/__project__ -> /template
                 template_name = '/'.join(self.get_template_folder().split('/')[0:-1])
                 # print('template_name',template_name)
                 MultiLogger().set_msg('   template({}) -> actual({})'.format(str(template_folderfile).replace(template_name,''), repo_folderfile.replace(self.get_branch_folder(),''))).runtime()
-                if 'd' in cmd or 'D' in cmd:  # delete target
-                    # print('templatize 2.2')
+                # make the target folder in the new repo
+                #print('repo_folderfile',repo_folderfile.split('\n'))
+                #print('nv_list',nv_list)
+                #print('-----A')
+                #pprint(nv_list)
+                #print('-----B')
+                #for ln in str(repo_folderfile).split('\n'):
+                #    for nv in nv_list:
+                #        print('nv', nv)
+                #        if nv['name'] in ln:
+                #            ln = ln.replace(nv['name'], '{}'.format(nv['value']))
+                if '<<' in repo_folderfile:
+                    #print('A repo_folderfile',repo_folderfile)
+                    #nv_list.extend(NVResource(project_dict,)) do this befor call to templatize
+                    #pprint(nv_list)
+                    #print('A repo_folderfile',repo_folderfile)
 
-                    if os.path.exists(repo_folderfile): os.remove(repo_folderfile)
+                    repo_folderfile = TemplateString(repo_folderfile, nv_list)
+                    #print('B repo_folderfile',repo_folderfile)
+                #print('template_folderfile     ',template_folderfile.split('/')[-1],template_folderfile)
+                #print('repo_folderfile         ', repo_folderfile.split('/')[-1] ,repo_folderfile)
+                #print('repo_folderfile exits   ', repo_folderfile.split('/')[-1], os.path.exists(repo_folderfile))
+                #print('repo_folderfile contents', repo_folderfile.split('/')[-1], StringReader(str(repo_folderfile)).replace('\n','|'))
+
+                #if os.path.exists(repo_folderfile):
+                #    print('  exists')
+                if '.env' in repo_folderfile:
+                    if verbose: print('found .env')
+
+                if 'd' in cmd or 'D' in cmd:  # delete target
+                    operations += 'D'
+                    if os.path.exists(repo_folderfile):
+                        if verbose: print('  D ', repo_folderfile)
+
+                        os.remove(repo_folderfile)
+                else:
+                    operations += '-'
 
                 if 'c' in cmd or 'C' in cmd:  # create from template
-                    # print('templatize 2.3  ', repo_folderfile)
+                    # print('templatize 2.3 create', repo_folderfile)
 
                     #if not os.path.exists(repo_folderfile):
+                    operations += 'C'
 
                     if not os.path.exists(TemplateString(repo_folderfile, nv_list)):
                         # print('templatize 2.3.1')
 
                         #template_content = StringReader(template_folderfile)
-                        template_content = TemplateString(StringReader(template_folderfile), nv_list)
+                        template_content = TemplateString(StringReader([template_folderfile]), nv_list)
                         # print('write', repo_folderfile)
                         # print('write', template_content)
-                        StringWriter(TemplateString(repo_folderfile, nv_list), template_content)
+                        if active_resource: # active: Y or N
+                            #print('templatize 2.3 create', repo_folderfile)
+                            #print('C ', repo_folderfile)
+                            if verbose: print('  C ', repo_folderfile.split('/')[-1],template_content.replace('\n','|'))
+                            StringWriter(TemplateString(repo_folderfile, nv_list), template_content)
+                        #else:
+                        #    print(TemplateString('  Inactive Resource <<API_RESOURCE>>',nv_list))
                         #StringWriter(repo_folderfile, template_content)
+                else:
+                    operations += '-'
 
                 if 'r' in cmd or 'R' in cmd:  # read from target
                     # print('templatize 2.4')
+                    operations += 'R'
 
-                    target_content = TemplateString(StringReader(repo_folderfile), nv_list)
-                    template_content = TemplateString(StringReader(template_folderfile), nv_list)
+                    #print('A .env     exits', os.path.exists(
+                    #    '/Users/jameswilfong/Development/test_org/test_ws/test_prj/first/py_test/.env'))
+                    #print('B .env          ', StringReader(
+                    #    '/Users/jameswilfong/Development/test_org/test_ws/test_prj/first/py_test/.env').replace('\n','|'))
+
+                    #print('README.md     exits',os.path.exists('/Users/jameswilfong/Development/test_org/test_ws/test_prj/first/py_test/README.md'))
+                    #print('README.md          ',StringReader('/Users/jameswilfong/Development/test_org/test_ws/test_prj/first/py_test/README.md'))
+
+                    target_content = TemplateString(StringReader(str(repo_folderfile)), nv_list)
+                    template_content = TemplateString(StringReader([template_folderfile]), nv_list)
+                    if template_content:
+                        if verbose: print('  R template_content', template_content.replace('\n','|'))
+
+                    if target_content:
+                        if verbose: print('  R target_content  ', target_content.replace('\n','|'))
+
+                else:
+                    operations += '-'
 
                 if 'u' in cmd or 'U' in cmd:  # update
                     # print('templatize 2.5')
-
+                    operations += 'U'
+                    #print('  U', StringReader(repo_folderfile))
                     # read template
                     # read target
                     tmp = UpdaterString(target_content).updates(template_content)
                     ## print('file {} nv-list {}'.format(repo_folderfile,nv_list), nv_list)
+                    if repo_folderfile.endswith('.env'):
+                        #print('  U repo_folderfile ',repo_folderfile)
+                        #print('  U target_content  ', target_content.replace('\n','|'))
+                        #print('  U template_content', template_content.replace('\n','|'))
+                        if verbose: print('  U write contents  ', tmp.replace('\n','|'))
+
                     StringWriter(repo_folderfile, TemplateString(tmp, nv_list))
+
                     ## print('tmp', tmp)
+                else:
+                    operations += '-'
+
                 if repo_folderfile.endswith('.sh'):
                     # make file runable
                     # Change the mode of path
                     Permissions(repo_folderfile, verbose=False)
+            #print('---')
+            #print('  operations', operations, repo_folderfile.split('/')[-1])
+
         #import subprocess
 
         #subprocess.run(["ls", "-l"])
         # print('templatize out')
+        #if repo_folderfile.endswith('.env'):
+        #    print('  operations', operations, repo_folderfile)
+
+        #print('  operations', operations, repo_folderfile.split('/')[-1])
 
         return self
 
@@ -229,29 +402,80 @@ class ProcessProject(ProcessPackage):
 
     def run(self):
         return self.process()
+'''
+class Templatize(TemplateString):
 
+    def __init__(self, template_folder_file, nv_list):
+        TemplateString.__init__(StringReader(template_folder_file), nv_list=nv_list)
 
-def main():
-    from able import DiagramString
+        #self.template_folder_file=template_folder_file
+        self.nv_list=nv_list
+        # make the command string e.g., /whatever.js.CRUD.tmpl -> CRUD
+        self.crud = str(template_folder_file).split('/')[-1].split('.')[-2]
+        # make the repo file namne e.g., /whatever.js.CRUD.tmpl -> whatever.js
+        self.repo_folder_file = str(template_folder_file).split('.')[0:-2]
+        print('repo_folder_file', self.repo_folder_file)
+
+        #self.repo_folder_file = ''
+    def get_template_key_list(self):
+        return self.nv_list
+
+    def get_repo_folder(self):
+        ##* __get_repo_folder__, location of github repo
+        #nv_list = self.get_template_name_value_pairs()
+        return TemplateString(
+            '{}/Development/<<WS_ORGANIZATION>>/<<WS_WORKSPACE>>/<<WS_PROJECT>>/<<GH_BRANCH>>/<<GH_REPO>>'.format(
+                os.environ['HOME']), nv_list=self.get_template_key_list())
+    def exists(self):
+        return os.path.exists(self.repo_folder_file)
+
+def test_templatize():
+    tmpl_folder_file = '{}/temp/tmplfile.env.cru-.tmpl'.format(os.getcwd())
+    nv_list = {}
+    print('cwd', tmpl_folder_file)
+
+    actual = Templatize(tmpl_folder_file, nv_list)
+
+    if os.path.exists(tmpl_folder_file):
+        os.remove(tmpl_folder_file)
+'''
+def process_project_test(status):
+    status.addTitle('Process Project test')
     os.environ['GH_TEST'] = 'TEST'
     #print ('ProcessProject',ProcessProject('github', recorder=Recorder()))
     #print('ProcessProject', ProcessProject().set_application('github').get_application() )
     #assert (ProcessProject().set_application('github').get_application() == 'github')
     #assert (ProcessProject('github', application=None) == {})
 
-    assert (ProcessProject().assign(ProcessPackage().set('A', 'a')).get('A') == 'a')
-    print ('xxx',ProcessProject().get_template_folder_key() )
+    status.assert_test ("ProcessPackage().set('A', 'a')).get('A') == 'a'",ProcessProject().assign(ProcessPackage().set('A', 'a')).get('A') == 'a')
 
-    assert (ProcessProject().set_template_folder_key('github').get_template_folder_key() == 'github')
+    status.assert_test ("ProcessProject().set_template_folder_key('github').get_template_folder_key() ",ProcessProject().set_template_folder_key('github').get_template_folder_key() == 'github')
 
-    assert (ProcessProject().get_template_key_list() == [{'name': '<<GH_TEST>>', 'value': 'TEST'}])
-    assert (ProcessProject().get_branch_folder() == '/Users/jameswilfong/Development/<<WS_ORGANIZATION>>/<<WS_WORKSPACE>>/<<WS_PROJECT>>/<<GH_BRANCH>>')
-    assert (ProcessProject().get_repo_folder() == '/Users/jameswilfong/Development/<<WS_ORGANIZATION>>/<<WS_WORKSPACE>>/<<WS_PROJECT>>/<<GH_BRANCH>>/<<GH_REPO>>')
+    status.assert_test  ("ProcessProject().get_template_key_list()",ProcessProject().get_template_key_list() == [{'name': '<<GH_TEST>>', 'value': 'TEST'}])
+    status.assert_test  ("ProcessProject().get_branch_folder()",ProcessProject().get_branch_folder() == '/Users/jameswilfong/Development/<<WS_ORGANIZATION>>/<<WS_WORKSPACE>>/<<WS_PROJECT>>/<<GH_BRANCH>>')
+    status.assert_test  ("ProcessProject().get_repo_folder()",ProcessProject().get_repo_folder() == '/Users/jameswilfong/Development/<<WS_ORGANIZATION>>/<<WS_WORKSPACE>>/<<WS_PROJECT>>/<<GH_BRANCH>>/<<GH_REPO>>')
 
-    ProcessProject().set_env_var('GH_TEST', 'TEST').configure_environment()
+    # ProcessProject().set_env_var('GH_TEST', 'TEST').configure_environment()
 
     ProcessProject().set_template_folder_key('__project__').templatize()
 
+    #assert(ProcessProject().templatize_a('',{'<<A>>':'a'}) == 'A=a')
+
+    #test_templatize()
+    #print('project_dictionary')
+    #pprint(ProcessProject().get_project_dictionary())
+    status.assert_test  ("'project' in ProcessProject().get_project_dictionary()", 'project' in ProcessProject().get_project_dictionary())
+    #print('StringReader', StringReader('/Users/jameswilfong/Development/test_org/test_ws/test_prj/first/py_test/.env'))
+
+def main(status):
+    process_project_test(status)
+
 if __name__ == "__main__":
+    from source.component.status import Status
+    from source.component.status_report import StatusReport
+
+    status = Status()
     # execute as docker
-    main()
+
+    main(status)
+    print(StatusReport(status))

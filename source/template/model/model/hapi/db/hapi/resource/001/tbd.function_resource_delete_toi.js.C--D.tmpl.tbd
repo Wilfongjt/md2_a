@@ -1,12 +1,13 @@
 'use strict';
 // const pg = require('pg');
-
+// function_adoptee_delete_toi.js.C--D.tmpl
 const Step = require('../../../lib/runner/step');
-module.exports = class FunctionAdopteeDeleteToi extends Step {
+module.exports = class FunctionResourceDeleteToi extends Step {
   constructor(baseName, baseVersion) {
-    super(baseName, baseVersion);
+    // super(baseName, baseVersion);
+    super(baseName, baseVersion, resource_name, role, scope, pk, sk);
     // this.kind = kind;
-    this.name = 'adoptee_del';
+    this.name = 'resource_del';
     this.desc = `Delete ${this.name} by identity`;
     this.name = `${this.kind}_${this.version}.${this.name}`;
     this.role = 'api_user, api_admin';

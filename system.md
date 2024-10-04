@@ -23,33 +23,116 @@
 * primarykey is (pk,sk)
 * identity is (id)
 * request is 
+
+# project: <project_name>
+## claim: <claim_name>
+## resource: <resource_name>
+### model: <model_name>
+### data: <data_name>
+
+
 # data Types
 default is TEXT
 {}
-# Transformation
+
+# Model
+## Model Datum Configuration
+## Model Datum Values 
+
+# Transformations 
+Preparing data for storage, retrieval, or removal. 
+
+## Storage Transformation (Input)
+    POST
+    PUT
+## Assembly Transformation (Output)
+    GET
+## Terminal Transforation 
+    DELETE
+
+
+account_route_post.js
+| Template  | javascript route | SQL |
+|---|---|---| 
+| function_account_post_toj.js.C--D.tmpl| function_account_post_toj | FunctionAccountPostToj |
+
+| Template                               | route (js)                | SQL                    |
+|----------------------------------------|---------------------------|------------------------|
+| function_account_post_toj.js.C--D.tmpl | function_account_post_toj | FunctionAccountPostToj |
+
+* generate route (.js) files,  
+* steady state .sql 
+account
+hapi              SQL gen                       SQL base          SQL base  
+POST /account --> account(/account/{owner}) --> resource_post --> insert
+
+resource_name, owner, form
+
+# Model Configuration
+with common datum 
+
+## resource: Sample
+
+| field    | type    | size  | validate | encrypt | api_admin | api_guest | api_user |
+|----------|---------|-------|----------|---------|-----------|-----------|----------|
+| id       | C       | 3-330 | R        | N       | R         | CR        | RUD      |
+| type     | C       | 3-330 | R        | N       | R         | CR        | RUD      |
+| owner    | C       | 3-330 | R        | N       | R         | CR        | RUD      |
+| password | C       | 8-330 | R        | Y       | -         | CR        | RUD      |
+| point    | POINT   | 400   | R        | N       | R         | CR        | RUD      |
+| polygon  | POLYGON | 4000  | R        | N       | R         | CR        | RUD      |
+
+#### cache as name-value pairs
+
+name: project, value:project_test_prj 
+name: project#resources, value: ??
+name: <project>#resources#<resource>#field, value: id
+name: <project>#resources#SAMPLE#type, value: C
+name: <project>#resources#SAMPLE#size, value: 3-330
+name: <project>#resources#SAMPLE#validate, value: R
+name: <project>#resources#SAMPLE#encrypt, value: N
+name: <project>#resources#SAMPLE#api_admin, value: R
+name: <project>#resources#SAMPLE#api_guest, value: CR
+name: <project>#resources#SAMPLE#api_user, value: RUD
+
+# Input Data Values
+
+| id       | type   | owner                    | password | point     | polygon                         |  |
+|----------|--------|--------------------------|----------|-----------|---------------------------------|--|
+| abc123   | SAMPLE | api_admin@lyttlebit.com  | a1A!aaaa | [0.5,0.5] | [[0.0,0.0],[0.0,2.0],[1.0,0.0]] |  |
+| abc123   | SAMPLE | api_guest@lyttlebit.com  | a1A!aaaa | [0.5,1.5] | [[0.0,2.0],[1.0,2.0],[1.0,0.0]] |  |
+| abc123   | SAMPLE | api_user@lyttlebit.com   | a1A!aaaa | [1.5,0.5] | [[1.0,0.0],[1.0,2.0],[2.0,0.0]] |  |
+
+
+# Data Transformation
+Client Data 
+Data Breakdown
+Triplization 
+
 * model_datum is {
     id:    {value: abc123,    type:C, size:3-330, validate:R},
-    type:  {value: abc123,    type:C, size:3-330, validate:R},
+    type:  {value: SAMPLE,    type:C, size:3-330, validate:R},
     owner: {value: abc123,    type:C, size:3-330, validate:R},
-    password: {value: abc123, type:C, size:3-330, validate:R, encrypted: Y}, 
+    password: {value: abc123, type:C, size:8-330, validate:R, encrypted: Y}, 
     point: {value: [1.0,1.0], type:POINT, size:400, validate:R},
     polygon: {value: [[1.0,1.0],[2.0,2.0],[2.0,1.0]], type:POLYGON, size:4000, validate:R}
 }
-
+* 
 * client form is { 
             id: abc123, 
             type: SAMPLE, 
             owner: abc123, 
             password: a1A!aaaa, 
             point: [1.0,1.0],
-            polygon: [[x,y],[x,y],...]
+            polygon: [[0.0,0.0],[0.0,2.0],[1.0,0.0]]
           }
+
 * triple is {pk:SAMPLE#abc123, sk:name#id, tk:value#abc123}
 * triple is {pk:SAMPLE#abc123, sk:name#type, tk:SAMPLE}
 * triple is {pk:SAMPLE#abc123, sk:name#owner, tk:value#abc123}
 * triple is {pk:SAMPLE#abc123, sk:name#password, tk:value#abc123}
 * triple is {pk:SAMPLE#abc123, sk:name#point, tk:value#(x,y)}
-* triple is {pk:SAMPLE#abc123, sk:name#point, tk:value#(x,y)}
+* triple is {pk:SAMPLE#abc123, sk:name#polygon, tk:value#([[x,y],[x,y]...])}
 
 
 # ISSUES
@@ -330,7 +413,7 @@ PUT
 
 1. Define form when scope is in ['POST','PUT']
 1. Define headers from ['authorization','test']
-1. Define test from ['data','claims','owner','api_settings']
+1. Define test from ['data','claim','owner','api_settings']
 1. Define payload from form when scope is ['POST','PUT']
 
 ## (request)
@@ -1293,3 +1376,33 @@ Template
     
     
 Document    
+
+# Markdown to JSON
+
+# A:
+1. B:b
+1. C:c
+
+## D:
+1. E:e
+
+| F  | G  | H  |
+|----|----|----|
+| f1 | g1 | h1 |
+| f2 | g2 | g2 |
+| f3 | g3 | g3 |
+
+'''
+{
+    'a': {
+        'b': 'b',
+        'c': 'c',
+        'd': {
+          'e': 'e',
+          'f1': {'f': 'f1', 'g': 'g1', 'h': 'h1'},
+          'f2': {'f': 'f2', 'g': 'g2', 'h': 'h2'},
+          'f3': {'f': 'f3', 'g': 'g3', 'h': 'h3'}
+        }
+    }
+}
+'''
