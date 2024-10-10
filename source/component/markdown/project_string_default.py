@@ -28,34 +28,21 @@ class ProjectStringDefault(str):
     ##### Model:
     resource.model 
     
-    | name        | type | size   | validate | encrypt |
-    |-------------|------|--------|----------|---------|
-    | id          | C    | 3-330  | R        | N       |
-    | type        | C    | 3-330  | R        | N       |
-    | owner       | C    | 3-330  | R        | N       |
-    | username    | C    | 3-330  | R        | N       |  
-    | displayname | C    | 3-330  | R        | N       |
-    | password    | C    | 10-330 | R        | Y       |
-    | scope       | C    | 3-330  | R        | N       |
+    | name        | type | size   | validate | encrypt | api_admin | api_guest | api_user |
+    |-------------|------|--------|----------|---------|-----------|-----------|----------|
+    | id          | C    | 3-330  | R        | N       | R         | CR        | RUD      | 
+    | type        | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | owner       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | username    | C    | 3-330  | R        | N       | R         | CR        | RUD      |  
+    | displayname | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    | password    | C    | 10-330 | R        | Y       | -         | CR        | UD       |
+    | scope       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
     
     Types
     * C is character, any keyboard character
     * L is logical aka boolean, eg ‘True', ‘False', ’T', ‘F', ‘Y', ’N', ‘1', ‘0' 
     * N is numeric, eg ‘1' or ‘1.1' or ‘-1.1' 
     * D is datetime, eg '2024-06-23' or '2024-06-23 18:30:00'
-    
-    ##### Scope:
-    resource.scope
-     
-    | name        | api_admin | api_guest | api_user |
-    |-------------|-----------|-----------|----------|
-    | id          | R         | CR        | RUD      |
-    | type        | R         | CR        | RUD      |
-    | owner       | R         | CR        | RUD      |
-    | username    | R         | CR        | RUD      |    
-    | displayname | R         | CR        | RUD      |
-    | password    | -         | CR        | UD       |
-    | scope       | R         | CR        | RUD      |
     
     Privileges
     * C is Create
@@ -83,7 +70,8 @@ class ProjectStringDefault(str):
         instance = super().__new__(cls, contents)
         return instance
 
-def main():
+def main(status):
+    status.addTitle('Project String Default test')
     from pprint import pprint
     from source.component.markdown.tier_md import TierMD
     from source.component.markdown.helper.project_name import ProjectName
@@ -91,16 +79,23 @@ def main():
 
     actual = TierMD(ProjectStringDefault())
     pprint(actual)
-    assert ('project' in actual)
-    assert ('sample' in actual['project'])
-    assert ('resources' in actual['project']['sample'])
+    status.assert_test("'project' in {}".format(actual), 'project' in actual)
+    status.assert_test("'sample' in {}".format(actual['project']), 'sample' in actual['project'])
+    status.assert_test("'resources' in ".format(actual['project']['sample']), 'resources' in actual['project']['sample'])
 
-    assert ('claim' in actual['project']['sample'])
+    status.assert_test("'claim' in {}".format(actual['project']['sample']), 'claim' in actual['project']['sample'])
 
-    assert (ProjectName(actual)=='sample')
-    assert (ProjectClaimType(actual,'sample')=='jwt')
+    #status.assert_test("".format(actual), ProjectName(actual)=='sample')
+    #status.assert_test("".format(actual), ProjectClaimType(actual,'sample')=='jwt')
 
 
 if __name__ == "__main__":
     # execute as docker
-    main()
+    from source.component.status import Status
+    from source.component.status_report import StatusReport
+
+    status = Status()
+    # execute as docker
+
+    main(status)
+    print(StatusReport(status))

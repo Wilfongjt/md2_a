@@ -141,7 +141,8 @@ class TierMD(Tier):
 
             i += 1
 
-def tierMD_test():
+def tierMD_test(status):
+    status.addTitle('Tier MD')
     from pprint import pprint
     from source.component.markdown.project_string_default import ProjectStringDefault
     # filename_md = 'project_test_prj.md'
@@ -153,40 +154,47 @@ def tierMD_test():
 
     #print(ProjectStringDefault())
     actual = TierMD(ProjectStringDefault())
-    pprint(actual)
+    #pprint(actual)
     #pprint(actual)
     #print('model',actual.find('model'))
     #pprint(actual.find('model'))
-    assert('project' in actual)
-    assert('data' in actual.find('account'))
-    assert('model' in actual.find('account'))
+    status.assert_test("'project' in {}".format(actual), 'project' in actual)
+    status.assert_test("'data' in {}".format(actual), 'data' in actual.find('account'))
+    status.assert_test("'model' in {}".format(actual), 'model' in actual.find('account'))
     claims = Tier(actual.find('claim'))
-    print('claims', claims)
+    status.addLine('claims')
 
-    assert('parent' in claims)
-    assert ('claim' == claims['parent'])
-    assert('type' in claims)
-    assert('api_admin' in claims)
-    assert('api_guest' in claims)
-    assert('api_user' in claims)
+    status.assert_test("'parent' in {}".format(claims), 'parent' in claims)
+    status.assert_test ("'claim' in {}".format(claims), 'claim' == claims['parent'])
+    status.assert_test("'type' in {}".format(claims), 'type' in claims)
+    status.assert_test("'api_admnin' in {}".format(claims), 'api_admin' in claims)
+    status.assert_test("api_guest in {}".format(claims), 'api_guest' in claims)
+    status.assert_test("api_user in {}".format(claims), 'api_user' in claims)
 
     resources = Tier(actual.find('resources'))
-    #print('resources', resources)
-    assert ('parent' in resources)
-    assert ('resources' == resources['parent'])
-    assert ('account' in resources)
+    status.addLine('resources')
+    status.assert_test ("'parent' in {}".format(resources), 'parent' in resources)
+    status.assert_test ("'resources' in {}".format(resources), 'resources' == resources['parent'])
+    status.assert_test ("'account' in {}".format(resources), 'account' in resources)
     resource = Tier(actual.find('account'))
-    #print('resource', resource)
-    assert ('schema' in resource)
-    assert ('version' in resource)
-    assert ('active' in resource)
-    assert ('model' in resource)
-    assert ('data' in resource)
+    status.addLine('resource')
+    status.assert_test ("'schema' in {}".format(resource), 'schema' in resource)
+    status.assert_test ("'version' in {}".format(resource), 'version' in resource)
+    status.assert_test ("'active' in {}".format(resource), 'active' in resource)
+    status.assert_test ("'model' in {}".format(resource), 'model' in resource)
+    status.assert_test ("'data' in {}".format(resource), 'data' in resource)
 
-def main():
-    tierMD_test()
+def main(status):
+    tierMD_test(status)
 
 
 if __name__ == "__main__":
     # execute as docker
-    main()
+    from source.component.status import Status
+    from source.component.status_report import StatusReport
+
+    status = Status()
+    # execute as docker
+
+    main(status)
+    print(StatusReport(status))
