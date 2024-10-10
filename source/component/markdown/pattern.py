@@ -30,55 +30,70 @@ class Pattern(str):
         instance = super().__new__(cls, contents)
         return instance
 
-def test_pattern():
+def test_pattern(status):
+    status.addTitle('Pattern test')
     # character
     resource_field = {'size': '3-330', 'type': 'C'}
     # resource_field = {'size': '3-330', 'type': 'C', 'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'resource': 'account', 'validate': 'R'}
     # print('C', Pattern(resource_field))
-    print('   character pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
-    assert (Pattern(resource_field) == '^.{3,330}$')
-    assert (re.match(Pattern(resource_field), 'abc!89'))
+    #print('   character pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
+
+    #assert (Pattern(resource_field) == '^.{3,330}$')
+    #status.assert_test("Pattern({}) == '^.{3,330}$'".format(resource_field), Pattern(resource_field) == '^.{3,330}$')
+    status.assert_test("Pattern({}) == {}'".format(resource_field, '^.{3,330}$'), Pattern(resource_field) == '^.{3,330}$')
+
+    #assert (re.match(Pattern(resource_field), 'abc!89'))
+    status.assert_test("re.match(Pattern({}), 'abc!89')".format(resource_field), re.match(Pattern(resource_field), 'abc!89'))
     # logical
     resource_field = {'size': '14,6', 'type': 'L'}
-    print('     logical pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
-    assert (Pattern(resource_field) == '(True|False|Y|N|T|F|1|0)')
-    assert (re.match(Pattern(resource_field), 'False'))
-    assert (re.match(Pattern(resource_field), 'True'))
-    assert (re.match(Pattern(resource_field), 'Y'))
-    assert (re.match(Pattern(resource_field), 'N'))
-    assert (re.match(Pattern(resource_field), 'T'))
-    assert (re.match(Pattern(resource_field), 'F'))
-    assert (re.match(Pattern(resource_field), '0'))
-    assert (re.match(Pattern(resource_field), '1'))
-    assert (not re.match(Pattern(resource_field), 'z'))
+    status.addLine('logical pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
+    status.assert_test ("Pattern({}) == '(True|False|Y|N|T|F|1|0)'".format(resource_field), Pattern(resource_field) == '(True|False|Y|N|T|F|1|0)')
+    status.assert_test ("re.match(Pattern({}), 'False')".format(resource_field), re.match(Pattern(resource_field), 'False'))
+    status.assert_test ("re.match(Pattern({}), 'True')".format(resource_field), re.match(Pattern(resource_field), 'True'))
+    status.assert_test ("re.match(Pattern({}), 'Y')".format(resource_field), re.match(Pattern(resource_field), 'Y'))
+    status.assert_test ("re.match(Pattern({}), 'N')".format(resource_field), re.match(Pattern(resource_field), 'N'))
+    status.assert_test ("re.match(Pattern({}), 'T')".format(resource_field), re.match(Pattern(resource_field), 'T'))
+    status.assert_test ("re.match(Pattern({}), 'F')".format(resource_field), re.match(Pattern(resource_field), 'F'))
+    status.assert_test ("re.match(Pattern({}), '0')".format(resource_field), re.match(Pattern(resource_field), '0'))
+    status.assert_test ("re.match(Pattern({}), '1')".format(resource_field), re.match(Pattern(resource_field), '1'))
+    status.assert_test ("not re.match(Pattern({}), 'z')".format(resource_field), not re.match(Pattern(resource_field), 'z'))
     # integer
     resource_field = {'size': '1-6', 'type': 'I'}
     # print('integer',Pattern(resource_field))
-    print('     integer pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
-    assert (Pattern(resource_field) == '-?\d{1,6}')
-    assert (not re.match(Pattern(resource_field), 'a'))
-    assert (re.match(Pattern(resource_field), '1'))
-    assert (re.match(Pattern(resource_field), '-1'))
+    status.addLine('integer pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
+    status.assert_test ("Pattern({}) == '{}'".format(resource_field,'-?\d{1,6}'), Pattern(resource_field) == '-?\d{1,6}')
+    status.assert_test ("Pattern(resource_field) == 'a'".format(resource_field), not re.match(Pattern(resource_field), 'a'))
+    status.assert_test ("Pattern(resource_field) == '1'".format(resource_field), re.match(Pattern(resource_field), '1'))
+    status.assert_test ("Pattern(resource_field) == '-1'".format(resource_field), re.match(Pattern(resource_field), '-1'))
 
     # number
     resource_field = {'size': '14,6', 'type': 'N'}
-    print('      number pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
-    assert (Pattern(resource_field) == '-?\d{1,14}(\.\d{1,6})?')
-    assert (not re.match(Pattern(resource_field), 'a'))
-    assert (re.match(Pattern(resource_field), '1'))
-    assert (re.match(Pattern(resource_field), '-1'))
-    assert (re.match(Pattern(resource_field), '1.1'))
+    status.addLine('number pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
+    status.assert_test ("Pattern({}) == '{}'".format(resource_field,'-?\d{1,14}(\.\d{1,6})?'), Pattern(resource_field) == '-?\d{1,14}(\.\d{1,6})?')
+    status.assert_test ("Pattern({}) == '{}'".format(resource_field,'a'), not re.match(Pattern(resource_field), 'a'))
+    status.assert_test ("Pattern({}) == '{}'".format(resource_field,'1'), re.match(Pattern(resource_field), '1'))
+    status.assert_test ("Pattern({}) == '{}'".format(resource_field,'-1'), re.match(Pattern(resource_field), '-1'))
+    status.assert_test ("Pattern({}) == '{}'".format(resource_field,'1.1'), re.match(Pattern(resource_field), '1.1'))
     # datetime
     resource_field = {'size': '14,6', 'type': 'D'}
-    print('    datetime pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
-    assert (Pattern(resource_field) == '(\d{4}-\d{2}-\d{2})([T ]?)(\d{2}:\d{2}:\d{2})?(\.\d+)?(Z|([+-]\d{2}:\d{2}))?')
-    assert (not re.match(Pattern(resource_field), 'a'))
-    assert (re.match(Pattern(resource_field), '2024-06-23'))
-    assert (re.match(Pattern(resource_field), '2024-06-23 18:30:00'))
+    status.addLine('datetime pattern: {} -> {}'.format(resource_field, Pattern(resource_field)))
+    status.assert_test ("Pattern({}) == '{}'".format(resource_field,'(\d{4}-\d{2}-\d{2})([T ]?)(\d{2}:\d{2}:\d{2})?(\.\d+)?(Z|([+-]\d{2}:\d{2}))?'), Pattern(resource_field) == '(\d{4}-\d{2}-\d{2})([T ]?)(\d{2}:\d{2}:\d{2})?(\.\d+)?(Z|([+-]\d{2}:\d{2}))?')
+    status.assert_test ("Pattern({}) == '{}'".format(resource_field,'a'), not re.match(Pattern(resource_field), 'a'))
+    status.assert_test ("Pattern({}) == '{}'".format(resource_field,'2024-06-23'), re.match(Pattern(resource_field), '2024-06-23'))
+    status.assert_test ("Pattern({}) == '{}'".format(resource_field,'2024-06-23 18:30:00'), re.match(Pattern(resource_field), '2024-06-23 18:30:00'))
 
-def main():
-    test_pattern()
+def main(status):
+    test_pattern(status)
 
 if __name__ == "__main__":
     # execute as docker
-    main()
+    # execute as docker
+    from source.component.status import Status
+    from source.component.status_report import StatusReport
+
+    status = Status()
+    # execute as docker
+
+    main(status)
+    print(StatusReport(status))
+

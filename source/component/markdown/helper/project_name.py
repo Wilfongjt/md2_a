@@ -7,18 +7,27 @@ class ProjectName(str):
         instance = super().__new__(cls, contents)
         return instance
 
-def test_project_name():
+def test_project_name(status):
+    status.addTitle('Project Name test')
     from source.component.markdown.tier_md import TierMD
 
     actual = ProjectName(TierMD(ProjectStringDefault()))
 
 
-    print('        project_name:', actual)
-    assert (actual == 'sample')
+    status.addTitle('        project_name: {}'.format(actual))
+    status.assert_test("actual == 'sample'", actual == 'sample')
 
-def main():
-    test_project_name()
+
+def main(status):
+    test_project_name(status)
 
 if __name__ == "__main__":
     # execute as docker
-    main()
+    from source.component.status import Status
+    from source.component.status_report import StatusReport
+
+    status = Status()
+    # execute as docker
+
+    main(status)
+    print(StatusReport(status))

@@ -25,26 +25,34 @@ class Min(int):
         instance = super().__new__(cls, contents)
         return instance
 
-def test_min():
+def test_min(status):
+    status.addTitle('Min test')
     resource_field = {'size': '3-330', 'type': 'C'}
-    print('        characer min:', Min(resource_field))
-    assert (Min(resource_field) == 3)
+    #print('        characer min:', Min(resource_field))
+    status.assert_test ("Min({}) == 3".format(resource_field), Min(resource_field) == 3)
 
     resource_field = {'size': '1-14', 'type': 'I'}
-    print('         integer min:', Min(resource_field))
-    assert (Min(resource_field) == 1)
+    #print('         integer min:', Min(resource_field))
+    status.assert_test ("Min({}) == 1".format(resource_field), Min(resource_field) == 1)
 
     resource_field = {'size': '14,6', 'type': 'N'}
-    print('          number min:', Min(resource_field))
-    assert (Min(resource_field) == 1)
+    #print('          number min:', Min(resource_field))
+    status.assert_test ("Min({}) == 14".format(resource_field), Min(resource_field) == 1)
 
     resource_field = {'size': '8-19', 'type': 'D'}
-    print('            date min:', Min(resource_field))
-    assert (Min(resource_field) == 8)
+    #print('            date min:', Min(resource_field))
+    status.assert_test ("Min({}) == 8".format(resource_field), Min(resource_field) == 8)
 
-def main():
-    test_min()
+def main(status):
+    test_min(status)
 
 if __name__ == "__main__":
     # execute as docker
-    main()
+    from source.component.status import Status
+    from source.component.status_report import StatusReport
+
+    status = Status()
+    # execute as docker
+
+    main(status)
+    print(StatusReport(status))
