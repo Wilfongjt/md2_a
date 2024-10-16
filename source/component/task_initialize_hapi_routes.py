@@ -1,10 +1,13 @@
 import os
 from source.component.process_project import ProcessProject
 from able import TemplateString, StringReader
-from source.component.tier import Tier
+from source.component.markdown.tier_md import TierMD
 from source.component.multilogger import MultiLogger
 from source.component.markdown.helper.resource_names import ResourceNames
-
+from source.component.nv_resource import NVResource
+from source.component.nv_resource_schema_version import NVResourceSchemaVersion
+from source.component.markdown.helper.project_name_first import ProjectNameFirst
+from source.component.nv_resource_method_scopes import NVResourceMethodScopes
 
 class Task_InitializeHapiRoutes(ProcessProject):
     ##
@@ -31,7 +34,7 @@ class Task_InitializeHapiRoutes(ProcessProject):
         filename_md = TemplateString('project_<<WS_PROJECT>>.md', nv_list)
         folderfilename_md = '{}/{}'.format(os.getcwd(), filename_md)
         resource_string = StringReader(folderfilename_md)
-        project_dict = Tier(resource_string)
+        project_dict = TierMD(resource_string)
         return project_dict
 
     def route_templates(self):
@@ -52,32 +55,33 @@ class Task_InitializeHapiRoutes(ProcessProject):
         #resource_string = StringReader(folderfilename_md)
         #project_dict = Tier(resource_string)
         project_dict = self.get_project_dictionary(nv_list)
-        print('project_dict', project_dict)
+        project_name = ProjectNameFirst(project_dict)
+        #print('project_dict', project_dict)
         #pprint(project_dict)
-        for resource_name in ResourceNames(project_dict):
+        for resource_name in ResourceNames(project_dict, project_name):
             nv_list = self.get_template_key_list()  # reset nv_list
-            nv_list.extend(NVResource(project_dict, resource_name))  # add field attributes
+            nv_list.extend(NVResource(project_dict, project_name, resource_name))  # add field attributes
             print('route nv_list', nv_list)
             #print('resource name', resource_name)
             #print('resource', project_dict['project']['resource'][resource_name])
             active = True
-            if 'active' in project_dict['project']['resource'][resource_name]: # active:
-                if project_dict['project']['resource'][resource_name]['active'].lower() not in ['y', 'yes', 't', 'true']:
+            if 'active' in project_dict['project'][project_name]['resources'][resource_name]: # active:
+                if project_dict['project'][project_name]['resources'][resource_name]['active'].lower() not in ['y', 'yes', 't', 'true']:
                     active = False
 
             schema = 'api'
-            if 'schema' in project_dict['project']['resource'][resource_name]: # schema:
-                schema = project_dict['project']['resource'][resource_name]['schema']
+            if 'schema' in project_dict['project'][project_name]['resources'][resource_name]: # schema:
+                schema = project_dict['project'][project_name]['resources'][resource_name]['schema']
             version = '0.0.1'
-            if 'version' in project_dict['project']['resource'][resource_name]:  # schema:
-                version = project_dict['project']['resource'][resource_name]['version']
+            if 'version' in project_dict['project'][project_name]['resources'][resource_name]:  # schema:
+                version = project_dict['project'][project_name]['resources'][resource_name]['version']
 
             #nv_list.append({'name': '<<API_SCHEMA>>', 'value':'{}_{}'.format(schema, version.replace('.','_')) })
 
-            nv_list.extend(NVResourceSchemaVersion(project_dict, resource_name))
+            nv_list.extend(NVResourceSchemaVersion(project_dict, project_name, resource_name))
             # print('nv_list', nv_list)
             # Route Scopes
-            nv_list.extend(NVResourceMethodScopes(project_dict, resource_name))
+            nv_list.extend(NVResourceMethodScopes(project_dict, project_name, resource_name))
             #nv_list.append({'name': '<<DELETE_SCOPE>>', 'value': RouteScopes(project_dict, resource_name, 'DELETE')})
             #nv_list.append({'name': '<<GET_SCOPE>>', 'value': RouteScopes(project_dict, resource_name, 'GET')})
             #nv_list.append({'name': '<<POST_SCOPE>>', 'value': RouteScopes(project_dict, resource_name, 'POST')})
@@ -105,15 +109,16 @@ class Task_InitializeHapiRoutes(ProcessProject):
 
         return self
 
-def task_initialize_hapi_routes(status):
+def task_initialize_hapi_routes_test(status):
     status.addTitle('Task_InitializeHapiRoutes test')
+
     actual = Task_InitializeHapiRoutes()
 
     status.assert_test("Task_InitializeHapiRoutes()=={}", actual == {})
 
 
 def main(status):
-    task_initialize_hapi_routes(status)
+    task_initialize_hapi_routes_test(status)
 
 if __name__ == "__main__":
     from source.component.status import Status

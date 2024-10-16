@@ -69,6 +69,7 @@ class ProcessProject(ProcessPackage):
         #else:
         #    print('**** ProjectStringDefault is set to Default...use for testing ****')
         project_dict = TierMD(resource_string)
+
         return project_dict
 
     def get_template_key_list(self):

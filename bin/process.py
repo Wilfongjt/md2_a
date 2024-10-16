@@ -69,9 +69,9 @@ def main():
 
     account = Artemis(project, ['resources','account','model'])
 
-    pprint(claims)
-    print('')
-    pprint(account)
+    #pprint(claims)
+    #print('')
+    #pprint(account)
 
 if __name__ == "__main__":
     # execute as docker

@@ -1,9 +1,12 @@
+from pprint import pprint
 class ResourceNames(list):
     def __init__(self, project_dict, project_name):
         ##* Extract Resource names from project-dictionary
-        project = project_dict['project'][project_name]
+        #project = project_dict['project'][project_name]
         #print('project_name', project_name)
-        for r in project['resources']:
+        #print('project')
+        #pprint(project_dict)
+        for r in project_dict['project'][project_name]['resources']:
             #print('Resource Names', r)
             self.append(r)
 

@@ -14,14 +14,18 @@ def main(status=None):
     source.component.nv_list.main(status)
     source.component.nv_resource.main(status)
     source.component.nv_resource_fields.main(status)
+    source.component.nv_resource_method_scopes.main(status)
+    source.component.nv_resource_schema_version.main(status)
     source.component.permissions.main(status)
     source.component.process_package.main(status)
     source.component.process_project.main(status)
     source.component.status.main(status)
     source.component.status_report.main(status)
-
     source.component.task_initialize_hapi_routes.main(status)
+    source.component.test_token.main(status)
     source.component.tier.main(status)
+
+    source.component.env.env_string_default.main(status)
 
     source.component.markdown.max.main(status)
     source.component.markdown.min.main(status)
