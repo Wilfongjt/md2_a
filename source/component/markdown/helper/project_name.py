@@ -14,7 +14,7 @@ def test_project_name(status):
     actual = ProjectName(TierMD(ProjectStringDefault()))
 
 
-    status.addTitle('        project_name: {}'.format(actual))
+    status.addTitle('project_name: {}'.format(actual))
     status.assert_test("actual == 'sample'", actual == 'sample')
 
 

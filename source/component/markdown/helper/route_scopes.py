@@ -54,10 +54,10 @@ def test_route_scope(status):
 
     project_dict = TierMD(ProjectStringDefault())
     project = 'sample'
-    status.addBullet('         account POST scopes: {}'.format(RouteScopes(project_dict, project,'account','POST')))
-    status.addBullet('         account GET scopes: {}'.format(RouteScopes(project_dict, project,'account','GET')))
-    status.addBullet('         account PUT scopes: {}'.format(RouteScopes(project_dict, project,'account','PUT')))
-    status.addBullet('         account DELETE scopes: {}'.format(RouteScopes(project_dict, project,'account','DELETE')))
+    status.addBullet('account POST scopes: {}'.format(RouteScopes(project_dict, project,'account','POST')))
+    status.addBullet('account GET scopes: {}'.format(RouteScopes(project_dict, project,'account','GET')))
+    status.addBullet('account PUT scopes: {}'.format(RouteScopes(project_dict, project,'account','PUT')))
+    status.addBullet('account DELETE scopes: {}'.format(RouteScopes(project_dict, project,'account','DELETE')))
 
     assert( 'api_guest' not in RouteScopes(project_dict, project,'account','DELETE'))
     status.addBullet("'api_guest' not in {}".format(RouteScopes(project_dict, project,'account','DELETE')))

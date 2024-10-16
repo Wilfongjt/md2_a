@@ -1,22 +1,11 @@
 # Project: 
-1. name: test_prj
+## sample:
+1. name: sample
 1. schema: api
 1. version: 1.0.0
 
-process
-p#r#m#f#
-[r for r in project]
-[m for m in resource]
-[f for f in model]
-project#<project>
-project#<project>#schema#<schema>
-project#<project>#version#<version>
-
-## Claim:
+### Claim:
 1. name: jwt
-
-project#<project>#claim#jwt#name#<name>
-????
 
 | name      | aud                 | iss                       | sub        | user       | scope     | key |
 |-----------|---------------------|---------------------------|------------|------------|-----------|-----|
@@ -27,13 +16,15 @@ project#<project>#claim#jwt#name#<name>
 * ? means value is unknown until runtime
 * table name is dependent on project name
 
-## Resources
-### Account
+### Resources
+#### Account
     User accounts
 
-1. active: y
+ 1. schema: api
+ 1. version: 1.0.0
+ 1. active: y
 
-#### Model:
+##### Model:
 
 | field       | type | size   | validate | encrypt | api_admin | api_guest | api_user |
 |-------------|------|--------|----------|---------|-----------|-----------|----------|
@@ -44,11 +35,6 @@ project#<project>#claim#jwt#name#<name>
 | displayname | C    | 3-330  | R        | N       | R         | CR        | RUD      |
 | password    | C    | 10-330 | R        | Y       | -         | CR        | UD       |
 | scope       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-
-account_del(Token, Owner, Id),  DELETE, U
-account(Token, Owner, Id),      GET,    AUG
-account(Token, Owner, Form),    POST,   U
-account(Token, Owner, Id, Form),PUT,    U
 
 Types
 * C is character, any keyboard character
@@ -63,10 +49,10 @@ Roles
 * D is Delete from the db
 * \- is None, space holder
 
-#### Data:
+##### Data:
 Default account data
 
-##### Test:
+###### Test:
 
 | id        | type    | owner                    | username                | displayname | password | scope     |
 |-----------|---------|--------------------------|-------------------------|-------------|----------|-----------|
@@ -79,11 +65,11 @@ Default account data
 * ? means value is unknown until runtime
 * - means not applicable
 
-### Drain
+#### Drain
 
 1. active: y
 
-#### Model:
+##### Model:
 
 | field | type | size | validate | encrypt | api_admin | api_guest | api_user |
 |-------|-----|--|---------|--------|----------|---------|-------|

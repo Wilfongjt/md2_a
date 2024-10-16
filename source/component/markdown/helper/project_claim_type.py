@@ -1,7 +1,7 @@
 from source.component.markdown.project_string_default import ProjectStringDefault
 class ProjectClaimType(str):
     def __new__(cls, project_dict, project_name):
-        print('project_dict',project_dict['project'])
+        #print('project_dict',project_dict['project'])
         contents = project_dict['project'][project_name]['claim']['type']
 
         instance = super().__new__(cls, contents)

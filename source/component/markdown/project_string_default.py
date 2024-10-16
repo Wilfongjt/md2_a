@@ -78,7 +78,7 @@ def main(status):
     from source.component.markdown.helper.project_claim_type import ProjectClaimType
 
     actual = TierMD(ProjectStringDefault())
-    pprint(actual)
+    #pprint(actual)
     status.assert_test("'project' in {}".format(actual), 'project' in actual)
     status.assert_test("'sample' in {}".format(actual['project']), 'sample' in actual['project'])
     status.assert_test("'resources' in ".format(actual['project']['sample']), 'resources' in actual['project']['sample'])

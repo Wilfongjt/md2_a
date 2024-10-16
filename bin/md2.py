@@ -8,8 +8,11 @@
 import os
 import re
 from source.component import Tier
-from source.component.markdown.helper import RouteScopes
-from source.component.markdown.project_string_default import ProjectStringDefault
+from source.component.markdown.tier_md import TierMD
+from source.component import RouteScopes
+from source.component.markdown.helper.resource_names import ResourceNames
+from source.component import ProjectStringDefault
+from source.component.markdown.helper.project_name_first import ProjectNameFirst
 
 # SCRIPT_DIR = os.path.dirname(str(os.path.abspath(__file__)).replace('/bin','/source/component'))
 # sys.path.append(os.path.dirname(SCRIPT_DIR))
@@ -371,8 +374,10 @@ def test_resource_patterns():
 
 
 class RouteConstantsJS(str):
-    def __new__(cls, project_dict):
-        resource_list = project_dict['project']['resource']
+    def __new__(cls, project_dict, project_name):
+        #resource_list = project_dict['project'][ProjectNameFirst(project_dict)]['resource']
+
+        resource_list = ResourceNames(project_dict, project_name)
         lst = ['/* generated in RouteConstantsJS from {} */'.format(str(__file__))]
         for r in resource_list:
             # crud = CRUD_Collective(project_dict, r)
@@ -387,7 +392,9 @@ class RouteConstantsJS(str):
         instance = super().__new__(cls, contents)
         return instance
 def test_route_constants_js():
-    route_constants = RouteConstantsJS(Tier(ProjectStringDefault()))
+    project = TierMD(ProjectStringDefault())
+    project_name =  ProjectNameFirst(project)
+    route_constants = RouteConstantsJS(project, project_name)
     route_constants = ['                      {}'.format(x) for x in route_constants.split('\n')]
     print('  route_constants_js:', '\n'.join(route_constants).strip())
     assert (
@@ -397,8 +404,8 @@ def test_route_constants_js():
 
 
 class ApiRoutes(str):
-    def __new__(cls, project_dict):
-        resource_list = project_dict['project']['resource']
+    def __new__(cls, project_dict, project_name):
+        resource_list = project_dict['project'][project_name]['resources']
         # lst = ['/* generated in RouteConstantsJS from {} */'.format(str(__file__))]
         lst = []
         # lst_comments=[]
@@ -449,7 +456,7 @@ def test_api_routes():
     assert ('                    server.route(account_route_delete);' in api_routes)
 
 
-
+'''
 class NVResourceMethodScopes(NVList):
     # NVResourceMethodScopes(project_dict, resource_name)
     def __init__(self, project_dict, resource_name):
@@ -473,10 +480,10 @@ def test_nv_resource_method_scopes():
         assert ('value' in nv)
         assert (nv['name'] in ['<<DELETE_SCOPE>>', '<<GET_SCOPE>>','<<POST_SCOPE>>','<<PUT_SCOPE>>'])
         assert (nv['value'][0] in ['api_admin', 'api_guest', 'api_user'])
+'''
 
 
-
-
+'''
 class NVResourceSchemaVersion(NVList):
     def __init__(self, project_dict, resource_name):
         schema = 'api'
@@ -493,7 +500,7 @@ def test_nv_resource_schema_version():
     actual = NVResourceSchemaVersion(Tier(ProjectStringDefault()), 'account')
     print('nv resource schema version', actual)
     assert(actual == [{'name': '<<API_SCHEMA>>', 'value': 'api_0_0_0'}])
-
+'''
 # Tasks
 
 class Task_InitializeEnv(ProcessProject):
@@ -918,11 +925,12 @@ class Task_InitializeHapi(ProcessProject):
         print('folderfilename_md', folderfilename_md)
         resource_string = StringReader(folderfilename_md)
         ##* Convert project file contents to Dictionary
-        project_dict = Tier(resource_string)
+        project_dict = TierMD(resource_string)
+        project_name = ProjectNameFirst(project_dict)
         ##* Extract ROUTE_CONST name-value pairs from project dictionary
-        nv_list.append({'name': '<<ROUTE_CONST>>', 'value': RouteConstantsJS(project_dict)})
+        nv_list.append({'name': '<<ROUTE_CONST>>', 'value': RouteConstantsJS(project_dict, project_name)})
         ##* Extract API_ROUTES name-value pairs from project dictionary
-        nv_list.append({'name': '<<API_ROUTES>>', 'value': ApiRoutes(project_dict)})
+        nv_list.append({'name': '<<API_ROUTES>>', 'value': ApiRoutes(project_dict, project_name)})
 
         print('nv_list', nv_list)
         # pprint(nv_list)
@@ -944,7 +952,7 @@ class Task_InitializeHapi(ProcessProject):
 # merge server_ext with <<API_ROUTES>> Task_MergeHapiServerRouteNames
 # merge server_ext with <<ROUTE_CONST>> Task_MergeHapiServerRouteNames
 # intialize routes_*.js files Task_InitializeHapiRoutes
-from task_initialize_hapi_routes import Task_InitializeHapiRoutes
+from source.component.task_initialize_hapi_routes import Task_InitializeHapiRoutes
 
 class Task_InitializePostgres(ProcessProject):
     ##
@@ -995,13 +1003,14 @@ class Task_InitializeModel(ProcessProject):
         ##* Templatize DB Deploy templates
         nv_list = self.get_template_key_list()
         project_dict = self.get_project_dictionary()
+        project_name = ProjectNameFirst(project_dict)
         # get resource
         #for xxx in project_dict['project']:
         #    print('xxx',xxx)
         #print('xxx done')
         #nv_list = nv_list.extend(NVResource(project_dict=project_dict))
-        for resource in project_dict['project']['resource']:
-            print('resource', resource)
+        for resource in project_dict['project'][project_name]['resources']:
+            print('xresource', resource)
 
         self.templatize(nv_list=nv_list)
         return self
