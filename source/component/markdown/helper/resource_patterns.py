@@ -41,7 +41,7 @@ def test_resource_patterns(status):
     #pprint(TierMD(ProjectStringDefault())) #['project']['resources']
     status.addTitle('Resource Patterns test')
     project = TierMD(ProjectStringDefault()) #['project']['resources']
-    #pprint(project)
+    #pprint(project_dict)
     actual = ResourcePatterns(project, ProjectNameFirst(project),'account')
     #print('   resource_patterns:', actual)
     status.assert_test("'account' in {}".format(actual),'account' in actual)

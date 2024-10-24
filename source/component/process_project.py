@@ -4,6 +4,8 @@ from source.component import ProcessPackage, MultiLogger, Permissions
 from source.component.markdown.tier_md import TierMD
 
 from source.component.markdown.project_string_default import ProjectStringDefault
+from source.component.status import Status
+
 # from source.component.project_string import ProjectStringDefault
 from able import TemplateString, \
                  EnvVarString, \
@@ -19,7 +21,7 @@ class ProcessProject(ProcessPackage):
     ##
     ##### Process Project
     ##
-    ## Base class for project methods
+    ## Base class for project_dict methods
 
     def __init__(self):
 
@@ -32,6 +34,17 @@ class ProcessProject(ProcessPackage):
         self.template_folder_key = None # template_folder_key # eg 'github'
 
         self.e_var = []
+        self.status = None
+
+    def getStatus(self):
+        #if not self.status:
+        #    print('init status')
+        #    self.status = Status()
+        return self.status
+
+    def setStatus(self, status):
+        self.status = status
+        return self
 
     def get_application(self):
         return self.application
@@ -61,7 +74,7 @@ class ProcessProject(ProcessPackage):
         # set resource_string to default
         resource_string = ProjectStringDefault()
         nv_list = self.get_template_key_list()
-        # attempt to open project
+        # attempt to open project_dict
         filename_md = TemplateString('project_<<WS_PROJECT>>.md', nv_list)
         if '<<' not in filename_md:
             folderfilename_md = '{}/{}'.format(os.getcwd(), filename_md)
@@ -231,6 +244,7 @@ class ProcessProject(ProcessPackage):
 
         # print('templatize 1')
         template_folder = self.get_template_folder()
+        self.getStatus().addLine('Templatize {}'.format(template_folder.split('/')[-1].upper()))
 
         # #* Convert Templates to Code
 
@@ -256,11 +270,15 @@ class ProcessProject(ProcessPackage):
                     output_subfolder = template_list[tmplt]['output_subfolder']
                     repo_folderfile = '{}/{}'.format(self.get_repo_folder(), output_subfolder)
                     repo_folderfile = repo_folderfile.replace('root/', '')
-
+                    fld = repo_folderfile.split('/')[-2]
+                    fn = repo_folderfile.split('/')[-1]
+                    self.getStatus().addBullet('{}/{} -> {}'.format(fld, fn, output_subfolder))
                 else:
                     #repo_folderfile = output_folder
                     repo_folderfile = '{}/{}'.format(output_folder, template_list[tmplt]['output_subfolder'])
-
+                    fld = repo_folderfile.split('/')[-2]
+                    fn = repo_folderfile.split('/')[-1]
+                    self.getStatus().addBullet('{}/{}'.format(fld, fn))
                 # make the command string e.g., whatever.js.CRUD.tmpl -> CRUD
                 cmd = str(template_folderfile).split('/')[-1].split('.')[-2]
 
@@ -458,14 +476,14 @@ def process_project_test(status):
 
     # ProcessProject().set_env_var('GH_TEST', 'TEST').configure_environment()
 
-    ProcessProject().set_template_folder_key('__project__').templatize()
+    ProcessProject().setStatus(status).set_template_folder_key('__project__').templatize()
 
     #assert(ProcessProject().templatize_a('',{'<<A>>':'a'}) == 'A=a')
 
     #test_templatize()
     #print('project_dictionary')
     #pprint(ProcessProject().get_project_dictionary())
-    status.assert_test  ("'project' in ProcessProject().get_project_dictionary()", 'project' in ProcessProject().get_project_dictionary())
+    status.assert_test  ("'project_dict' in ProcessProject().get_project_dictionary()", 'project' in ProcessProject().get_project_dictionary())
     #print('StringReader', StringReader('/Users/jameswilfong/Development/test_org/test_ws/test_prj/first/py_test/.env'))
 
 def main(status):

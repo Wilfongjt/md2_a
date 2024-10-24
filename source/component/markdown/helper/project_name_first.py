@@ -19,7 +19,7 @@ def test_project_name_last(status):
     from source.component.markdown.tier_md import TierMD
 
     actual = ProjectNameFirst(TierMD(ProjectStringDefault()))
-    #pprint(actual)
+    pprint(actual)
     #print('        project_name:', actual)
     status.assert_test ("actual == 'sample'", actual == 'sample')
 

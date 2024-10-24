@@ -17,7 +17,7 @@ def test_project_name_last(status):
 
     actual = ProjectNameLast(TierMD(ProjectStringDefault()))
 
-    #print('        project_name:', actual)
+    print('        project_name:', actual)
     status.assert_test ("actual == 'sample'",actual == 'sample')
 
 def main(status):

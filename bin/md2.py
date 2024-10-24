@@ -13,6 +13,8 @@ from source.component import RouteScopes
 from source.component.markdown.helper.resource_names import ResourceNames
 from source.component import ProjectStringDefault
 from source.component.markdown.helper.project_name_first import ProjectNameFirst
+from source.component.status import Status
+from source.component.status_report import StatusReport
 
 # SCRIPT_DIR = os.path.dirname(str(os.path.abspath(__file__)).replace('/bin','/source/component'))
 # sys.path.append(os.path.dirname(SCRIPT_DIR))
@@ -50,58 +52,60 @@ from source.component import ProcessProject, Application, MultiLogger
 def main():
     no = 0
     print('runtime', RuntimeLogger())
+    status = Status()
+
     ##
     #### MD2 Process
     ##
-    MultiLogger('df').set_msg('start').runtime().terminal()
+    MultiLogger('f').set_msg('start').runtime().terminal()
     app = ApplicationMD2().load_environment()
     ##### Process
 
     ##1. [Initialize MD2](#initialize-md2)
-    Auto(Task_InitializeEnv(no=app.incNo()).set_application(app))
+    Auto( Task_InitializeEnv(no=app.incNo()).set_application(app).setStatus(status) )
 
     ##1. [Configure MD2 Environment Values](#configure-md2-environment-values)
-    Auto(Task_Configure(no=app.incNo()).set_application(app))  # (env_file_content_string, app)
+    Auto(Task_Configure(no=app.incNo()).set_application(app).setStatus(status))  # (env_file_content_string, app)
 
     ##1. [Initialize project_<<WS_PROJECT>>.md.C---.tmpl](#configure-md2-environment-values)
     print('-----')
-    Auto(Task_InitializeProjecMd(no=app.incNo()).set_application(app))  # (env_file_content_string, app)
+    Auto(Task_InitializeProjecMd(no=app.incNo()).set_application(app).setStatus(status))  # (env_file_content_string, app)
     print('-----')
     # exit(0)
     ##1. [Clone GitHub Repository](#clone-github-repository)
-    Auto(Task_Github(no=app.incNo()).set_application(app))
+    Auto(Task_Github(no=app.incNo()).set_application(app).setStatus(status))
     #Test_TemplateOutputs().test(template_folder=app.get_template_folder(subfolder='github'))
     # assert ('' in StringReader())
     #exit(0)
     print('-----')
     ##1. [Patch Clone](#patch-clone)
-    Auto(Task_GithubPatch(no=app.incNo()).set_application(app))
+    Auto(Task_GithubPatch(no=app.incNo()).set_application(app).setStatus(status))
     #exit(0)
     print('-----')
     ##1. [Initialize ProjectSpace](#initialize-projectspace)
-    Auto(Task_InitializeProjectSpace(no=app.incNo()).set_application(app))
+    Auto(Task_InitializeProjectSpace(no=app.incNo()).set_application(app).setStatus(status))
     #exit(0)
     print('-----')
     ##1. [Initialize Docker](#initialize-docker)
-    Auto(Task_InitializeDocker(no=app.incNo()).set_application(app))
+    Auto(Task_InitializeDocker(no=app.incNo()).set_application(app).setStatus(status))
     #exit(0)
     print('-----')
     ##1. [Initialize Heroku](#initialize-heroku)
-    Auto(Task_InitializeHeroku(no=app.incNo()).set_application(app))
+    Auto(Task_InitializeHeroku(no=app.incNo()).set_application(app).setStatus(status))
     #exit(0)
     print('-----')
     ##1. [Initialize Node](#initialize-node)
-    Auto(Task_InitializeNode(no=app.incNo()).set_application(app))
+    Auto(Task_InitializeNode(no=app.incNo()).set_application(app).setStatus(status))
     #exit(0)
     print('-----')
     ##1. [Initialize JWT](#initialize-jwt)
-    Auto(Task_InitializeJWT(no=app.incNo()).set_application(app))
+    Auto(Task_InitializeJWT(no=app.incNo()).set_application(app).setStatus(status))
     print('-----')
     ##1. [Initialize Nodemon](#initialize-nodemon)
-    Auto(Task_InitializeNodemon(no=app.incNo()).set_application(app))
+    Auto(Task_InitializeNodemon(no=app.incNo()).set_application(app).setStatus(status))
     print('-----')
     ##1. [Initialize Hapi](#initialize-hapi)
-    Auto(Task_InitializeHapi(no=app.incNo()).set_application(app))  # move /templates to project, apply .env nv_list
+    Auto(Task_InitializeHapi(no=app.incNo()).set_application(app).setStatus(status))  # move /templates to project_dict, apply .env nv_list
 
     '''
     resource_string = ConvertMdTableToListString(StringReader('{}/{}'.format(get_bin_folder(), 'test_prj.md')))
@@ -147,23 +151,24 @@ def main():
     '''
     print('-----')
     ##1. [Initialize Hapi Routes](#initialize-hapi-routes)
-    Auto(Task_InitializeHapiRoutes(no=app.incNo()).set_application(app))  # -->
+    Auto(Task_InitializeHapiRoutes(no=app.incNo()).set_application(app).setStatus(status))  # -->
     # exit(0)
     ##1. [Initialize Postgres](#initialize-postgres)
     print('-----')
-    Auto(Task_InitializePostgres(no=app.incNo()).set_application(app))
+    Auto(Task_InitializePostgres(no=app.incNo()).set_application(app).setStatus(status))
     print('-----')
     ##1. [Initialize Model](#initialize-model)
-    Auto(Task_InitializeModel(no=app.incNo()).set_application(app))
-    exit(0)
+    Auto(Task_InitializeModel(no=app.incNo()).set_application(app).setStatus(status))
+    #exit(0)
     print('-----')
     ##1. [Update Environment Values](#update-md2-environment-variables)
-    Auto(Task_UpdateEnvironment(no=app.incNo()).set_application(app))
+    Auto(Task_UpdateEnvironment(no=app.incNo()).set_application(app).setStatus(status))
 
     xx = 'Summary {} {}'.format(app.get_name(), DiagramString(app))
     MultiLogger().set_msg(xx).runtime().terminal()
     MultiLogger().set_msg('end').runtime().terminal()
-
+    print('status', status)
+    print('status report',StatusReport(status))
 # Defaults
 from source.component.env.env_string_default import EnvStringDefault
 
@@ -535,10 +540,12 @@ class Task_InitializeEnv(ProcessProject):
 
     def process(self):
         # print('1. Initialize MD2')
-        MultiLogger().set_msg(
-            '{}. Initialize Environment {}'.format(self.no, self.get_application().get_name())).runtime().terminal()
-
+        #MultiLogger().set_msg(
+        #    '{}. Initialize Environment {}'.format(self.no, self.get_application().get_name())).runtime().terminal()
+        self.getStatus().addTitle('{}. Initialize Environment {}'.format(self.no, self.get_application().get_name()))
         self.initialize_md2()
+
+        #StatusReport(self.getStatus())
 
         return self
 
@@ -593,8 +600,10 @@ class Task_Configure(ProcessProject):
         return self
 
     def process(self):
-        MultiLogger().set_msg(
-            '{}. Configure {}'.format(self.no, self.get_application().get_name())).runtime().terminal()
+        #MultiLogger().set_msg(
+        #    '{}. Configure {}'.format(self.no, self.get_application().get_name())  ).runtime().terminal()
+
+        self.getStatus().addTitle('{}. Configure {}'.format(self.no, self.get_application().get_name()))
 
         self.configure_environment()
 
@@ -617,13 +626,14 @@ class Task_InitializeProjecMd(ProcessProject):
 
         project_folder = os.getcwd()
         if project_folder.endswith('/bin'):
-            # print('project folder', project_folder)
+            # print('project_dict folder', project_folder)
             self.templatize(nv_list=nv_list, output_folder=project_folder)
         return self
 
     def process(self):
-        MultiLogger().set_msg(
-            '{}. Task_InitializeProjecMd {}'.format(self.no, self.get_application().get_name())).runtime().terminal()
+        #MultiLogger().set_msg(
+        #    '{}. Task_InitializeProjecMd {}'.format(self.no, self.get_application().get_name())).runtime().terminal()
+        self.getStatus().addTitle('{}. Task_InitializeProjecMd {}'.format(self.no, self.get_application().get_name()))
 
         self.initialize_project_md()
 
@@ -662,8 +672,10 @@ class Task_Github(ProcessProject):
         if not os.path.isdir(repo_folder):
             repo_name = repo_folder.split('/')[-1]
             if 'GH_TEST' not in os.environ:
+                self.getStatus().addBullet('clone repo')
                 CloneRepo(repo_folder=repo_folder, username_gh=os.environ['GH_USER'])
             else:
+                self.getStatus().addBullet('clone exists')
                 self.makedirs(repo_folder)
 
         return self
@@ -671,9 +683,11 @@ class Task_Github(ProcessProject):
     def process(self):
         # print('3. GitHub:')
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('{}. GitHub: {}'.format(self.no, repo_name)).runtime().terminal()
+        #MultiLogger().set_msg('{}. GitHub: {}'.format(self.no, repo_name)).runtime().terminal()
+        self.getStatus().addTitle('{}. Task_Gitub {}'.format(self.no, self.get_application().get_name()))
 
         self.clone()
+
         self.templatize()
 
         return self
@@ -722,7 +736,8 @@ class Task_GithubPatch(ProcessProject):
     def process(self):
 
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('{}. GitHub Patch: {}'.format(self.no, repo_name)).runtime().terminal()
+        #MultiLogger().set_msg('{}. GitHub Patch: {}'.format(self.no, repo_name)).runtime().terminal()
+        self.getStatus().addTitle('{}. Task_GithubPatch {}'.format(self.no, self.get_application().get_name()))
 
         self.patch()
 
@@ -749,7 +764,8 @@ class Task_InitializeProjectSpace(ProcessProject):
 
     def process(self):
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('{}. ProjectSpace: {}'.format(self.no, repo_name)).runtime().terminal()
+        #MultiLogger().set_msg('{}. ProjectSpace: {}'.format(self.no, repo_name)).runtime().terminal()
+        self.getStatus().addTitle('{}. ProjectSpace {}'.format(self.no, self.get_application().get_name()))
 
         self.projectspace_templates()
 
@@ -776,7 +792,8 @@ class Task_InitializeDocker(ProcessProject):
 
     def process(self):
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('{}. Docker: {}'.format(self.no, repo_name)).runtime().terminal()
+        #MultiLogger().set_msg('{}. Docker: {}'.format(self.no, repo_name)).runtime().terminal()
+        self.getStatus().addTitle('{}. Docker: {}'.format(self.no, self.get_application().get_name()))
 
         self.docker_templates()
 
@@ -803,7 +820,8 @@ class Task_InitializeHeroku(ProcessProject):
 
     def process(self):
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('{}. Heroku: {}'.format(self.no, repo_name)).runtime().terminal()
+        #MultiLogger().set_msg('{}. Heroku: {}'.format(self.no, repo_name)).runtime().terminal()
+        self.getStatus().addTitle('{}. Heroku: {}'.format(self.no, self.get_application().get_name()))
 
         self.heroku_templates()
 
@@ -830,7 +848,8 @@ class Task_InitializeNode(ProcessProject):
 
     def process(self):
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('{}. Node: {}'.format(self.no, repo_name)).runtime().terminal()
+        #MultiLogger().set_msg('{}. Node: {}'.format(self.no, repo_name)).runtime().terminal()
+        self.getStatus().addTitle('{}. node: {}'.format(self.no, self.get_application().get_name()))
 
         self.node_templates()
 
@@ -857,7 +876,8 @@ class Task_InitializeJWT(ProcessProject):
 
     def process(self):
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('{}. JWT: {}'.format(self.no, repo_name)).runtime().terminal()
+        #MultiLogger().set_msg('{}. JWT: {}'.format(self.no, repo_name)).runtime().terminal()
+        self.getStatus().addTitle('{}. JWT: {}'.format(self.no, self.get_application().get_name()))
 
         self.jwt_templates()
 
@@ -884,7 +904,8 @@ class Task_InitializeNodemon(ProcessProject):
 
     def process(self):
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('{}. Nodemon: {}'.format(self.no, repo_name)).runtime().terminal()
+        #MultiLogger().set_msg('{}. Nodemon: {}'.format(self.no, repo_name)).runtime().terminal()
+        self.getStatus().addTitle('{}. Nodemon: {}'.format(self.no, self.get_application().get_name()))
 
         self.nodemon_templates()
 
@@ -912,27 +933,27 @@ class Task_InitializeHapi(ProcessProject):
         if not self.get_application():
             raise Exception('Application Not Found!')
 
-        print('ProcessProject', ProcessProject())
+        #print('ProcessProject', ProcessProject())
 
         #self.get_application().add('hapi')
         self.get_application().add(self.get_template_folder_key())
         ##* Templatize Hapi templates in '/template/hapi'
         ##* Extract ENVironment name-value pairs from memory
         nv_list = self.get_template_key_list()
-        ##* Read project file from user provided bin/project_??.md file
+        ##* Read project_dict file from user provided bin/project_??.md file
         filename_md = TemplateString('project_<<WS_PROJECT>>.md', nv_list)
         folderfilename_md = '{}/{}'.format(os.getcwd(), filename_md)
-        print('folderfilename_md', folderfilename_md)
+        #print('folderfilename_md', folderfilename_md)
         resource_string = StringReader(folderfilename_md)
-        ##* Convert project file contents to Dictionary
+        ##* Convert project_dict file contents to Dictionary
         project_dict = TierMD(resource_string)
         project_name = ProjectNameFirst(project_dict)
-        ##* Extract ROUTE_CONST name-value pairs from project dictionary
+        ##* Extract ROUTE_CONST name-value pairs from project_dict dictionary
         nv_list.append({'name': '<<ROUTE_CONST>>', 'value': RouteConstantsJS(project_dict, project_name)})
-        ##* Extract API_ROUTES name-value pairs from project dictionary
+        ##* Extract API_ROUTES name-value pairs from project_dict dictionary
         nv_list.append({'name': '<<API_ROUTES>>', 'value': ApiRoutes(project_dict, project_name)})
 
-        print('nv_list', nv_list)
+        #print('nv_list', nv_list)
         # pprint(nv_list)
         #
         #
@@ -941,7 +962,8 @@ class Task_InitializeHapi(ProcessProject):
 
     def process(self):
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('{}. Hapi: {}'.format(self.no, repo_name)).runtime().terminal()
+        #MultiLogger().set_msg('{}. Hapi: {}'.format(self.no, repo_name)).runtime().terminal()
+        self.getStatus().addTitle('{}. Hapi: {}'.format(self.no, self.get_application().get_name()))
 
         self.hapi_templates()
 
@@ -976,7 +998,8 @@ class Task_InitializePostgres(ProcessProject):
 
     def process(self):
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('{}. Postgres: {}'.format(self.no, repo_name)).runtime().terminal()
+        #MultiLogger().set_msg('{}. Postgres: {}'.format(self.no, repo_name)).runtime().terminal()
+        self.getStatus().addTitle('{}. Postgres: {}'.format(self.no, self.get_application().get_name()))
 
         self.postgres_templates()
 
@@ -1017,7 +1040,8 @@ class Task_InitializeModel(ProcessProject):
 
     def process(self):
         repo_name = os.environ['GH_REPO']
-        MultiLogger().set_msg('{}. Model: {}'.format(self.no, repo_name)).runtime().terminal()
+        #MultiLogger().set_msg('{}. Model: {}'.format(self.no, repo_name)).runtime().terminal()
+        self.getStatus().addTitle('{}. Model: {}'.format(self.no, self.get_application().get_name()))
 
         self.db_deploy_templates()
 
@@ -1059,8 +1083,9 @@ class Task_UpdateEnvironment(ProcessProject):
         return self
 
     def process(self):
-        MultiLogger().set_msg(
-            '{}. Update Environment: {}'.format(self.no, self.get_application().get_name())).runtime().terminal()
+        #MultiLogger().set_msg(
+        #    '{}. Update Environment: {}'.format(self.no, self.get_application().get_name())).runtime().terminal()
+        self.getStatus().addTitle('{}. Update Environment: {}'.format(self.no, self.get_application().get_name()))
 
         self.commit_environment()
 

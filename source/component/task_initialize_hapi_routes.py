@@ -39,17 +39,17 @@ class Task_InitializeHapiRoutes(ProcessProject):
 
     def route_templates(self):
         # handle generated routes for each resource
-        # open 'bin/<project>.md' (by default, <project>.md enables the ACCOUNT resource)
+        # open 'bin/<project_dict>.md' (by default, <project_dict>.md enables the ACCOUNT resource)
 
         # create a nv_list for <<API_ROUTES>> and <<ROUTE_CONST>>, eg [{name: '', value: ''},...]
 
         # make template list for each resource (route_post,route_get, route_put, route_delete)
-        # remove routes not defined in the <project>.md
+        # remove routes not defined in the <project_dict>.md
         # apply nv_list to each template
-        # save to /<project>/lib/__routes__
+        # save to /<project_dict>/lib/__routes__
 
         nv_list = self.get_template_key_list() # replacement keys and values
-        print('nv_list',nv_list)
+        #print('nv_list',nv_list)
         #filename_md = TemplateString('project_<<WS_PROJECT>>.md', nv_list)
         #folderfilename_md = '{}/{}'.format(os.getcwd(), filename_md)
         #resource_string = StringReader(folderfilename_md)
@@ -61,7 +61,7 @@ class Task_InitializeHapiRoutes(ProcessProject):
         for resource_name in ResourceNames(project_dict, project_name):
             nv_list = self.get_template_key_list()  # reset nv_list
             nv_list.extend(NVResource(project_dict, project_name, resource_name))  # add field attributes
-            print('route nv_list', nv_list)
+            #print('route nv_list', nv_list)
             #print('resource name', resource_name)
             #print('resource', project_dict['project']['resource'][resource_name])
             active = True
@@ -86,7 +86,7 @@ class Task_InitializeHapiRoutes(ProcessProject):
             #nv_list.append({'name': '<<GET_SCOPE>>', 'value': RouteScopes(project_dict, resource_name, 'GET')})
             #nv_list.append({'name': '<<POST_SCOPE>>', 'value': RouteScopes(project_dict, resource_name, 'POST')})
             #nv_list.append({'name': '<<PUT_SCOPE>>', 'value': RouteScopes(project_dict, resource_name, 'PUT')})
-            print('pre tmpl nv_list', nv_list)
+            #print('pre tmpl nv_list', nv_list)
             self.templatize(nv_list=nv_list, active_resource=active) # templateize will remove resource when active is set to true
 
             #if 'active' not in project_dict['project']['resource'][resource_name]:
@@ -101,7 +101,7 @@ class Task_InitializeHapiRoutes(ProcessProject):
         return self
 
     def process(self):
-        print('Task_InitializeHapiRoutes process')
+        #print('Task_InitializeHapiRoutes process')
         repo_name = os.environ['GH_REPO']
         MultiLogger().set_msg('{}. Task_InitializeHapiRoutes: {}'.format(self.no, repo_name)).runtime().terminal()
 

@@ -16,7 +16,7 @@ class ProjectStringDefault(str):
     | api_user  | lyttlebit | sample_api_client  | client_api | client_api | api_user  | ?   |
     
     * ? means value is unknown until runtime
-    * table name is dependent on project name
+    * table name is dependent on project_dict name
 
     ### Resources
     #### Account

@@ -9,9 +9,9 @@ class MultiLogger():
     ## Application logging system
     ##* Create runtime.log at \<root>/log/runtime.log
 
-    def __init__(self,setting_string='df', log_folder=None):
+    def __init__(self,setting_string='f', log_folder=None):
         # d is datetime
-        # f is
+        # f is file name
         self.msg = '{}'.format(datetime.datetime.now())
         self.log_folder=log_folder
         if not self.log_folder:
@@ -26,13 +26,16 @@ class MultiLogger():
 
     def format(self):
         rc = ''
+        dt = ''
+        fn = ''
+        #print('setting_string', self.setting_string)
         if 'd' in self.setting_string:
-            rc += '{}'.format(datetime.datetime.now())
+            dt += '{}'.format(datetime.datetime.now())
         if 'f' in self.setting_string :
             # print('file', __main__.__file__)
-            rc += ' {}'.format(str(__main__.__file__).split('/')[-1])
+            fn += ' <- {}'.format(str(__main__.__file__).split('/')[-1])
 
-        rc += ' ' + self.msg
+        rc = dt + self.msg + fn
 
         return rc
 

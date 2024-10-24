@@ -28,8 +28,8 @@ class TierMD(Tier):
 
             # calc tree level
             level = Level(ln)
-            ln = ln.split('...')  # remove the ... comment , '# project: ... a comment'
-            ln = str(ln[0])  # point to '# project:'
+            ln = ln.split('...')  # remove the ... comment , '# project_dict: ... a comment'
+            ln = str(ln[0])  # point to '# project_dict:'
             ln = ln.replace('|', ' | ')  # fix |aud|iss|sub| --> | aud | iss | sub |
 
             # split up
@@ -62,6 +62,8 @@ class TierMD(Tier):
                     '''
                     if ln[1].lower() not in self:
                         parent_key= ln[1]
+                        #self[ln[1].lower()] = {'alias': ln[1].lower()}  # initialize the tree trunk
+
                         self[ln[1].lower()] = {}  # initialize the tree trunk
                         ostack.push(self[ln[1].lower()])  # push value
                         if echo:
@@ -90,7 +92,9 @@ class TierMD(Tier):
                         #print('resource', ln[1].lower())
                         resource_key=ln[1].lower()
                     if ln[1].lower() not in ostack.peek():
+                        #ostack.peek()[ln[1].lower()] = {'alias': ln[1].lower()}
                         ostack.peek()[ln[1].lower()] = {}
+
                         ostack.push(ostack.peek()[ln[1].lower()])
                     if echo:
                         print(ln[0].ljust(lntyp), ln[1].ljust(line_len), str(level).rjust(3),
@@ -99,7 +103,7 @@ class TierMD(Tier):
 
             elif ln[0] == '1.':
 
-                # splits should be ['#','project'] or ['1.','cat','val']
+                # splits should be ['#','project_dict'] or ['1.','cat','val']
                 if len(ln) > 3:
                     raise Exception('Bad Line {}'.format(ln))
                 #print('ln',ln)
@@ -158,6 +162,7 @@ def tierMD_test(status):
     #pprint(actual)
     #print('model',actual.find('model'))
     #pprint(actual.find('model'))
+
     status.assert_test("'project' in {}".format(actual), 'project' in actual)
     status.assert_test("'data' in {}".format(actual), 'data' in actual.find('account'))
     status.assert_test("'model' in {}".format(actual), 'model' in actual.find('account'))

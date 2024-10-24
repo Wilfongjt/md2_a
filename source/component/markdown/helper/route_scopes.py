@@ -6,7 +6,7 @@ class RouteScopes(list):
     # GET is R
     # PUT is U
     # DELETE is D
-    # fix missing project name
+    # fix missing project_dict name
     def __init__(self, project_dict, project_name, resource_name, method ):
         # method is POST, GET, PUT, or DELETE
         if method == 'DELETE':
@@ -19,7 +19,7 @@ class RouteScopes(list):
             method = 'R'
         lst = []
         #print(project_dict['project'])
-        #project = project_dict['project']
+        #project_dict = project_dict['project']
         resources = project_dict['project'][project_name]['resources']
         #pprint(resources)
 

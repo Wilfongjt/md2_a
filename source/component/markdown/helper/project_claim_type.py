@@ -8,7 +8,7 @@ class ProjectClaimType(str):
         return instance
 
 def test_project_name(status):
-    status.addTitle('project claim type test')
+    status.addTitle('project_dict claim type test')
 
     from source.component.markdown.tier_md import TierMD
 

@@ -1,10 +1,10 @@
 from pprint import pprint
 class ResourceNames(list):
     def __init__(self, project_dict, project_name):
-        ##* Extract Resource names from project-dictionary
-        #project = project_dict['project'][project_name]
+        ##* Extract Resource names from project_dict-dictionary
+        #project_dict = project_dict['project'][project_name]
         #print('project_name', project_name)
-        #print('project')
+        #print('project_dict')
         #pprint(project_dict)
         for r in project_dict['project'][project_name]['resources']:
             #print('Resource Names', r)
