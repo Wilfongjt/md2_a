@@ -1,9 +1,9 @@
 
 '''
-{project: {
+{project_dict: {
         claim: {<user-name>},
         resource: {<resource-name>: {}},
-        name: <project-name>
+        name: <project_dict-name>
     }
 }
 '''
@@ -12,12 +12,12 @@
 class Tier(dict):
     '''
 
-# project: <prj-nm>
+# project_dict: <prj-nm>
 
                                            update            update
 ln[0]  ln[1]   ln[2]      dict             stack             dict
-#      <cat1>: <cat-va1>  d[<cat1>] = {}   push(d[<cat1>])   {project: {<category-value1>:{}}}
-#      <cat2>: <cat-va2>  d[<cat2>] = {}   push(d[<cat2>)    {project: {<category-value2>:{}}}
+#      <cat1>: <cat-va1>  d[<cat1>] = {}   push(d[<cat1>])   {project_dict: {<category-value1>:{}}}
+#      <cat2>: <cat-va2>  d[<cat2>] = {}   push(d[<cat2>)    {project_dict: {<category-value2>:{}}}
 
 
 
@@ -270,20 +270,20 @@ def tier_test(status):
                                                'name': 'Sample_resource',
                                                'version': '0.0.0'}}}}
     '''
-    project#<project_name1>
-    project#<project_name2>
-    project#<project_name2>#claim#<claim_name1>
-    project#<project_name2>#claim#<claim_name2>
-    project#<project_name2>#resource#<resource_name1>
-    project#<project_name2>#resource#<resource_name1>#model...
-    project#<project_name2>#resource#<resource_name1>#data...
-    project#<project_name2>#resource#<resource_name2>
-    project#<project_name2>#resource#<resource_name2>#model...
-    project#<project_name2>#resource#<resource_name2>#data...
+    project_dict#<project_name1>
+    project_dict#<project_name2>
+    project_dict#<project_name2>#claim#<claim_name1>
+    project_dict#<project_name2>#claim#<claim_name2>
+    project_dict#<project_name2>#resource#<resource_name1>
+    project_dict#<project_name2>#resource#<resource_name1>#model...
+    project_dict#<project_name2>#resource#<resource_name1>#data...
+    project_dict#<project_name2>#resource#<resource_name2>
+    project_dict#<project_name2>#resource#<resource_name2>#model...
+    project_dict#<project_name2>#resource#<resource_name2>#data...
     '''
     actual = Tier(dictionary)
     # actual = Tier(ProjectStringDefault())
-    #print('actual')
+    print('actual', actual)
     #pprint(actual)
     #print('actual', actual)
     status.assert_test ("'project' in actual", 'project' in actual)

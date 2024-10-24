@@ -27,10 +27,14 @@ def main(status=None):
 
     source.component.env.env_string_default.main(status)
 
+    source.component.markdown.claim.main(status)
+    source.component.markdown.data.main(status)
     source.component.markdown.max.main(status)
     source.component.markdown.min.main(status)
+    source.component.markdown.model.main(status)
     source.component.markdown.pattern.main(status)
     source.component.markdown.project_string_default.main(status)
+    source.component.markdown.scopes.main(status)
     source.component.markdown.tier_md.main(status)
 
     source.component.markdown.helper.project_claim_type.main(status)

@@ -18,7 +18,7 @@ class Finder(dict):
         Recursively reads a dictionary and prints its keys and values.
 
         Parameters:
-        project (dict): The dictionary to read.
+        project_dict (dict): The dictionary to read.
 
         """
         rc = {}

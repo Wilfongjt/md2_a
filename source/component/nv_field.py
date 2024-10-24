@@ -15,8 +15,12 @@ class NVField(NVList):  # name value field
             raise Exception('Resource Field Name Not Found: {}'.format(field_name))
 
         # fields are stored in resource model
+        pprint(project_dict)
+        # project_dict: {sample: {resources: {account:{ model: {}}}}
         fld_atts = project_dict['project'][project_name]['resources'][resource_name]['model'][field_name]
         att =[f for f in fld_atts]
+        print('fld_atts',fld_atts)
+
         flds =[{'name': '<<{}_{}>>'.format(field_name.upper(),key.upper()), 'value': value, 'resource': resource_name} for key, value in fld_atts.items()]
 
         self.extend(flds)

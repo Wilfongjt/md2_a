@@ -85,7 +85,7 @@ def main(status):
     #    print('Application test')
     status.addTitle('Application test')
     app_name = str(os.getcwd()).split('/')[8]
-    #print('project', app_name, str(os.getcwd()).split('/')[0:9] )
+    #print('project_dict', app_name, str(os.getcwd()).split('/')[0:9] )
     actual = Application(name=app_name)
     #print('get_bin_folder', actual.get_bin_folder())
     assert(actual.get_name()==app_name)

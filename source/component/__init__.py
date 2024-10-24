@@ -16,10 +16,14 @@ from .tier import Tier
 # /env
 from .env.env_string_default import EnvStringDefault
 # /markdown
+from .markdown.claim import Claim
+from .markdown.data import Data
+from .markdown.model import Model
 from .markdown.max import Max
 from .markdown.min import Min
 from .markdown.pattern import Pattern
 from .markdown.project_string_default import ProjectStringDefault
+from .markdown.scopes import Scopes
 from .markdown.tier_md import TierMD
 
 
