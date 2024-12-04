@@ -1,4 +1,6 @@
 class Min(int):
+    # expect size in resource_field
+    # expect size to be min-max pair
     def __new__(cls, resource_field):
         # resource_field is {'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'pattern': '^.{3,330}$', 'resource': 'account','size': '3-330', 'type': 'C', 'validate': 'R'}
         contents = ''

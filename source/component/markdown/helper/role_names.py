@@ -1,12 +1,10 @@
 class RoleNames(list):
-    def __init__(self, project_dict, project_name):
+    def __init__(self, project_dict):
         lst = []
-
-        for r in project_dict['project'][project_name]['resources']:
-            for f in project_dict['project'][project_name]['resources'][r]['model']:
-                for s in project_dict['project'][project_name]['resources'][r]['model'][f]:
-                    if s.startswith('api_'):
-                        lst.append(s)
+        for r in project_dict['project']['privileges']:
+            for p in project_dict['project']['privileges'][r]:
+                if p.startswith('api_'):
+                    lst.append(p)
 
         lst = set(lst)  # get rid of duplicates
         for r in lst:
@@ -19,8 +17,8 @@ def test_role_names(status):
     from source.component.markdown.helper.project_name_first import ProjectNameFirst
 
     project = TierMD(ProjectStringDefault())
-    actual = RoleNames(project, ProjectNameFirst(project))
-    #print('          role_names:', actual)
+    actual = RoleNames(project)
+    print('          role_names:', actual)
 
     status.assert_test ("'api_admin' in {}".format(actual), 'api_admin' in actual)
     status.assert_test ("'api_guest' in {}".format(actual), 'api_guest' in actual)

@@ -128,8 +128,9 @@ class TierMD(Tier):
                     tbl_att_row = {tbl_cols[i]: tbl_att_row[i] for i in range(len(tbl_att_row))}
                     # break down the size (3-330) into size_min: 30, size_max: 330
                     if 'size' in tbl_att_row:
-                        tbl_att_row['size_min']=Min(tbl_att_row)
-                        tbl_att_row['size_max']=Max(tbl_att_row)
+                        # move max and min to
+                        #tbl_att_row['size_min']=Min(tbl_att_row) -> ModelFieldMix
+                        #tbl_att_row['size_max']=Max(tbl_att_row) -> ModelFieldMan
                         tbl_att_row['resource']=resource_key.lower()
                         tbl_att_row['pattern']='^.{{}}$'.replace('{}','{},{}'.format(Min(tbl_att_row),Max(tbl_att_row)))
 
@@ -149,6 +150,7 @@ def tierMD_test(status):
     status.addTitle('Tier MD')
     from pprint import pprint
     from source.component.markdown.project_string_default import ProjectStringDefault
+    from source.component.find import Find
     # filename_md = 'project_test_prj.md'
     # folderfilename_md = '{}/{}'.format(os.getcwd(), filename_md)
     # print('folderfilename_md', folderfilename_md)
@@ -159,35 +161,45 @@ def tierMD_test(status):
     #print(ProjectStringDefault())
     actual = TierMD(ProjectStringDefault())
     #pprint(actual)
-    #pprint(actual)
+    pprint(actual)
     #print('model',actual.find('model'))
     #pprint(actual.find('model'))
 
     status.assert_test("'project' in {}".format(actual), 'project' in actual)
-    status.assert_test("'data' in {}".format(actual), 'data' in actual.find('account'))
-    status.assert_test("'model' in {}".format(actual), 'model' in actual.find('account'))
-    claims = Tier(actual.find('claim'))
+    print('actual', Find(actual, ['models', 'account']))
+    #exit(0)
+    status.assert_test("'tests' in {}".format(actual), 'tests' in Find(actual, ['tests','account']))
+    print('actual', Find(actual, ['account']))
+
+    status.assert_test("'model' in {}".format(actual), 'account' in Find(actual, ['account']))
+
+#add inclusive to Find
+    claims = Tier(Find(actual, ['claims']))
+    print('claims', claims)
     status.addLine('claims')
 
-    status.assert_test("'parent' in {}".format(claims), 'parent' in claims)
-    status.assert_test ("'claim' in {}".format(claims), 'claim' == claims['parent'])
-    status.assert_test("'type' in {}".format(claims), 'type' in claims)
-    status.assert_test("'api_admnin' in {}".format(claims), 'api_admin' in claims)
-    status.assert_test("api_guest in {}".format(claims), 'api_guest' in claims)
-    status.assert_test("api_user in {}".format(claims), 'api_user' in claims)
+    #status.assert_test("'parent' in {}".format(claims), 'parent' in claims)
+    status.assert_test ("'claim' in {}".format(claims), 'claims' in claims)
+    status.assert_test("'type' not in {}".format(claims), 'type' not in claims)
+    status.assert_test("'api_admnin' not in {}".format(claims), 'api_admin' not in claims)
+    status.assert_test("api_guest not in {}".format(claims), 'api_guest' not in claims)
+    status.assert_test("api_user not in {}".format(claims), 'api_user' not in claims)
 
     resources = Tier(actual.find('resources'))
     status.addLine('resources')
-    status.assert_test ("'parent' in {}".format(resources), 'parent' in resources)
-    status.assert_test ("'resources' in {}".format(resources), 'resources' == resources['parent'])
+    #status.assert_test ("'parent' in {}".format(resources), 'parent' not in resources)
+    #status.assert_test ("'resources' not in {}".format(resources), 'resources' == resources['parent'])
     status.assert_test ("'account' in {}".format(resources), 'account' in resources)
     resource = Tier(actual.find('account'))
     status.addLine('resource')
+    #print('resource', resource)
     status.assert_test ("'schema' in {}".format(resource), 'schema' in resource)
-    status.assert_test ("'version' in {}".format(resource), 'version' in resource)
     status.assert_test ("'active' in {}".format(resource), 'active' in resource)
-    status.assert_test ("'model' in {}".format(resource), 'model' in resource)
-    status.assert_test ("'data' in {}".format(resource), 'data' in resource)
+    status.assert_test ("'major' in {}".format(resource), 'major' in resource)
+    status.assert_test ("'minor' in {}".format(resource), 'minor' in resource)
+    status.assert_test ("'patch' in {}".format(resource), 'patch' in resource)
+    #status.assert_test ("'model' in {}".format(resource), 'model' in resource)
+    #status.assert_test ("'data' in {}".format(resource), 'data' in resource)
 
 def main(status):
     tierMD_test(status)

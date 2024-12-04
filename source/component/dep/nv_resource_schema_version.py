@@ -1,5 +1,7 @@
 from source.component.nv_list import NVList
 from source.component.markdown.helper.project_name_first import ProjectNameFirst
+# deprecated
+'''
 class NVResourceSchemaVersion(NVList):
     def __init__(self, project_dict, project_name, resource_name):
         schema = 'api'
@@ -13,7 +15,7 @@ class NVResourceSchemaVersion(NVList):
             version = project_dict['project'][project_name]['resources'][resource_name]['version']
 
         self.add({'name': '<<API_SCHEMA>>', 'value': '{}_{}'.format(schema, version.replace('.', '_'))})
-
+'''
 def test_nv_resource_schema_version(status):
     status.addTitle('NV resource schema version')
     from source.component.markdown.tier_md import TierMD
@@ -31,7 +33,8 @@ def test_nv_resource_schema_version(status):
 
 
 def main(status):
-    test_nv_resource_schema_version(status)
+    #test_nv_resource_schema_version(status)
+    print('NVResourceSchemaVersion deprecated')
 
 
 if __name__ == "__main__":

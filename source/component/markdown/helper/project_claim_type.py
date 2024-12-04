@@ -1,19 +1,20 @@
 from source.component.markdown.project_string_default import ProjectStringDefault
 class ProjectClaimType(str):
-    def __new__(cls, project_dict, project_name):
+    def __new__(cls, project_dict):
         #print('project_dict',project_dict['project'])
-        contents = project_dict['project'][project_name]['claim']['type']
+        contents = project_dict['project']['claims']['type']
 
         instance = super().__new__(cls, contents)
         return instance
 
 def test_project_name(status):
-    status.addTitle('project_dict claim type test')
-
     from source.component.markdown.tier_md import TierMD
 
-    actual = ProjectClaimType(TierMD(ProjectStringDefault()),'sample')
-    # print('        project_claim_name:', actual)
+    status.addTitle('project_dict claim type test')
+    project_dict = TierMD(ProjectStringDefault())
+    #print('project_dict', project_dict)
+    actual = ProjectClaimType(project_dict)
+    #print('        project_claim_name:', actual)
     #assert (actual == 'jwt')
     status.assert_test("actual == 'jwt'", actual == 'jwt')
 

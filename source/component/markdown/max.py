@@ -1,4 +1,6 @@
 class Max(int):
+    # expect size in resource_field
+    # expect size to be min-max pair
     def __new__(cls, resource_field):
         # resource_field is {'api_admin': 'R', 'api_guest': 'CR', 'api_user': 'RUD', 'encrypt': 'N', 'field': 'id', 'pattern': '^.{3,330}$', 'resource': 'account','size': '3-330', 'type': 'C', 'validate': 'R'}
         contents = ''
@@ -25,7 +27,12 @@ class Max(int):
         return instance
 
 def test_max(status):
+    from source.component.markdown.project_string_default import ProjectStringDefault
+    from source.component.markdown.tier_md import TierMD
     status.addTitle('Max test')
+    project_dict = TierMD(ProjectStringDefault())
+    #actual = Max(project_dict, 'account', 'id')
+    #print('actual', actual)
     resource_field = {'size': '3-330', 'type': 'C'}
     #print('        characer min:', Max(resource_field))
     status.assert_test ("Max({}) == 330".format(resource_field), Max(resource_field) == 330)

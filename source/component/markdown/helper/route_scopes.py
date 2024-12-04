@@ -2,12 +2,14 @@
 from pprint import pprint
 
 class RouteScopes(list):
+    # list of scope(s) for a given method
+    # -> ['api_xxx', ...]
     # POST is C`
     # GET is R
     # PUT is U
     # DELETE is D
     # fix missing project_dict name
-    def __init__(self, project_dict, project_name, resource_name, method ):
+    def __init__(self, project_dict, resource_name, method ):
         # method is POST, GET, PUT, or DELETE
         if method == 'DELETE':
             method = 'D'
@@ -20,16 +22,26 @@ class RouteScopes(list):
         lst = []
         #print(project_dict['project'])
         #project_dict = project_dict['project']
-        resources = project_dict['project'][project_name]['resources']
+        #resources = project_dict['project']['resources']
         #pprint(resources)
 
-        for r in resources:
-            #print('r',r)
-            for m in resources[r]['model']:
-                #print('m',resources[r]['model'][m])
-                for s in resources[r]['model'][m]:
+        for p in project_dict['project']['privileges']:
+            #print('p', method, p, project_dict['project']['privileges'][p])
+            for s in project_dict['project']['privileges'][p]:
+                #print('s',s, method, project_dict['project']['privileges'][p][s])
+                for fld in project_dict['project']['privileges'][p][s]:
+                    if method in project_dict['project']['privileges'][p][s][fld]:
+                        if s not in self:
+                            #print('fld', method, fld, project_dict['project']['privileges'][p][s][fld])
+                            self.append(s)
+        '''
+        for r in project_dict['project']['resources']: # all resource
+            print('r',r)
+            for m in project_dict['project']['models'][r]: # all models 
+                print('m',m)
+                for s in resources[r]['model'][m]: # all resource model 
                     #print('s is ', s)
-                    if s.startswith('api_'):
+                    if s.startswith('api_'): #
                         for y in resources[r]['model'][m]:
                             #print('model', resources[r]['model'])
                             for fld in resources[r]['model']:
@@ -40,11 +52,14 @@ class RouteScopes(list):
                                         #print('scope', att, resources[r]['model'][fld][att])
                                         if method in resources[r]['model'][fld][att]:
                                             lst.append(att)
-
-        lst = set(lst)  # get rid of duplicates
-        for r in lst:
-            self.append(r)
-        #print('RouteScopes', method, self)
+                '''
+        #lst = set(lst)  # get rid of duplicates
+        #print('lst', lst)
+        #for r in lst:
+        #    print('r', r, self)
+        #    if r not in self:
+        #        self.append(r)
+        print('RouteScopes', method, self)
 
 def test_route_scope(status):
     from source.component.markdown.tier_md import TierMD
@@ -54,46 +69,47 @@ def test_route_scope(status):
 
     project_dict = TierMD(ProjectStringDefault())
     project = 'sample'
-    status.addBullet('account POST scopes: {}'.format(RouteScopes(project_dict, project,'account','POST')))
-    status.addBullet('account GET scopes: {}'.format(RouteScopes(project_dict, project,'account','GET')))
-    status.addBullet('account PUT scopes: {}'.format(RouteScopes(project_dict, project,'account','PUT')))
-    status.addBullet('account DELETE scopes: {}'.format(RouteScopes(project_dict, project,'account','DELETE')))
+    status.addBullet('account POST scopes: {}'.format(RouteScopes(project_dict, 'account','POST')))
 
-    assert( 'api_guest' not in RouteScopes(project_dict, project,'account','DELETE'))
-    status.addBullet("'api_guest' not in {}".format(RouteScopes(project_dict, project,'account','DELETE')))
+    status.addBullet('account GET scopes: {}'.format(RouteScopes(project_dict, 'account','GET')))
+    status.addBullet('account PUT scopes: {}'.format(RouteScopes(project_dict, 'account','PUT')))
+    status.addBullet('account DELETE scopes: {}'.format(RouteScopes(project_dict, 'account','DELETE')))
+    
+    assert( 'api_guest' not in RouteScopes(project_dict, 'account','DELETE'))
+    status.addBullet("'api_guest' not in {}".format(RouteScopes(project_dict, 'account','DELETE')))
 
-    assert( 'api_user' in RouteScopes(project_dict, project,'account','DELETE'))
-    status.addBullet("'api_user' in {}".format(RouteScopes(project_dict, project,'account','DELETE')))
+    assert( 'api_user' in RouteScopes(project_dict, 'account','DELETE'))
+    status.addBullet("'api_user' in {}".format(RouteScopes(project_dict, 'account','DELETE')))
 
-    assert( 'api_admin' not in RouteScopes(project_dict, project,'account','DELETE'))
-    status.addBullet("'api_admin' not in {}".format(RouteScopes(project_dict, project,'account','DELETE')))
+    assert( 'api_admin' not in RouteScopes(project_dict, 'account','DELETE'))
+    status.addBullet("'api_admin' not in {}".format(RouteScopes(project_dict, 'account','DELETE')))
 
-    assert( 'api_guest' in RouteScopes(project_dict, project,'account','POST'))
-    status.addBullet("'api_guest' in {}".format(RouteScopes(project_dict, project,'account','POST')))
+    assert( 'api_guest' in RouteScopes(project_dict, 'account','POST'))
+    status.addBullet("'api_guest' in {}".format(RouteScopes(project_dict, 'account','POST')))
 
-    assert( 'api_user' not in RouteScopes(project_dict, project,'account','POST'))
-    status.addBullet("'api_user' not in {}".format(RouteScopes(project_dict, project,'account','POST')))
+    assert( 'api_user' not in RouteScopes(project_dict, 'account','POST'))
+    status.addBullet("'api_user' not in {}".format(RouteScopes(project_dict, 'account','POST')))
 
-    assert( 'api_admin' not in RouteScopes(project_dict, project,'account','POST'))
-    status.addBullet("'api_admin' not in {}".format(RouteScopes(project_dict, project,'account','POST')))
+    assert( 'api_admin' not in RouteScopes(project_dict, 'account','POST'))
+    status.addBullet("'api_admin' not in {}".format(RouteScopes(project_dict, 'account','POST')))
 
-    assert( 'api_guest' not in RouteScopes(project_dict, project,'account','PUT'))
-    status.addBullet("'api_guest' not in {}".format(RouteScopes(project_dict, project,'account','PUT')))
+    assert( 'api_guest' not in RouteScopes(project_dict, 'account','PUT'))
+    status.addBullet("'api_guest' not in {}".format(RouteScopes(project_dict, 'account','PUT')))
 
-    assert( 'api_user' in RouteScopes(project_dict, project,'account','PUT'))
-    status.addBullet("'api_user' in {}".format(RouteScopes(project_dict, project,'account','PUT')))
+    assert( 'api_user' in RouteScopes(project_dict, 'account','PUT'))
+    status.addBullet("'api_user' in {}".format(RouteScopes(project_dict, 'account','PUT')))
 
-    assert( 'api_admin' not in RouteScopes(project_dict, project,'account','PUT'))
-    status.addBullet("'api_admin' not in {}".format(RouteScopes(project_dict, project,'account','PUT')))
+    assert( 'api_admin' not in RouteScopes(project_dict, 'account','PUT'))
+    status.addBullet("'api_admin' not in {}".format(RouteScopes(project_dict, 'account','PUT')))
 
-    assert( 'api_guest' in RouteScopes(project_dict, project,'account','GET'))
-    status.addBullet("'api_guest' in {}".format(RouteScopes(project_dict, project,'account','GET')))
+    assert( 'api_guest' in RouteScopes(project_dict, 'account','GET'))
+    status.addBullet("'api_guest' in {}".format(RouteScopes(project_dict, 'account','GET')))
 
-    assert( 'api_user' in RouteScopes(project_dict, project,'account','GET'))
-    status.addBullet("'api_guest' in {}".format(RouteScopes(project_dict, project,'account','GET')))
+    assert( 'api_user' in RouteScopes(project_dict, 'account','GET'))
+    status.addBullet("'api_guest' in {}".format(RouteScopes(project_dict, 'account','GET')))
 
-    assert( 'api_admin' in RouteScopes(project_dict, project,'account','GET'))
-    status.addBullet("'api_admin' in {}".format(RouteScopes(project_dict, project,'account','GET')))
+    assert( 'api_admin' in RouteScopes(project_dict, 'account','GET'))
+    status.addBullet("'api_admin' in {}".format(RouteScopes(project_dict, 'account','GET')))
 
 
 def main(status):

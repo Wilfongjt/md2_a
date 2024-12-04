@@ -15,7 +15,7 @@ class MultiLogger():
         self.msg = '{}'.format(datetime.datetime.now())
         self.log_folder=log_folder
         if not self.log_folder:
-            # default log folder is the current working dir
+            # default log template_folder is the current working dir
             self.log_folder = str(os.getcwd()).replace('/bin','/log')
         os.makedirs(self.log_folder, exist_ok=True)
         self.setting_string=setting_string

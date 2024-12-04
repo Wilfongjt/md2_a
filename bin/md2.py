@@ -41,7 +41,7 @@ from source.component import ProcessProject, Application, MultiLogger
 ##
 ##__Terms__
 ##* __NF__ means Not Found
-##* __\<root>__ refers to the current repo's root folder
+##* __\<root>__ refers to the current repo's root template_folder
 ##* __\<repo>__ refers to a target or new repository
 ##* __configure__ refers to the setting of values which alter the outcome of a process
 ##* __initiate__ means to start/execute a process
@@ -626,7 +626,7 @@ class Task_InitializeProjecMd(ProcessProject):
 
         project_folder = os.getcwd()
         if project_folder.endswith('/bin'):
-            # print('project_dict folder', project_folder)
+            # print('project_dict template_folder', project_folder)
             self.templatize(nv_list=nv_list, output_folder=project_folder)
         return self
 
@@ -662,7 +662,7 @@ class Task_Github(ProcessProject):
         repo_name = os.environ['GH_REPO']
         self.get_application().add('clone ({})'.format(repo_name))
 
-        ##* __Create__ Branch Folder __When__ folder is NF
+        ##* __Create__ Copyable Folder __When__ template_folder is NF
         branch_folder = self.get_branch_folder()
         os.makedirs(branch_folder, exist_ok=True)
 

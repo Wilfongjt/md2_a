@@ -1,33 +1,40 @@
 from .application import Application
 from .find import Finder
 from .multilogger import MultiLogger
-from .nv_field import NVField
+# from .nv_field import NVField
 from .nv_list import NVList
-from .nv_resource import NVResource
-from .nv_resource_fields import NVResourceFields
+#from .nv_resource import NVResource
+#from .nv_resource_fields import NVResourceFields
 from .permissions import Permissions
 from .process_package import ProcessPackage
 from .process_project import ProcessProject
 from .status import Status
 from .status_report import StatusReport
 from .task_initialize_hapi_routes import Task_InitializeHapiRoutes
+from .template_files import TemplateFileLatest
 from .test_token import TestToken
 from .tier import Tier
 # /env
 from .env.env_string_default import EnvStringDefault
 # /markdown
-from .markdown.claim import Claim
+from .markdown.active import Active
+from .markdown.claims import Claims
+from .markdown.copyable import Copyable
 from .markdown.data import Data
 from .markdown.model import Model
 from .markdown.max import Max
 from .markdown.min import Min
 from .markdown.pattern import Pattern
+from .markdown.project_md import ProjectMD
 from .markdown.project_string_default import ProjectStringDefault
+from .markdown.resources import Resources
+from .markdown.schema import Schema
 from .markdown.scopes import Scopes
 from .markdown.tier_md import TierMD
-
+from .markdown.version import Version
 
 from .markdown.helper.project_claim_type import ProjectClaimType
+
 from .markdown.helper.project_name import ProjectName
 from .markdown.helper.project_name_first import ProjectNameFirst
 from .markdown.helper.project_name_last import ProjectNameLast

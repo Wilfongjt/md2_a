@@ -1,12 +1,12 @@
 from pprint import pprint
 class ResourceNames(list):
-    def __init__(self, project_dict, project_name):
+    def __init__(self, project_dict):
         ##* Extract Resource names from project_dict-dictionary
         #project_dict = project_dict['project'][project_name]
         #print('project_name', project_name)
         #print('project_dict')
         #pprint(project_dict)
-        for r in project_dict['project'][project_name]['resources']:
+        for r in project_dict['project']['resources']:
             #print('Resource Names', r)
             self.append(r)
 
@@ -17,7 +17,7 @@ def test_resource_names(status):
     from source.component.markdown.helper.project_name_first import ProjectNameFirst
 
     project =TierMD(ProjectStringDefault())
-    actual = ResourceNames(project, ProjectNameFirst(project))
+    actual = ResourceNames(project)
     #print('      resource_names:', actual)
     status.assert_test ("resource names", actual == ['account'])
 

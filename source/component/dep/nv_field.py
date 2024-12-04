@@ -2,29 +2,62 @@ from source.component.nv_list import NVList
 from pprint import pprint
 import os
 
+
+ # deprecated Use Scalars(Models())
+class depNVField(NVList):  # name value field
+    # NV an individual resource field
+    # apply to a template
+    def __init__(self, project_dict, project_name, resource_name, field_name):
+        # must have an existing resource
+
+        if not resource_name in project_dict['project']['models']:
+            raise Exception('Resource Name Not Found: {}'.format(resource_name))
+
+        if not field_name in project_dict['project']['models'][resource_name]: # row_dict:
+            raise Exception('Resource Field Name Not Found: {}'.format(field_name))
+        #if not field_name in project_dict['project'][project_name]['resources'][resource_name]['model']: # row_dict:
+        #    raise Exception('Resource Field Name Not Found: {}'.format(field_name))
+
+        # fields are stored in resource model
+        #pprint(project_dict)
+        # project_dict: {sample: {resources: {account:{ model: {}}}}
+        fld_atts = project_dict['project']['models'][resource_name][field_name]
+        att =[f for f in fld_atts]
+        print('fld_atts',fld_atts)
+
+        flds =[{'name': '<<{}_{}>>'.format(field_name.upper(),key.upper()), 'value': value, 'resource': resource_name} for key, value in fld_atts.items()]
+        print('flds',flds)
+
+        self.extend(flds)
+'''
+
 class NVField(NVList):  # name value field
     # NV an individual resource field
     # apply to a template
     def __init__(self, project_dict, project_name, resource_name, field_name):
         # must have an existing resource
 
-        if not resource_name in project_dict['project'][project_name]['resources']:
+        if not resource_name in project_dict['project']['models']:
             raise Exception('Resource Name Not Found: {}'.format(resource_name))
 
-        if not field_name in project_dict['project'][project_name]['resources'][resource_name]['model']: # row_dict:
+        if not field_name in project_dict['project']['models'][resource_name]: # row_dict:
             raise Exception('Resource Field Name Not Found: {}'.format(field_name))
+        #if not field_name in project_dict['project'][project_name]['resources'][resource_name]['model']: # row_dict:
+        #    raise Exception('Resource Field Name Not Found: {}'.format(field_name))
 
         # fields are stored in resource model
-        pprint(project_dict)
+        #pprint(project_dict)
         # project_dict: {sample: {resources: {account:{ model: {}}}}
-        fld_atts = project_dict['project'][project_name]['resources'][resource_name]['model'][field_name]
+        fld_atts = project_dict['project']['models'][resource_name][field_name]
         att =[f for f in fld_atts]
         print('fld_atts',fld_atts)
 
         flds =[{'name': '<<{}_{}>>'.format(field_name.upper(),key.upper()), 'value': value, 'resource': resource_name} for key, value in fld_atts.items()]
+        print('flds',flds)
 
         self.extend(flds)
 
+'''
 def test_nv_field(status):
     from pprint import pprint
     from source.component.markdown.project_string_default import ProjectStringDefault
@@ -35,12 +68,15 @@ def test_nv_field(status):
     #print('            nv_field ->', actual)
     assert ({'name': '<<ID_NAME>>', 'value': 'id', 'resource': 'account'} in actual)
     status.addBullet('<<ID_NAME>> in nvField ok')
+
     assert ({'name': '<<ID_SIZE_MIN>>', 'value': 3, 'resource': 'account'} in actual)
     status.addBullet('<<ID_SIZE_MIN>> in nvField ok')
 
     assert ({'name': '<<ID_SIZE_MAX>>', 'value': 330, 'resource': 'account'} in actual)
     status.addBullet('<<ID_SIZE_MAX>> in nvField ok')
 
+    #print('actual', actual)
+    #        {'name': '<<ID_RESOURCE>>', 'value': '', 'resource': 'account'}
     assert ({'name': '<<ID_RESOURCE>>', 'value': 'account', 'resource': 'account'} in actual)
     status.addBullet('<<ID_RESOURCE>> in nvField ok')
 
