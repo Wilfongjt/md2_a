@@ -4,10 +4,10 @@ from able import TemplateString, StringReader
 from source.component.markdown.tier_md import TierMD
 from source.component.multilogger import MultiLogger
 from source.component.markdown.helper.resource_names import ResourceNames
-from source.component.nv_resource import NVResource
-from source.component.nv_resource_schema_version import NVResourceSchemaVersion
+# from source.component.nv_resource import NVResource
+#from source.component.nv_resource_schema_version import NVResourceSchemaVersion
 from source.component.markdown.helper.project_name_first import ProjectNameFirst
-from source.component.nv_resource_method_scopes import NVResourceMethodScopes
+from source.component.dep.nv_resource_method_scopes import NVResourceMethodScopes
 
 class Task_InitializeHapiRoutes(ProcessProject):
     ##
@@ -38,6 +38,7 @@ class Task_InitializeHapiRoutes(ProcessProject):
         return project_dict
 
     def route_templates(self):
+        print('route_templates 1')
         # handle generated routes for each resource
         # open 'bin/<project_dict>.md' (by default, <project_dict>.md enables the ACCOUNT resource)
 
@@ -54,13 +55,23 @@ class Task_InitializeHapiRoutes(ProcessProject):
         #folderfilename_md = '{}/{}'.format(os.getcwd(), filename_md)
         #resource_string = StringReader(folderfilename_md)
         #project_dict = Tier(resource_string)
+        print('route_templates 2')
+
         project_dict = self.get_project_dictionary(nv_list)
+        print('route_templates 3')
+
         project_name = ProjectNameFirst(project_dict)
+        print('route_templates 4')
+
         #print('project_dict', project_dict)
         #pprint(project_dict)
         for resource_name in ResourceNames(project_dict, project_name):
+            print('route_templates 41')
+
             nv_list = self.get_template_key_list()  # reset nv_list
             nv_list.extend(NVResource(project_dict, project_name, resource_name))  # add field attributes
+            print('route_templates 411')
+
             #print('route nv_list', nv_list)
             #print('resource name', resource_name)
             #print('resource', project_dict['project']['resource'][resource_name])
@@ -77,9 +88,12 @@ class Task_InitializeHapiRoutes(ProcessProject):
                 version = project_dict['project'][project_name]['resources'][resource_name]['version']
 
             #nv_list.append({'name': '<<API_SCHEMA>>', 'value':'{}_{}'.format(schema, version.replace('.','_')) })
+            print('route_templates 42')
 
             nv_list.extend(NVResourceSchemaVersion(project_dict, project_name, resource_name))
             # print('nv_list', nv_list)
+            print('route_templates 43')
+
             # Route Scopes
             nv_list.extend(NVResourceMethodScopes(project_dict, project_name, resource_name))
             #nv_list.append({'name': '<<DELETE_SCOPE>>', 'value': RouteScopes(project_dict, resource_name, 'DELETE')})
@@ -87,6 +101,8 @@ class Task_InitializeHapiRoutes(ProcessProject):
             #nv_list.append({'name': '<<POST_SCOPE>>', 'value': RouteScopes(project_dict, resource_name, 'POST')})
             #nv_list.append({'name': '<<PUT_SCOPE>>', 'value': RouteScopes(project_dict, resource_name, 'PUT')})
             #print('pre tmpl nv_list', nv_list)
+            print('route_templates 44')
+
             self.templatize(nv_list=nv_list, active_resource=active) # templateize will remove resource when active is set to true
 
             #if 'active' not in project_dict['project']['resource'][resource_name]:
@@ -97,6 +113,7 @@ class Task_InitializeHapiRoutes(ProcessProject):
             #        self.templatize(nv_list=nv_list)
             #    else:
             #        print('figure out delete resource')
+        print('route_templates out')
 
         return self
 

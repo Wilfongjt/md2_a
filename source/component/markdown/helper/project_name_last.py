@@ -1,23 +1,24 @@
 from source.component.markdown.project_string_default import ProjectStringDefault
 class ProjectNameLast(str):
     def __new__(cls, project_dict):
-        if 'project' in project_dict:
-            last_key = list(project_dict['project'].keys())[-1]
-        else:
-            last_key = list(project_dict.keys())[-1]
+        #if 'project' in project_dict:
+        #    last_key = list(project_dict['project'].keys())[-1]
+        #else:
+        #    last_key = list(project_dict.keys())[-1]
 
-        contents = last_key
-
+        #contents = last_key
+        contents = project_dict['project']['name']
         instance = super().__new__(cls, contents)
         return instance
 
 def test_project_name_last(status):
     status.addTitle('Project Name Last test')
     from source.component.markdown.tier_md import TierMD
+    project_dict = TierMD(ProjectStringDefault())
+    #print('project_dict', project_dict)
+    actual = ProjectNameLast(project_dict=project_dict)
 
-    actual = ProjectNameLast(TierMD(ProjectStringDefault()))
-
-    print('        project_name:', actual)
+    #print('        project_name:', actual)
     status.assert_test ("actual == 'sample'",actual == 'sample')
 
 def main(status):

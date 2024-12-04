@@ -1,10 +1,12 @@
 
 from source.component.nv_list import NVList
 #from .nv_list import NVList
-from source.component.nv_resource_fields import NVResourceFields
+#from source.component.nv_resource_fields import NVResourceFields
 from pprint import pprint
 import os
 
+# Deprecate
+'''
 class NVResource(NVList):  # name value resource
     # NV a resource_name
     # apply to a template
@@ -20,7 +22,8 @@ class NVResource(NVList):  # name value resource
         self.add({'name': '<<API_RESOURCE>>', 'value': resource_name})
         # print('NVResource', resource_name)
         self.extend(NVResourceFields(project_dict, project_name, resource_name))
-
+'''
+'''
 def test_nv_resource(status):
     from source.component.markdown.project_string_default import ProjectStringDefault
     from source.component.markdown.tier_md import TierMD
@@ -72,9 +75,10 @@ def test_nv_resource(status):
     #assert ({'name': '<<OWNER_MAX>>', 'value': 330, 'resource': 'sample_resource'} in actual)
     #assert ({'name': '<<OWNER_RESOURCE>>', 'value': 'sample_resource', 'resource': 'sample_resource'} in actual)
     #assert ({'name': '<<OWNER_PATTERN>>', 'value': '^.{3,330}$', 'resource': 'sample_resource'} in actual)
-
+'''
 def main(status):
-    test_nv_resource(status)
+    #test_nv_resource(status)
+    status.addTitle('NVResource Deprecated')
 
 if __name__ == "__main__":
     from source.component.status import Status

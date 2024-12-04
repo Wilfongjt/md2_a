@@ -143,8 +143,8 @@ class ProcessProject(ProcessPackage):
         return self
 
     def makedirs(self, folder_file):
-        ##* __makedirs__, make folders from a folder file name
-        # end with / then folder
+        ##* __makedirs__, make folders from a template_folder file name
+        # end with / then template_folder
         # end without / then file
         if not str(folder_file).endswith('/'):
             # remove filename
@@ -287,12 +287,12 @@ class ProcessProject(ProcessPackage):
                 target_content = ''
                 template_content = ''
                 # make target-file from templatized-content
-                self.makedirs(repo_folderfile) # make output folder
-                # make the template folder e.g., /template/__project__ -> /template
+                self.makedirs(repo_folderfile) # make output template_folder
+                # make the template template_folder e.g., /template/__project__ -> /template
                 template_name = '/'.join(self.get_template_folder().split('/')[0:-1])
                 # print('template_name',template_name)
                 MultiLogger().set_msg('   template({}) -> actual({})'.format(str(template_folderfile).replace(template_name,''), repo_folderfile.replace(self.get_branch_folder(),''))).runtime()
-                # make the target folder in the new repo
+                # make the target template_folder in the new repo
                 #print('repo_folderfile',repo_folderfile.split('\n'))
                 #print('nv_list',nv_list)
                 #print('-----A')

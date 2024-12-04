@@ -5,15 +5,17 @@ class Finder(dict):
     base class for Find
     recursive
     '''
-    def __init__(self, project, findkey_list):
+    def __init__(self, project, findkey_list, inclusive=True):
         self.project = project
-
+        self.idx = 0
+        self.foundbranch = {}
+        self.keycnt = len(findkey_list)
         if type(findkey_list) is str:
-            self.findkey_list = [findkey_list]
+            self.find_list = [findkey_list]
         else:
             self.findkey_list = findkey_list
 
-    def read_dict_recursive(self, project, findkey_list=None):
+    def read_dict_recursive(self, project):
         """
         Recursively reads a dictionary and prints its keys and values.
 
@@ -22,48 +24,78 @@ class Finder(dict):
 
         """
         rc = {}
-        if not findkey_list:
-            findkey_list = self.findkey_list
 
         for key, value in project.items():
-            if findkey_list[0] == key:
-                if len(findkey_list) > 1: # go again
-                    findkey_list = [k for k in findkey_list[1:]] # get rid of first key
-                    rc = self.read_dict_recursive(value,findkey_list)
 
-                else: # found
-                    rc[key]=value
-                    return rc
+            if self.keycnt == self.idx:
+                return self.foundbranch
 
-            elif isinstance(value, dict):
+            if self.findkey_list[self.idx] == key:
+                self.foundbranch = value
+                self.idx += 1
+
+                if self.keycnt == self.idx:
+                    return self.foundbranch
+
+            if isinstance(value, dict):
                 # Recursively call the function to process the nested dictionary
-                rc = self.read_dict_recursive(value, findkey_list)
+                rc = self.read_dict_recursive(value)
 
         return rc
 
+
 class Find(Finder):
-    def __init__(self, project, findlist):
-        Finder.__init__(self, project, findlist)
-        #print('artemis findlist', self.findkey_list)
+    def __init__(self, project, findlist, inclusive=True):
+        Finder.__init__(self, project, findlist, inclusive=True)
+
         rc = self.read_dict_recursive(project)
-        for k in rc:
-            self[k] = rc[k]
-        #print('rc',self)
+        print('findlist', findlist)
+        print('rc', rc)
+
+        if inclusive:
+            me = self
+            lastme = self
+            for k in self.findkey_list:
+                lastme = me
+                me[k]={}
+                me = me[k]
+
+            if type(rc) not in [dict, list]:
+                lastme[self.findkey_list[-1]] = rc
+
+            if type(rc) in [dict, list]:
+                for k in rc:
+                    me[k] = rc[k]
+        else:
+            for k in rc:
+                print('k ', k)
+                print('rc', rc[k])
+                if type(rc[k]) in [dict, list]:
+                    print('self', self)
+                    self[k] = rc[k]
+                else:
+                    print('self', self)
+                    self[k]=rc[k]
+
+        #if not inclusive:
+        #    last = findlist[-1]
 
 
 def main(status):
     from pprint import pprint
-    status.addTitle('Find test')
+    status.addTitle('Find tests')
 
-    project = TierMD(ProjectStringDefault())
+    project_dict = TierMD(ProjectStringDefault())
 
-    # claims
-    claims = Find(project, ['claim', 'api_admin'])
-    status.assert_test("'api_admin' in claims", 'api_admin' in claims)
+    status.assert_test("Find(project, ['models', 'account','id','size'])", Find(project_dict, ['models', 'account','id','size']) == {'models': {'account': {'id': {'size': '3-330'}}}})
+    status.assert_test("Find(project, ['models', 'account','id','type'])", Find(project_dict, ['models', 'account','id','type']) == {'models': {'account': {'id': {'type': 'C'}}}})
 
-    account = Find(project, ['account', 'model'])
-    status.assert_test ("'model' in account", 'model' in account)
+    print('find',Find(project_dict, ['claims', 'api_admin'], inclusive=True))
+    status.assert_test('Find Inclusive','claims' in Find(project_dict, ['claims', 'api_admin'], inclusive=True))
+    print('find',Find(project_dict, ['claims', 'api_admin'], inclusive=False))
+    status.assert_test('Find Not Inclusive','claims' not in Find(project_dict, ['claims', 'api_admin'], inclusive=False))
 
+    #status.assert_test("Find(project, ['claims'])", Find(project_dict, ['claims']) == )
 
 if __name__ == "__main__":
     from source.component.status import Status

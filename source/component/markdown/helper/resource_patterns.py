@@ -1,22 +1,24 @@
 from source.component.markdown.pattern import Pattern
 
 class ResourcePatterns(dict):
-    def __init__(self, project_dict, project_name, resource_name):
+    def __init__(self, project_dict, resource_name):
         # return {'account': {'id': {'pattern': '^.{3,330}$'}, 'type': {'pattern': '^.{3,330}$'}, ...}}
-        resource_list = project_dict['project'][project_name]['resources']
+        resource_list = project_dict['project']['resources']
 
         if resource_name:
             resource_list = {r: resource_list[r] for r in resource_list if r == resource_name}
-        for r in project_dict['project'][project_name]['resources']:
+        for r in project_dict['project']['resources']:
             # {account: {}, ...}
             self[r] = {}
-            for m in project_dict['project'][project_name]['resources'][r]['model']:
+            for m in project_dict['project']['models'][r]:
+                #print('models',project_dict['project']['models'][r])
                 #print('m',m,project_dict['project']['resources'][r]['model'])
-                for fld in project_dict['project'][project_name]['resources'][r]['model']:
+                for fld in project_dict['project']['models'][r]:
+                    #for fld in project_dict['project']['resources'][r]['model']:
 
                     if fld not in self[r]:
                         self[r][fld]={}
-                    self[r][fld]['pattern']=Pattern(project_dict['project'][project_name]['resources'][r]['model'][fld])
+                    self[r][fld]['pattern']=Pattern(project_dict['project']['models'][r][fld])
                     #print('fld', fld, project_dict['project']['resources'][r]['model'][fld])
 
                 '''
@@ -42,7 +44,7 @@ def test_resource_patterns(status):
     status.addTitle('Resource Patterns test')
     project = TierMD(ProjectStringDefault()) #['project']['resources']
     #pprint(project_dict)
-    actual = ResourcePatterns(project, ProjectNameFirst(project),'account')
+    actual = ResourcePatterns(project, 'account')
     #print('   resource_patterns:', actual)
     status.assert_test("'account' in {}".format(actual),'account' in actual)
 

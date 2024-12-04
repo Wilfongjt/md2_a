@@ -3,13 +3,14 @@ from source.component.markdown.project_string_default import ProjectStringDefaul
 class ProjectNameFirst(str):
     def __new__(cls, project_dict):
         #print('keys', list(project_dict['project'].keys()))
-        if 'project' in project_dict:
-            first_key = list(project_dict['project'].keys())[0]
-        else:
-            first_key = list(project_dict.keys())[0]
+        #if 'project' in project_dict:
+        #    first_key = list(project_dict['project'].keys())[0]
+        #else:
+        #    first_key = list(project_dict.keys())[0]
         #print('first_key', first_key)
-        contents = first_key
+        #contents = first_key
 
+        contents = project_dict['project']['name']
         instance = super().__new__(cls, contents)
         return instance
 

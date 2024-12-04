@@ -33,11 +33,11 @@ class Application(Recorder):
     #    return self
 
     def get_bin_folder(self):
-        ##* __get_bin_folder__, eg "\<repo>/bin" (aka bin-folder)
+        ##* __get_bin_folder__, eg "\<repo>/bin" (aka bin-template_folder)
         return str(os.getcwd()).replace('/source/component','/bin')
 
     def get_template_folder(self, subfolder=None):
-        ##* __get_template_folder__, eg "\<repo>/source/template" (aka template-folder)
+        ##* __get_template_folder__, eg "\<repo>/source/template" (aka template-template_folder)
         if subfolder:
             # print('subfolder',subfolder)
             tmp = str(os.getcwd()).replace('/bin', '/source/template').replace('/component', '/template')
@@ -50,7 +50,7 @@ class Application(Recorder):
 
     def get_environment_filename(self):
         ##* __get_environment_filename___, eg "\<repo>/bin/\<repo-name>_.env" (aka runtime-env)
-        # env is stored in the bin folder bin/md2
+        # env is stored in the bin template_folder bin/md2
         return '{}/{}.env'.format(self.get_bin_folder(), self.get_name())
 
     def get_environment_template_filename(self):

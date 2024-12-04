@@ -1,10 +1,11 @@
 
 from source.component.nv_list import NVList
-from source.component.nv_field import NVField
+#from source.component.nv_field import NVField
 from pprint import pprint
 import os
-
-class NVResourceFields(NVList):
+# deprecated
+'''
+class depNVResourceFields(NVList):
     # NV all resource fields
     # apply to a template
     def __init__(self, project_dict, project_name, resource_name):
@@ -20,6 +21,7 @@ class NVResourceFields(NVList):
         #for row in project_dict['project'][project_name]['resources'][resource_name]['model']['rows']:
         #    # print('NVResourceFields', resource_name)
         #    self.extend(NVField(project_dict, project_name, resource_name, row['field']))
+'''
 def test_nv_resource_fields(status):
     from source.component.markdown.project_string_default import ProjectStringDefault
     from source.component.markdown.tier_md import TierMD
@@ -65,8 +67,8 @@ def test_nv_resource_fields(status):
 
 
 def main(status):
-
-    test_nv_resource_fields(status)
+    print('NVResourceFields Deprecated')
+    #test_nv_resource_fields(status)
 
 if __name__ == "__main__":
     from source.component.status import Status

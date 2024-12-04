@@ -1,8 +1,9 @@
 from source.component.markdown.project_string_default import ProjectStringDefault
 class ProjectName(str):
     def __new__(cls, project_dict):
-        first_key = next(iter(project_dict['project']))
-        contents = first_key
+        #first_key = next(iter(project_dict['project']['name']))
+        #contents = first_key
+        contents = project_dict['project']['name']
 
         instance = super().__new__(cls, contents)
         return instance

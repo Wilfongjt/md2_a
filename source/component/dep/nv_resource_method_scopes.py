@@ -1,6 +1,6 @@
 from source.component.nv_list import NVList
 from source.component.markdown.helper.route_scopes import RouteScopes
-
+# deprecated
 class NVResourceMethodScopes(NVList):
     # NVResourceMethodScopes(project_dict, resource_name)
     def __init__(self, project_dict, project_name, resource_name):
@@ -43,7 +43,8 @@ def test_nv_resource_method_scopes(status):
         status.assert_test("{} in ['api_admin', 'api_guest', 'api_user']".format(nv['value'][0]),nv['value'][0] in ['api_admin', 'api_guest', 'api_user'])
 
 def main(status):
-    test_nv_resource_method_scopes(status)
+    print('NVResourceMethodScopes Deprecated')
+    # test_nv_resource_method_scopes(status)
 
 
 if __name__ == "__main__":

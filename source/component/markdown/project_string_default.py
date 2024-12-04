@@ -3,10 +3,13 @@ class ProjectStringDefault(str):
 
         contents = '''
     # Project: 
-    ## sample:
+    
     1. name: sample
     
-    ### Claim:
+    ## Claims:
+    Claims(project_dict, scope=None) --> {api_admin: {...}, api_guest: {...}, api_user: {...}}
+    Claims(project_dict, scope=api_admin) --> {api_admin: {...}}
+    
     1. type: jwt
     
     | name      | aud       | iss                | sub        | user       | scope     | key |
@@ -18,31 +21,45 @@ class ProjectStringDefault(str):
     * ? means value is unknown until runtime
     * table name is dependent on project_dict name
 
-    ### Resources
-    #### Account
-        User accounts
-    1. schema: api
-    1. version: 1.0.0
-    1. active: y
-
-    ##### Model:
-    resource.model 
+    ## Resources
+    Resources(project_dict) --> {account: {active: 1, schema: api, major: 00, minor: 00, patch:00}, resource1: {...},...}
+    Resources(project_dict, account) --> {account: {active: 1, schema: api, major: 00, minor: 00, patch:00}}
     
-    | name        | type | size   | validate | encrypt | api_admin | api_guest | api_user |
-    |-------------|------|--------|----------|---------|-----------|-----------|----------|
-    | id          | C    | 3-330  | R        | N       | R         | CR        | RUD      | 
-    | type        | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | owner       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | username    | C    | 3-330  | R        | N       | R         | CR        | RUD      |  
-    | displayname | C    | 3-330  | R        | N       | R         | CR        | RUD      |
-    | password    | C    | 10-330 | R        | Y       | -         | CR        | UD       |
-    | scope       | C    | 3-330  | R        | N       | R         | CR        | RUD      |
+    ### Account
+        User accounts
+    1. active: Y
+    1. schema: api
+    1. major: 00
+    1. minor: 00
+    1. patch: 00
+    
+    ## Models:
+    ### Account:
+    | name        | type | size   | validate | encrypt | default  | required |
+    |-------------|------|--------|----------|---------|----------|----------|
+    | id          | C    | 3-330  | R        | N       | ?        | 1        |
+    | type        | C    | 3-330  | R        | N       | ?        | 1        |
+    | owner       | C    | 3-330  | R        | N       | ?        | 1        |
+    | username    | C    | 3-330  | R        | N       | ?        | 1        |  
+    | displayname | C    | 3-330  | R        | N       | ?        | 1        |
+    | password    | C    | 10-330 | R        | Y       | ?        | 1        |
+    | scope       | C    | 3-330  | R        | N       | api_user | 1        |
+    | active      | L    | 1-1    | R        | N       | 1        | 1        |
+    
     
     Types
     * C is character, any keyboard character
     * L is logical aka boolean, eg ‘True', ‘False', ’T', ‘F', ‘Y', ’N', ‘1', ‘0' 
     * N is numeric, eg ‘1' or ‘1.1' or ‘-1.1' 
     * D is datetime, eg '2024-06-23' or '2024-06-23 18:30:00'
+    
+    ## Privileges:
+    ### Account:
+    | name      | id  | type | owner | username | displayname | password | scope | active |
+    |-----------|-----|------|-------|----------|-------------|----------|-------|--------|
+    | api_admin | R   | R    | R     | R        | R           | -        | R     | R      |
+    | api_guest | CR  | CR   | CR    | CR       | CR          | CR       | CR    | CR     |
+    | api_user  | RUD | RUD  | RUD   | RUD      | RUD         | UD      | RUD   | RUD    |  
     
     Privileges
     * C is Create
@@ -51,9 +68,9 @@ class ProjectStringDefault(str):
     * D is Delete
     * - is None
 
-    ##### Data:
-    ###### Test:
-    
+    ## Tests:
+    ### Account:
+  
     | id        | type    | owner                    | username                | displayname | password | scope     |
     |-----------|---------|--------------------------|-------------------------|-------------|----------|-----------|
     | api_admin | ACCOUNT | api_admin@lyttlebit.com  | api_admin@lyttlebit.com | Admin       | a1A!aaa  | api_admin |
@@ -78,12 +95,14 @@ def main(status):
     from source.component.markdown.helper.project_claim_type import ProjectClaimType
 
     actual = TierMD(ProjectStringDefault())
-    #pprint(actual)
+    pprint(actual)
     status.assert_test("'project' in {}".format(actual), 'project' in actual)
-    status.assert_test("'sample' in {}".format(actual['project']), 'sample' in actual['project'])
-    status.assert_test("'resources' in ".format(actual['project']['sample']), 'resources' in actual['project']['sample'])
 
-    status.assert_test("'claim' in {}".format(actual['project']['sample']), 'claim' in actual['project']['sample'])
+    status.assert_test("'claims' in {}".format(actual['project']), 'claims' in actual['project'])
+    status.assert_test("'models' in {}".format(actual['project']), 'models' in actual['project'])
+
+    status.assert_test("'privileges' in {}".format(actual['project']), 'privileges' in actual['project'])
+    status.assert_test("'resources' in ".format(actual['project']), 'resources' in actual['project'])
 
     #status.assert_test("".format(actual), ProjectName(actual)=='sample')
     #status.assert_test("".format(actual), ProjectClaimType(actual,'sample')=='jwt')
